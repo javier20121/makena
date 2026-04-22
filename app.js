@@ -77,12 +77,9 @@ function detectCategory(p) {
   const joined = [name, ...cats].join(' ');
   if (/agro|campo|semilla|fertiliz|herbicida|fungicida|herbici|poda|huerta|jardín|jardin/.test(joined)) return 'agro';
   if (/papel|cuaderno|resma|lapiz|lápiz|birome|carpeta|agenda|folder|archiv|marcador|sello/.test(joined)) return 'papeleria';
-  if (/celeste|azul|cielo|brillante/.test(joined)) return 'celeste';
-  if (/lila|violeta|purpura|púrpura|lavanda/.test(joined)) return 'lila';
-  if (/rosado|rosa|fucsia|pink/.test(joined)) return 'rosado';
   return 'bazar';
 }
-//ll//
+
 // ─── TIENDANUBE PROXY ───────────────────────────────────────
 async function tnFetch(params={}) {
   const url = new URL('/api/products', window.location.origin);
@@ -151,6 +148,7 @@ async function loadProducts(filter='all', page=1, append=false) {
         imageAlt:     p.name?.es || '',
         available:    v.stock !== 0,
         category:     detectCategory(p),
+        permalink:    p.permalink || null,
       };
     }) : [];
 
@@ -267,7 +265,10 @@ function buildCard(p, i=0) {
       <p class="product-desc">${esc(p.description || '')}</p>
       <div class="product-foot">
         ${priceHtml}
-        <button class="add-btn" data-product-id="${esc(p.id)}" aria-label="Agregar ${esc(p.title)}" ${!p.available?'disabled title="Sin stock"':''}>+</button>
+        <div class="product-actions">
+          ${p.permalink ? `<a class="buy-btn" href="${esc(p.permalink)}" target="_blank" rel="noopener noreferrer" aria-label="Comprar ${esc(p.title)}">Comprar</a>` : ''}
+          <button class="add-btn" data-product-id="${esc(p.id)}" aria-label="Agregar ${esc(p.title)}" ${!p.available?'disabled title="Sin stock"':''}>+ Carrito</button>
+        </div>
       </div>
     </div>`;
 
@@ -449,10 +450,7 @@ catBtns.forEach(btn => {
 hfcCards.forEach(card => {
   const filter = card.classList.contains('hfc-agro') ? 'agro'
                : card.classList.contains('hfc-bazar') ? 'bazar'
-               : card.classList.contains('hfc-papel') ? 'papeleria'
-               : card.classList.contains('hfc-celeste') ? 'celeste'
-               : card.classList.contains('hfc-lila') ? 'lila'
-               : card.classList.contains('hfc-rosado') ? 'rosado' : null;
+               : card.classList.contains('hfc-papel') ? 'papeleria' : null;
   if (filter) {
     card.addEventListener('click', () => {
       if (filter !== currentFilter) {
