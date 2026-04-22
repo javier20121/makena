@@ -9,7 +9,7 @@ const WHATSAPP_NUMBER = '5493757000000';
 
 // ─── CONFIG ─────────────────────────────────────────────────
 const PAGE_SIZE = 12;
-const CATEGORY_EMOJIS = { agro:'🌾', bazar:'🏠', papeleria:'📎', celeste:'💎', lila:'✨', rosado:'🌸', default:'📦' };
+const CATEGORY_EMOJIS = { agro:'🌾', bazar:'🏠', papeleria:'📎', default:'📦' };
 const EMPTY_MESSAGES = {
   error:     'No pudimos cargar los productos. Intentá de nuevo más tarde.',
   comingSoon:'¡Próximamente! Los productos están en camino.',
@@ -79,14 +79,14 @@ function detectCategory(p) {
   const tags = (p.tags || '').toLowerCase();
   
   // Prioridad 1: Tags explícitos de Tiendanube
+  if (tags.includes('papeleria') || tags.includes('papelería')) return 'papeleria';
   if (tags.includes('agro')) return 'agro';
   if (tags.includes('bazar')) return 'bazar';
-  if (tags.includes('papeleria') || tags.includes('papelería')) return 'papeleria';
 
   // Prioridad 2: Fallback por palabras clave en nombre/categorías
   const name = (p.name?.es || '').toLowerCase();
   const cats = (p.categories||[]).map(c=>(c.name?.es||'').toLowerCase());
-  const joined = [name, ...cats, tags].join(' ');
+  const joined = [name, ...cats].join(' ');
   
   if (/agro|campo|semilla|fertiliz|herbicida|fungicida|herbici|poda|huerta|jardín|jardin/.test(joined)) return 'agro';
   if (/papel|cuaderno|resma|lapiz|lápiz|birome|carpeta|agenda|folder|archiv|marcador|sello/.test(joined)) return 'papeleria';
