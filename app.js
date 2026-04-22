@@ -143,6 +143,7 @@ async function loadProducts(filter='all', page=1, append=false) {
     loadMoreRow.hidden = !hasNextPage || allProducts.length === 0;
 
   } catch(err) {
+    console.error('🔴 Error detallado de carga:', err.message);
     connectionState = 'error';
     hasNextPage = false; currentPage = 1;
     loadMoreRow.hidden = true;
@@ -429,15 +430,19 @@ document.head.appendChild(popStyle);
 
 // ─── INIT ─────────────────────────────────────────────────────
 async function init() {
-  $('currentYear').textContent = new Date().getFullYear();
-  loadCart();
-  updateCartUI();
-  setupObserver();
+  try {
+    $('currentYear').textContent = new Date().getFullYear();
+    loadCart();
+    updateCartUI();
+    setupObserver();
 
-  connectionState = 'connecting';
-  await loadProducts('all', 1, false);
+    connectionState = 'connecting';
+    await loadProducts('all', 1, false);
 
-  if (connectionState === 'connected') reconcileCart();
+    if (connectionState === 'connected') reconcileCart();
+  } catch (e) {
+    console.error("Falla crítica en init:", e);
+  }
 }
 
 init();

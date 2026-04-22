@@ -9,7 +9,6 @@ export default async function handler(req, res) {
   }
 
   const { storeId, ...params } = req.query;
-  // Es mejor usar el token directamente aquí o vía process.env
   const token = 'eab22a1052be423fc56d633f7c34f8507d8e747a';
 
   if (!storeId) {
