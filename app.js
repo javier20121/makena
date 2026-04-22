@@ -148,6 +148,7 @@ async function loadProducts(filter='all', page=1, append=false) {
         imageAlt:     p.name?.es || '',
         available:    v.stock !== 0,
         category:     detectCategory(p),
+        permalink:    p.permalink || '#', // URL del producto en Tiendanube
       };
     }) : [];
 
@@ -257,7 +258,10 @@ function buildCard(p, i=0) {
       <p class="product-desc">${esc(p.description || '')}</p>
       <div class="product-foot">
         ${priceHtml}
-        <button class="add-btn" data-product-id="${esc(p.id)}" aria-label="Agregar ${esc(p.title)}" ${!p.available?'disabled title="Sin stock"':''}>+</button>
+        <div class="product-actions">
+          <button class="add-btn" data-product-id="${esc(p.id)}" aria-label="Agregar ${esc(p.title)}" ${!p.available?'disabled title="Sin stock"':''}>+</button>
+          <a href="${esc(p.permalink)}" target="_blank" rel="noopener noreferrer" class="btn-buy-tn ${!p.available?'disabled':''}" ${!p.available?'aria-disabled="true"':''}>Comprar</a>
+        </div>
       </div>
     </div>`;
 

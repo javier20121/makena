@@ -487,20 +487,50 @@ em { font-style: italic; color: var(--accent-2); }
   margin-bottom: 0.85rem;
   display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
 }
-.product-foot { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; margin-top: auto; }
+.product-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: auto;
+}
 .product-price { font-weight: 800; font-size: 1.05rem; color: var(--accent-2); font-family: 'Fraunces', serif; }
 .product-compare { font-size: 0.8rem; color: var(--ink-3); text-decoration: line-through; }
 
+.product-actions {
+  display: flex;
+  gap: 0.5rem; /* Space between the two buttons */
+  align-items: center;
+}
+
 .add-btn {
   width: 36px; height: 36px; border-radius: var(--radius-sm);
-  background: var(--accent); color: white; font-size: 1.3rem;
+  background: var(--surface-2); /* Changed to secondary background */
+  color: var(--ink-2); /* Changed to secondary text color */
+  font-size: 1.3rem;
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0; transition: all var(--transition);
   line-height: 1;
 }
 .add-btn:hover { background: var(--accent-2); transform: scale(1.1); }
 .add-btn:active { transform: scale(0.96); }
-.add-btn:disabled { background: var(--surface-2); color: var(--ink-3); cursor: not-allowed; transform: none; }
+.add-btn:disabled {
+  background: var(--surface-2);
+  color: var(--ink-3);
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-buy-tn {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 0.6rem 1rem;
+  border-radius: var(--radius-full);
+  font-weight: 700; font-size: 0.85rem;
+  background: var(--accent); color: white;
+  transition: all var(--transition); white-space: nowrap;
+}
+.btn-buy-tn:hover { background: var(--accent-2); transform: translateY(-1px); }
+.btn-buy-tn.disabled { background: var(--surface-2); color: var(--ink-3); cursor: not-allowed; pointer-events: none; transform: none; }
 
 /* ── NOSOTROS ───────────────────────────────────────────────── */
 .about-section { background: var(--bg); }
