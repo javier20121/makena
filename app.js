@@ -82,7 +82,7 @@ function detectCategory(p) {
   if (/rosado|rosa|fucsia|pink/.test(joined)) return 'rosado';
   return 'bazar';
 }
-
+//ll//
 // ─── TIENDANUBE PROXY ───────────────────────────────────────
 async function tnFetch(params={}) {
   const url = new URL('/api/products', window.location.origin);
