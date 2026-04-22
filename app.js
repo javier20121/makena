@@ -6,8 +6,6 @@
 // ─── CONFIGURACIÓN ────────────────────────────────────────────
 const WHATSAPP_NUMBER = '5493757000000'; // ← Cambiá por tu número real
 
-const TN_API_BASE = 'https://api.tiendanube.com/v1';
-
 // Credenciales Tiendanube (se leen desde localStorage)
 let TN_STORE_ID = localStorage.getItem('mk_domain') || '';
 let TN_TOKEN    = localStorage.getItem('mk_token')  || 'eab22a1052be423fc56d633f7c34f8507d8e747a';
@@ -126,18 +124,24 @@ async function tnFetch(path, params = {}) {
     throw new Error('No hay credenciales de Tiendanube configuradas.');
   }
 
-  const url = new URL(`${TN_API_BASE}/${TN_STORE_ID}/${path}`);
-  Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
+  // Apuntamos a nuestra función de Vercel en lugar de a Tiendanube directamente
+  const url = new URL('/api/products', window.location.origin);
+  
+  // Enviamos las credenciales como parámetros para que el proxy las use
+  url.searchParams.append('storeId', TN_STORE_ID);
+  url.searchParams.append('token', TN_TOKEN);
 
-  console.log(`📡 Llamando a Tiendanube API: ${url.toString()}`);
+  // Filtrar parámetros para no enviar "undefined" o strings vacíos
+  Object.keys(params).forEach(key => {
+    if (params[key] !== undefined && params[key] !== null && params[key] !== '') {
+      url.searchParams.append(key, params[key]);
+    }
+  });
 
-  // Nota: Tiendanube requiere User-Agent para su API
+  console.log(`📡 Solicitando productos al Proxy: ${url.toString()}`);
+
   const response = await fetch(url, {
     method: 'GET',
-    headers: {
-      'Authentication': `bearer ${TN_TOKEN}`,
-      'Content-Type': 'application/json'
-    },
   });
 
   if (!response.ok) {
@@ -566,6 +570,12 @@ function saveConfig() {
 
   if (!storeId || !token) {
     showToast('⚠ Completá el ID de tienda y el token.');
+    return;
+  }
+
+  // El ID de Tiendanube es numérico (ej: 3123456), no un dominio .myshopify.com
+  if (storeId.includes('.') || isNaN(storeId)) {
+    showToast('⚠ El ID debe ser un número (ej: 123456).');
     return;
   }
 
