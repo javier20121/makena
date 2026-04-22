@@ -1,14 +1,13 @@
 /* ============================================================
-   MAKENA — app.js
+   MAKENA — app.js (VERSIÓN CORREGIDA)
    Tiendanube via Vercel Proxy
-   Credenciales fijas — sin panel de configuración público
    ============================================================ */
 
-// ─── CREDENCIALES (hardcodeadas — no exponer Admin API aquí) ──
-const TN_STORE_ID    = '7601778'; // Tu ID real de Tiendanube (user_id)
-const WHATSAPP_NUMBER = '5493757000000'; // ← Cambiá por tu número real
+// ─── CREDENCIALES ───────────────────────────────────────────
+const TN_STORE_ID = '7601778';
+const WHATSAPP_NUMBER = '5493757000000';
 
-// ─── CONFIG ───────────────────────────────────────────────────
+// ─── CONFIG ─────────────────────────────────────────────────
 const PAGE_SIZE = 12;
 const CATEGORY_EMOJIS = { agro:'🌾', bazar:'🏠', papeleria:'📎', default:'📦' };
 const EMPTY_MESSAGES = {
@@ -17,7 +16,7 @@ const EMPTY_MESSAGES = {
   noResults: 'No encontramos productos con ese criterio.',
 };
 
-// ─── ESTADO ───────────────────────────────────────────────────
+// ─── ESTADO ─────────────────────────────────────────────────
 let allProducts      = [];
 let filteredProducts = [];
 let cart             = [];
@@ -25,8 +24,9 @@ let currentFilter    = 'all';
 let currentPage      = 1;
 let hasNextPage      = false;
 let connectionState  = 'idle';
+let isLoading        = false;  // ✅ PREVIENE BUCLE INFINITO
 
-// ─── DOM ──────────────────────────────────────────────────────
+// ─── DOM ────────────────────────────────────────────────────
 const $ = id => document.getElementById(id);
 const productsGrid   = $('productsGrid');
 const loadingState   = $('loadingState');
@@ -56,7 +56,7 @@ const navLinks       = $('navLinks');
 const navbar         = $('navbar');
 const hfcCards       = document.querySelectorAll('.hfc');
 
-// ─── UTILIDADES ───────────────────────────────────────────────
+// ─── UTILIDADES ─────────────────────────────────────────────
 const fmt = (n) => new Intl.NumberFormat('es-AR', { style:'currency', currency:'ARS', minimumFractionDigits:0 }).format(n);
 
 function esc(s='') {
@@ -80,7 +80,7 @@ function detectCategory(p) {
   return 'bazar';
 }
 
-// ─── TIENDANUBE PROXY ─────────────────────────────────────────
+// ─── TIENDANUBE PROXY ───────────────────────────────────────
 async function tnFetch(params={}) {
   const url = new URL('/api/products', window.location.origin);
   url.searchParams.set('storeId', TN_STORE_ID);
@@ -88,19 +88,44 @@ async function tnFetch(params={}) {
     if (v !== undefined && v !== null && v !== '') url.searchParams.set(k, v);
   });
 
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  console.log('[tnFetch] URL:', url.toString());
 
-  return { data: await res.json(), total: res.headers.get('X-Total-Count') };
+  const res = await fetch(url);
+  
+  // ✅ VALIDAR RESPUESTA
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    console.error('[tnFetch] Error HTTP:', res.status, errorData);
+    throw new Error(`HTTP ${res.status}: ${errorData.error || 'Error desconocido'}`);
+  }
+
+  const data = await res.json();
+  
+  // ✅ VALIDAR QUE DATA SEA ARRAY
+  if (!Array.isArray(data)) {
+    console.error('[tnFetch] Data no es array:', data);
+    throw new Error('La respuesta de la API no es un array válido');
+  }
+
+  return { data, total: res.headers.get('X-Total-Count') };
 }
 
-// ─── CARGAR PRODUCTOS ─────────────────────────────────────────
+// ─── CARGAR PRODUCTOS ───────────────────────────────────────
 async function loadProducts(filter='all', page=1, append=false) {
+  // ✅ PREVENIR BUCLE INFINITO
+  if (isLoading) {
+    console.log('[loadProducts] Ya hay una carga en progreso, saltando...');
+    return;
+  }
+  
+  isLoading = true;
   setLoading(true);
 
   try {
     const params = { page, per_page: PAGE_SIZE };
     if (searchInput.value.trim()) params.q = searchInput.value.trim();
+
+    console.log('[loadProducts] Cargando:', { filter, page, append, params });
 
     const { data, total } = await tnFetch(params);
 
@@ -109,7 +134,8 @@ async function loadProducts(filter='all', page=1, append=false) {
     hasNextPage = (page * PAGE_SIZE) < totalCount;
     currentPage = page;
 
-    const products = data.map(p => {
+    // ✅ VALIDAR DATA ANTES DE MAPEAR
+    const products = Array.isArray(data) ? data.map(p => {
       const v = p.variants?.[0] || {};
       return {
         id:           String(p.id),
@@ -123,13 +149,15 @@ async function loadProducts(filter='all', page=1, append=false) {
         available:    v.stock !== 0,
         category:     detectCategory(p),
       };
-    });
+    }) : [];
+
+    console.log('[loadProducts] Productos procesados:', products.length);
 
     allProducts = append ? [...allProducts, ...products] : products;
-    filteredProducts = applyFilter(allProducts, currentFilter, searchInput.value);
+    filteredProducts = logicFilter(allProducts, currentFilter, searchInput.value);
 
     const toRender = append
-      ? applyFilter(products, currentFilter, searchInput.value)
+      ? logicFilter(products, currentFilter, searchInput.value)
       : filteredProducts;
 
     if (!append && filter === 'all' && !searchInput.value.trim() && allProducts.length === 0) {
@@ -137,43 +165,56 @@ async function loadProducts(filter='all', page=1, append=false) {
     } else {
       const hasQuery = searchInput.value.trim() || currentFilter !== 'all';
       renderProducts(toRender, append, EMPTY_MESSAGES.noResults, hasQuery);
-      const label = allProducts.length === 1 ? 'producto' : 'productos';
     }
 
     loadMoreRow.hidden = !hasNextPage || allProducts.length === 0;
 
   } catch(err) {
     console.error('🔴 Error detallado de carga:', err.message);
+    console.error('Stack:', err.stack);
     connectionState = 'error';
-    hasNextPage = false; currentPage = 1;
+    hasNextPage = false; 
+    currentPage = 1;
     loadMoreRow.hidden = true;
     if (!append) renderProducts([], false, EMPTY_MESSAGES.error);
     else showToast('Error al cargar más productos.');
   } finally {
+    isLoading = false;  // ✅ LIBERAR BLOQUEO
     setLoading(false);
   }
 }
 
-function applyFilter(products, filter, search='') {
-  let r = products;
+function logicFilter(products, filter, search='') {
+  let r = Array.isArray(products) ? products : [];
   if (filter !== 'all') r = r.filter(p => p.category === filter);
   if (search.trim()) {
     const q = search.toLowerCase();
-    r = r.filter(p => p.title.toLowerCase().includes(q) || p.description.toLowerCase().includes(q));
+    r = r.filter(p => p.title.toLowerCase().includes(q) || (p.description||'').toLowerCase().includes(q));
   }
   return r;
 }
 
+// ─── APLICAR FILTRO ─────────────────────────────────────────
 window.applyFilter = function(filter) {
+  // ✅ PREVENIR BUCLE INFINITO
+  if (isLoading || currentFilter === filter) {
+    console.log('[applyFilter] Saltando, filtro igual o carga en progreso');
+    return;
+  }
+  
   currentFilter = filter;
   currentPage = 1;
+  
+  // Actualizar chips visualmente
   chips.forEach(c => c.classList.toggle('active', c.dataset.filter === filter));
-  allProducts = [];
+  
+  allProducts = []; 
   loadProducts(filter, 1, false);
+  
   document.getElementById('productos')?.scrollIntoView({ behavior:'smooth', block:'start' });
 };
 
-// ─── RENDER PRODUCTOS ─────────────────────────────────────────
+// ─── RENDER PRODUCTOS ───────────────────────────────────────
 function renderProducts(products, append=false, emptyMsg=EMPTY_MESSAGES.noResults, showReset=false) {
   if (!append) {
     productsGrid.querySelectorAll('.product-card').forEach(el=>el.remove());
@@ -223,14 +264,14 @@ function buildCard(p, i=0) {
   return el;
 }
 
-// ─── LOADING ──────────────────────────────────────────────────
+// ─── LOADING ────────────────────────────────────────────────
 function setLoading(on) {
   loadingState.hidden = !on;
   loadingState.style.display = on ? 'flex' : 'none';
   if (on) emptyState.hidden = true;
 }
 
-// ─── CARRITO ──────────────────────────────────────────────────
+// ─── CARRITO ────────────────────────────────────────────────
 function addToCart(productId) {
   const p = allProducts.find(x => x.id === productId);
   if (!p) return;
@@ -313,7 +354,7 @@ function updateCartUI() {
 function openCart()  { cartDrawer.classList.add('open'); overlay.classList.add('active'); document.body.style.overflow='hidden'; }
 function closeCart() { cartDrawer.classList.remove('open'); overlay.classList.remove('active'); document.body.style.overflow=''; }
 
-// ─── CHECKOUT → WHATSAPP ──────────────────────────────────────
+// ─── CHECKOUT → WHATSAPP ────────────────────────────────────
 function sendWhatsApp() {
   if (!cart.length) return;
   let msg = '¡Hola Makena! Quiero hacer un pedido:\n\n';
@@ -324,20 +365,19 @@ function sendWhatsApp() {
   window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank', 'noopener,noreferrer');
 }
 
-// ─── BÚSQUEDA ─────────────────────────────────────────────────
+// ─── BÚSQUEDA ───────────────────────────────────────────────
 function doSearch() {
   if (connectionState !== 'connected') return;
   const q = searchInput.value.trim();
-  filteredProducts = applyFilter(allProducts, currentFilter, q);
+  filteredProducts = logicFilter(allProducts, currentFilter, q);
   const hasQuery = q || currentFilter !== 'all';
   renderProducts(filteredProducts, false, EMPTY_MESSAGES.noResults, hasQuery);
   if (q) document.getElementById('productos')?.scrollIntoView({behavior:'smooth', block:'start'});
 }
 
-// ─── NAVBAR & UI ──────────────────────────────────────────────
+// ─── NAVBAR & UI ────────────────────────────────────────────
 window.addEventListener('scroll', () => {
   navbar.classList.toggle('scrolled', window.scrollY > 50);
-  // Active nav link por sección visible
   const sections = ['inicio','categorias','productos','nosotros','contacto'];
   let current = 'inicio';
   sections.forEach(id => {
@@ -349,7 +389,6 @@ window.addEventListener('scroll', () => {
   });
 }, { passive:true });
 
-// Buscador expandible
 searchToggle.addEventListener('click', () => {
   const open = searchExpand.classList.toggle('open');
   if (open) setTimeout(()=>searchInput.focus(), 50);
@@ -358,13 +397,12 @@ document.addEventListener('click', e => {
   if (!e.target.closest('.search-wrapper')) searchExpand.classList.remove('open');
 });
 
-// ─── EVENT LISTENERS ──────────────────────────────────────────
+// ─── EVENT LISTENERS ────────────────────────────────────────
 cartBtn.addEventListener('click', openCart);
 cartCloseBtn.addEventListener('click', closeCart);
 overlay.addEventListener('click', closeCart);
 checkoutBtn.addEventListener('click', sendWhatsApp);
 
-// Delegación: carrito items
 cartBody.addEventListener('click', e => {
   const btn = e.target.closest('[data-action]');
   if (!btn) return;
@@ -373,36 +411,54 @@ cartBody.addEventListener('click', e => {
   if (btn.dataset.action==='dec') changeQty(id,-1);
 });
 
-// Delegación: agregar al carrito
 productsGrid.addEventListener('click', e => {
   const btn = e.target.closest('.add-btn');
   if (!btn || btn.disabled) return;
   addToCart(btn.dataset.productId);
 });
 
-// Filtros chips
-chips.forEach(c => c.addEventListener('click', () => applyFilter(c.dataset.filter)));
+// ✅ FILTROS CHIPS - SIN BUCLE INFINITO
+chips.forEach(c => {
+  c.addEventListener('click', () => {
+    const filter = c.dataset.filter;
+    if (filter !== currentFilter) {
+      window.applyFilter(filter);
+    }
+  });
+});
 
-// Botones de categoría en sección categorías
-catBtns.forEach(btn => btn.addEventListener('click', () => applyFilter(btn.dataset.filter)));
+catBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    const filter = btn.dataset.filter;
+    if (filter !== currentFilter) {
+      window.applyFilter(filter);
+    }
+  });
+});
 
-// Tarjetas flotantes del hero también filtran
 hfcCards.forEach(card => {
   const filter = card.classList.contains('hfc-agro') ? 'agro'
                : card.classList.contains('hfc-bazar') ? 'bazar'
                : card.classList.contains('hfc-papel') ? 'papeleria' : null;
-  if (filter) card.addEventListener('click', () => applyFilter(filter));
+  if (filter) {
+    card.addEventListener('click', () => {
+      if (filter !== currentFilter) {
+        window.applyFilter(filter);
+      }
+    });
+  }
 });
 
-// Búsqueda
 searchBtn.addEventListener('click', doSearch);
 searchInput.addEventListener('keydown', e => e.key==='Enter' && doSearch());
 searchInput.addEventListener('input', () => { if (!searchInput.value) doSearch(); });
 
-// Load more
-loadMoreBtn.addEventListener('click', () => loadProducts(currentFilter, currentPage+1, true));
+loadMoreBtn.addEventListener('click', () => {
+  if (!isLoading && hasNextPage) {
+    loadProducts(currentFilter, currentPage+1, true);
+  }
+});
 
-// Hamburger
 hamburger.addEventListener('click', () => {
   const open = navLinks.classList.toggle('open');
   hamburger.classList.toggle('open', open);
@@ -412,10 +468,9 @@ document.querySelectorAll('.nav-link').forEach(l => l.addEventListener('click', 
   hamburger.classList.remove('open');
 }));
 
-// Escape
 document.addEventListener('keydown', e => { if (e.key==='Escape') { closeCart(); searchExpand.classList.remove('open'); } });
 
-// ─── ANIMACIONES SCROLL ───────────────────────────────────────
+// ─── ANIMACIONES SCROLL ─────────────────────────────────────
 function setupObserver() {
   const obs = new IntersectionObserver(entries => {
     entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('fade-up'); obs.unobserve(e.target); } });
@@ -423,12 +478,12 @@ function setupObserver() {
   document.querySelectorAll('.cat-card, .contact-card, .mosaic-cell, .about-checks li, .stat-pill').forEach(el => obs.observe(el));
 }
 
-// ─── POP ANIMATION ────────────────────────────────────────────
+// ─── POP ANIMATION ──────────────────────────────────────────
 const popStyle = document.createElement('style');
 popStyle.textContent = `.cart-btn.pop{animation:cartPop .32s ease}@keyframes cartPop{0%,100%{transform:scale(1)}50%{transform:scale(1.3)}}`;
 document.head.appendChild(popStyle);
 
-// ─── INIT ─────────────────────────────────────────────────────
+// ─── INIT ───────────────────────────────────────────────────
 async function init() {
   try {
     $('currentYear').textContent = new Date().getFullYear();
