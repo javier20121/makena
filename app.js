@@ -76,9 +76,18 @@ function showToast(msg, duration=2800) {
 }
 
 function detectCategory(p) {
+  const tags = (p.tags || '').toLowerCase();
+  
+  // Prioridad 1: Tags explícitos de Tiendanube
+  if (tags.includes('agro')) return 'agro';
+  if (tags.includes('bazar')) return 'bazar';
+  if (tags.includes('papeleria') || tags.includes('papelería')) return 'papeleria';
+
+  // Prioridad 2: Fallback por palabras clave en nombre/categorías
   const name = (p.name?.es || '').toLowerCase();
   const cats = (p.categories||[]).map(c=>(c.name?.es||'').toLowerCase());
-  const joined = [name, ...cats].join(' ');
+  const joined = [name, ...cats, tags].join(' ');
+  
   if (/agro|campo|semilla|fertiliz|herbicida|fungicida|herbici|poda|huerta|jardín|jardin/.test(joined)) return 'agro';
   if (/papel|cuaderno|resma|lapiz|lápiz|birome|carpeta|agenda|folder|archiv|marcador|sello/.test(joined)) return 'papeleria';
   return 'bazar';
@@ -153,6 +162,7 @@ async function loadProducts(filter='all', page=1, append=false) {
         available:    v.stock !== 0,
         category:     detectCategory(p),
         permalink:    p.canonical_url || (typeof p.permalink === 'object' ? p.permalink?.es : p.permalink) || null,
+        tags:         p.tags ? p.tags.split(',').map(t => t.trim()).filter(t => t !== '') : []
       };
     }) : [];
 
@@ -223,7 +233,7 @@ window.applyFilter = function(filter) {
 // ─── RENDER PRODUCTOS ───────────────────────────────────────
 function renderProducts(products, append=false, emptyMsg=EMPTY_MESSAGES.noResults, showReset=false) {
   if (!append) {
-    productsGrid.querySelectorAll('.product-card').forEach(el=>el.remove());
+    productsGrid.querySelectorAll('.product-card, .skeleton-card').forEach(el=>el.remove());
   }
 
   if (!products.length && !append) {
@@ -243,14 +253,12 @@ function buildCard(p, i=0) {
   el.dataset.productId = p.id;
 
   const emoji = CATEGORY_EMOJIS[p.category] || CATEGORY_EMOJIS.default;
-  const tagLabel = { 
-    agro: 'Agro', 
-    bazar: 'Bazar', 
-    papeleria: 'Papelería',
-    celeste: 'Celeste',
-    lila: 'Lila',
-    rosado: 'Rosado'
-  }[p.category] || 'Otro';
+  
+  // Mostramos el primer tag real de Tiendanube como etiqueta visual. 
+  // Si no hay tags, usamos el nombre de la categoría detectada.
+  const tagLabel = (p.tags && p.tags.length > 0)
+    ? p.tags[0] 
+    : ({ agro: 'Agro', bazar: 'Bazar', papeleria: 'Papelería' }[p.category] || 'Destacado');
 
   const imgHtml = p.image
     ? `<img class="product-img" src="${esc(p.image)}" alt="${esc(p.imageAlt)}" loading="lazy" decoding="async">`
@@ -282,8 +290,8 @@ function buildCard(p, i=0) {
 
 // ─── LOADING ────────────────────────────────────────────────
 function setLoading(on) {
-  loadingState.hidden = !on;
-  loadingState.style.display = on ? 'flex' : 'none';
+  loadingState.hidden = true; // skeletons reemplazan al spinner
+  loadingState.style.display = 'none';
   if (on) emptyState.hidden = true;
 }
 
@@ -507,12 +515,44 @@ async function init() {
     updateCartUI();
     setupObserver();
 
+    // Announce bar
+    const announceBar = $('announceBar');
+    const announceClose = $('announceClose');
+    if (announceClose && announceBar) {
+      announceClose.addEventListener('click', () => {
+        announceBar.classList.add('hidden');
+        // ajustar navbar top si es necesario
+      });
+    }
+
+    // Back to top
+    const backTop = $('backTop');
+    if (backTop) {
+      window.addEventListener('scroll', () => {
+        backTop.classList.toggle('visible', window.scrollY > 400);
+      }, { passive: true });
+      backTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+    }
+
+    // Skeleton cards mientras carga
+    showSkeletons(6);
+
     connectionState = 'connecting';
     await loadProducts('all', 1, false);
 
     if (connectionState === 'connected') reconcileCart();
   } catch (e) {
     console.error("Falla crítica en init:", e);
+  }
+}
+
+function showSkeletons(n) {
+  productsGrid.querySelectorAll('.product-card, .skeleton-card').forEach(el => el.remove());
+  for (let i = 0; i < n; i++) {
+    const sk = document.createElement('div');
+    sk.className = 'skeleton-card';
+    sk.innerHTML = `<div class="skeleton-img"></div><div class="skeleton-body"><div class="skeleton-line"></div><div class="skeleton-line short"></div><div class="skeleton-line price"></div></div>`;
+    productsGrid.appendChild(sk);
   }
 }
 
