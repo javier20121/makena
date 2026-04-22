@@ -63,6 +63,10 @@ function esc(s='') {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
+function stripHtml(html='') {
+  return String(html).replace(/<[^>]*>/g, ' ').replace(/\s+/g,' ').trim();
+}
+
 let _toastTimer;
 function showToast(msg, duration=2800) {
   toast.textContent = msg;
@@ -141,18 +145,19 @@ async function loadProducts(filter='all', page=1, append=false) {
         id:           String(p.id),
         variantId:    String(v.id || ''),
         title:        p.name?.es || p.name?.[Object.keys(p.name||{})[0]] || 'Producto',
-        description:  p.description?.es || '',
-        price:        parseFloat(v.price || 0),
-        comparePrice: parseFloat(v.compare_at_price || 0),
+        description:  stripHtml(p.description?.es || ''),
+        price:        parseFloat(v.promotional_price || v.price || 0),
+        comparePrice: parseFloat(v.price || 0),
         image:        p.images?.[0]?.src || null,
         imageAlt:     p.name?.es || '',
         available:    v.stock !== 0,
         category:     detectCategory(p),
-        permalink:    p.permalink || null,
+        permalink:    p.canonical_url || (typeof p.permalink === 'object' ? p.permalink?.es : p.permalink) || null,
       };
     }) : [];
 
     console.log('[loadProducts] Productos procesados:', products.length);
+    if (products.length) console.log('[DEBUG] Primer producto permalink:', products[0]?.permalink, '| raw:', data[0]?.permalink, '| canonical:', data[0]?.canonical_url);
 
     allProducts = append ? [...allProducts, ...products] : products;
     filteredProducts = logicFilter(allProducts, currentFilter, searchInput.value);
@@ -251,9 +256,9 @@ function buildCard(p, i=0) {
     ? `<img class="product-img" src="${esc(p.image)}" alt="${esc(p.imageAlt)}" loading="lazy" decoding="async">`
     : `<div class="product-img-placeholder">${emoji}</div>`;
 
-  const priceHtml = p.comparePrice > p.price
+  const priceHtml = (p.comparePrice > p.price && p.price > 0)
     ? `<div><span class="product-compare">${fmt(p.comparePrice)}</span> <span class="product-price">${fmt(p.price)}</span></div>`
-    : `<span class="product-price">${fmt(p.price)}</span>`;
+    : `<span class="product-price">${p.price > 0 ? fmt(p.price) : 'Consultar'}</span>`;
 
   el.innerHTML = `
     <div class="product-img-wrap">
