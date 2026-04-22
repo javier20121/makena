@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Makena | Bazar · Papelería · Agro</title>
   <meta name="description" content="Makena — todo lo que necesitás para el hogar, la oficina y el campo. Bazar, papelería y productos agro con envío a todo el país.">
-  <meta name="theme-color" content="#2D6A4F">
+  <meta name="theme-color" content="#8F6BFF">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
@@ -303,24 +303,23 @@
     <div class="config-inner">
       <button class="close-btn config-close" id="configClose">&times;</button>
       <div class="config-icon">⚙️</div>
-      <h3>Conectar Shopify</h3>
-      <p>Ingresá las credenciales de tu tienda Makena en Shopify.</p>
+      <h3>Conectar Tiendanube</h3>
+      <p>Ingresá las credenciales de tu tienda Makena en Tiendanube.</p>
       <div class="config-field">
-        <label for="inputDomain">Dominio de Shopify</label>
-        <input type="text" id="inputDomain" placeholder="makena.myshopify.com">
+        <label for="inputDomain">ID de Tienda (Nube)</label>
+        <input type="text" id="inputDomain" placeholder="Ej: 1234567">
       </div>
       <div class="config-field">
-        <label for="inputToken">Storefront Access Token</label>
-        <input type="text" id="inputToken" placeholder="shpat_xxxxxxxxxx">
+        <label for="inputToken">Access Token API</label>
+        <input type="text" id="inputToken" placeholder="Pega tu token aquí">
       </div>
       <button class="btn btn-primary w-full" id="saveConfigBtn">Guardar y conectar</button>
-      <p class="config-hint">Los datos se guardan en tu navegador (localStorage).</p>
+      <p class="config-hint">Usa un Token de aplicación con permisos de lectura. Los datos se guardan solo en tu navegador.</p>
     </div>
   </div>
 
   <!-- FAB SETTINGS -->
-  <button class="fab-settings" id="fabSettings" title="Configurar Shopify">⚙️</button>
-
+  <button class="fab-settings" id="fabSettings" title="Configurar Tiendanube">⚙️</button>
   <script src="app.js"></script>
 </body>
 </html>

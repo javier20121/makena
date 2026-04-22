@@ -1,24 +1,32 @@
 /* ============================================================
    MAKENA — app.js
-   Integración con Shopify Storefront API
+   Integración con Tiendanube API
    ============================================================ */
 
 // ─── CONFIGURACIÓN ────────────────────────────────────────────
 const WHATSAPP_NUMBER = '5493757000000'; // ← Cambiá por tu número real
 
-// Credenciales Shopify (se leen desde localStorage)
-let SHOPIFY_DOMAIN = localStorage.getItem('mk_domain') || '';
-let SHOPIFY_TOKEN  = localStorage.getItem('mk_token')  || '';
+const TN_API_BASE = 'https://api.tiendanube.com/v1';
+
+// Credenciales Tiendanube (se leen desde localStorage)
+let TN_STORE_ID = localStorage.getItem('mk_domain') || '';
+let TN_TOKEN    = localStorage.getItem('mk_token')  || 'eab22a1052be423fc56d633f7c34f8507d8e747a';
 
 // ─── ESTADO GLOBAL ────────────────────────────────────────────
 let allProducts    = [];   // Todos los productos cargados
 let filteredProducts = []; // Productos filtrados actualmente
 let cart           = [];   // Items en el carrito
-let shopifyCartId  = null; // ID del carrito en Shopify
 let currentFilter  = 'all';
-let currentCursor  = null; // Para paginación
+let currentPage    = 1;    // Para paginación
 let hasNextPage    = false;
+let connectionState = 'disconnected';
 const PAGE_SIZE    = 12;
+
+const EMPTY_MESSAGES = {
+  error: 'Error al conectar con Tiendanube.',
+  comingSoon: 'Los productos se van a mostrar dentro de poco.',
+  noResults: 'No se encontraron productos.',
+};
 
 // Mapeo de colecciones/tags de Shopify a categorías Makena
 const CATEGORY_EMOJIS = {
@@ -88,137 +96,96 @@ function showToast(msg, duration = 2500) {
   showToast._t = setTimeout(() => toast.classList.remove('show'), duration);
 }
 
-function detectCategory(product) {
-  const tags = (product.tags || []).map(t => t.toLowerCase());
-  const title = (product.title || '').toLowerCase();
-  const vendor = (product.vendor || '').toLowerCase();
+function clearRenderedProducts() {
+  const existing = productsGrid.querySelectorAll('.product-card');
+  existing.forEach(el => el.remove());
+}
 
-  if (tags.includes('agro') || title.includes('agro') || title.includes('campo') || title.includes('semilla') || title.includes('herramienta')) return 'agro';
-  if (tags.includes('bazar') || title.includes('bazar') || title.includes('cocina') || title.includes('hogar')) return 'bazar';
-  if (tags.includes('papeleria') || tags.includes('papelería') || title.includes('papel') || title.includes('lapiz') || title.includes('lápiz') || title.includes('cuaderno')) return 'papeleria';
+function showEmptyState(message, showResetButton = false) {
+  emptyState.innerHTML = `${message} ${showResetButton ? '<button onclick="applyFilter(\'all\'); searchInput.value=\'\';" class="link-btn">Ver todos</button>' : ''}`;
+  emptyState.hidden = false;
+}
+
+function hideEmptyState() {
+  emptyState.hidden = true;
+}
+
+function detectCategory(product) {
+  const name = (product.name?.es || '').toLowerCase();
+  const categories = (product.categories || []).map(c => (c.name?.es || '').toLowerCase());
+
+  if (categories.includes('agro') || name.includes('agro') || name.includes('campo')) return 'agro';
+  if (categories.includes('bazar') || name.includes('bazar') || name.includes('cocina')) return 'bazar';
+  if (categories.includes('papeleria') || categories.includes('papelería') || name.includes('papel')) return 'papeleria';
   return 'bazar'; // default
 }
 
-// ─── SHOPIFY API ──────────────────────────────────────────────
-async function shopifyFetch(query, variables = {}) {
-  if (!SHOPIFY_DOMAIN || !SHOPIFY_TOKEN) {
-    throw new Error('No hay credenciales de Shopify configuradas.');
+// ─── TIENDANUBE API ───────────────────────────────────────────
+async function tnFetch(path, params = {}) {
+  if (!TN_STORE_ID || !TN_TOKEN) {
+    throw new Error('No hay credenciales de Tiendanube configuradas.');
   }
 
-  const endpoint = `https://${SHOPIFY_DOMAIN}/api/2024-04/graphql.json`;
+  const url = new URL(`${TN_API_BASE}/${TN_STORE_ID}/${path}`);
+  Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
 
-  const response = await fetch(endpoint, {
-    method: 'POST',
+  console.log(`📡 Llamando a Tiendanube API: ${url.toString()}`);
+
+  // Nota: Tiendanube requiere User-Agent para su API
+  const response = await fetch(url, {
+    method: 'GET',
     headers: {
-      'Content-Type': 'application/json',
-      'X-Shopify-Storefront-Access-Token': SHOPIFY_TOKEN,
+      'Authentication': `bearer ${TN_TOKEN}`,
+      'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ query, variables }),
   });
 
   if (!response.ok) {
+    console.error(`❌ Error en respuesta de Tiendanube: ${response.status} ${response.statusText}`);
     throw new Error(`Error HTTP ${response.status}`);
   }
 
-  const json = await response.json();
+  const data = await response.json();
+  console.log(`✅ Respuesta exitosa de Tiendanube (${path}):`, data);
 
-  if (json.errors) {
-    throw new Error(json.errors[0]?.message || 'Error de API');
-  }
-
-  return json.data;
+  return {
+    data: data,
+    total: response.headers.get('X-Total-Count')
+  };
 }
 
 // ─── CARGAR PRODUCTOS ─────────────────────────────────────────
-const PRODUCTS_QUERY = `
-  query GetProducts($first: Int!, $after: String, $query: String) {
-    products(first: $first, after: $after, query: $query) {
-      pageInfo {
-        hasNextPage
-        endCursor
-      }
-      edges {
-        node {
-          id
-          title
-          description
-          vendor
-          tags
-          priceRange {
-            minVariantPrice {
-              amount
-              currencyCode
-            }
-          }
-          compareAtPriceRange {
-            minVariantPrice {
-              amount
-              currencyCode
-            }
-          }
-          images(first: 1) {
-            edges {
-              node {
-                url
-                altText
-              }
-            }
-          }
-          variants(first: 1) {
-            edges {
-              node {
-                id
-                title
-                price {
-                  amount
-                  currencyCode
-                }
-                availableForSale
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-`;
-
-async function loadProducts(filter = 'all', cursor = null, append = false) {
+async function loadProducts(filter = 'all', page = 1, append = false) {
   setLoadingState(true);
 
-  let queryStr = '';
-  if (filter !== 'all') {
-    queryStr = `tag:${filter}`;
-  }
-
   try {
-    const data = await shopifyFetch(PRODUCTS_QUERY, {
-      first: PAGE_SIZE,
-      after: cursor,
-      query: queryStr || null,
+    const { data, total } = await tnFetch('products', {
+      page: page,
+      per_page: PAGE_SIZE,
+      q: searchInput.value.trim() || undefined
     });
 
-    const edges = data.products.edges;
-    const pageInfo = data.products.pageInfo;
+    connectionState = 'connected';
+    const totalCount = parseInt(total || 0);
+    hasNextPage = (page * PAGE_SIZE) < totalCount;
+    currentPage = page;
 
-    hasNextPage = pageInfo.hasNextPage;
-    currentCursor = pageInfo.endCursor;
-
-    const products = edges.map(({ node }) => ({
-      id: node.id,
-      variantId: node.variants.edges[0]?.node.id,
-      title: node.title,
-      description: node.description,
-      vendor: node.vendor,
-      tags: node.tags,
-      price: parseFloat(node.priceRange.minVariantPrice.amount),
-      comparePrice: parseFloat(node.compareAtPriceRange?.minVariantPrice?.amount || 0),
-      currency: node.priceRange.minVariantPrice.currencyCode,
-      image: node.images.edges[0]?.node.url || null,
-      imageAlt: node.images.edges[0]?.node.altText || node.title,
-      available: node.variants.edges[0]?.node.availableForSale ?? true,
-      category: detectCategory(node),
-    }));
+    const products = data.map(p => {
+      const mainVariant = p.variants[0] || {};
+      return {
+        id: p.id,
+        variantId: mainVariant.id,
+        title: p.name.es || p.name[Object.keys(p.name)[0]],
+        description: p.description.es || '',
+        price: parseFloat(mainVariant.price || 0),
+        comparePrice: parseFloat(mainVariant.compare_at_price || 0),
+        currency: 'ARS',
+        image: p.images[0]?.src || null,
+        imageAlt: p.name.es,
+        available: mainVariant.stock !== 0,
+        category: detectCategory(p),
+      };
+    });
 
     if (append) {
       allProducts = [...allProducts, ...products];
@@ -227,23 +194,41 @@ async function loadProducts(filter = 'all', cursor = null, append = false) {
     }
 
     filteredProducts = applyLocalFilter(allProducts, currentFilter, searchInput.value);
-    renderProducts(filteredProducts, append);
+    const productsToRender = append
+      ? applyLocalFilter(products, currentFilter, searchInput.value)
+      : filteredProducts;
+    const isCatalogEmpty = !append && filter === 'all' && !searchInput.value.trim() && allProducts.length === 0;
 
     // Paginación
-    if (hasNextPage) {
-      loadMoreRow.hidden = false;
+    if (isCatalogEmpty) {
+      renderProducts([], false, { emptyMessage: EMPTY_MESSAGES.comingSoon });
+      setStatus('connected', 'Tienda conectada. Los productos se van a mostrar dentro de poco.');
     } else {
-      loadMoreRow.hidden = true;
+      renderProducts(productsToRender, append, {
+        emptyMessage: EMPTY_MESSAGES.noResults,
+        showResetButton: Boolean(searchInput.value.trim() || currentFilter !== 'all'),
+      });
+
+      const productLabel = allProducts.length === 1 ? 'producto' : 'productos';
+      setStatus('connected', `✓ ${allProducts.length} ${productLabel} de Tiendanube`);
     }
 
-    setStatus('connected', `✓ ${allProducts.length} productos cargados de Shopify`);
+    loadMoreRow.hidden = !hasNextPage || allProducts.length === 0;
 
   } catch (err) {
     console.error('Error cargando productos:', err);
-    setStatus('error', `⚠ Error al conectar con Shopify: ${err.message}`);
+    connectionState = 'error';
+    hasNextPage = false;
+    currentPage = 1;
+    loadMoreRow.hidden = true;
+    setStatus('error', `Error al conectar con Tiendanube${err.message ? `: ${err.message}` : '.'}`);
 
     if (!append) {
-      renderDemoProducts();
+      allProducts = [];
+      filteredProducts = [];
+      renderProducts([], false, { emptyMessage: EMPTY_MESSAGES.error });
+    } else {
+      showToast('Error al cargar más productos.');
     }
   } finally {
     setLoadingState(false);
@@ -254,15 +239,14 @@ function applyLocalFilter(products, filter, search = '') {
   let result = products;
 
   if (filter !== 'all') {
-    result = result.filter(p => p.category === filter || p.tags.map(t => t.toLowerCase()).includes(filter));
+    result = result.filter(p => p.category === filter);
   }
 
   if (search.trim()) {
     const q = search.toLowerCase();
     result = result.filter(p =>
       p.title.toLowerCase().includes(q) ||
-      p.description.toLowerCase().includes(q) ||
-      p.tags.some(t => t.toLowerCase().includes(q))
+      p.description.toLowerCase().includes(q)
     );
   }
 
@@ -271,39 +255,42 @@ function applyLocalFilter(products, filter, search = '') {
 
 window.applyFilter = function(filter) {
   currentFilter = filter;
-  currentCursor = null;
+  currentPage = 1;
 
   filterPills.forEach(pill => {
     pill.classList.toggle('active', pill.dataset.filter === filter);
   });
 
-  // Si hay credenciales y queremos filtrar por tag en Shopify directamente:
-  if (SHOPIFY_DOMAIN && SHOPIFY_TOKEN) {
+  if (TN_STORE_ID && TN_TOKEN) {
     allProducts = [];
-    loadProducts(filter, null, false);
+    loadProducts(filter, 1, false);
   } else {
-    // Filtro local sobre demo
-    filteredProducts = applyLocalFilter(allProducts, filter, searchInput.value);
-    renderProducts(filteredProducts, false);
+    connectionState = 'error';
+    loadMoreRow.hidden = true;
+    setStatus('error', 'Error: Tiendanube no está configurado.');
+    renderProducts([], false, { emptyMessage: EMPTY_MESSAGES.error });
   }
 
   document.getElementById('productos')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 };
 
 // ─── RENDER PRODUCTOS ─────────────────────────────────────────
-function renderProducts(products, append = false) {
+function renderProducts(products, append = false, options = {}) {
+  const {
+    emptyMessage = EMPTY_MESSAGES.noResults,
+    showResetButton = false,
+  } = options;
+
   if (!append) {
-    // Limpiamos el grid pero dejamos el loading state fuera
-    const existing = productsGrid.querySelectorAll('.product-card');
-    existing.forEach(el => el.remove());
+    clearRenderedProducts();
   }
 
   if (products.length === 0 && !append) {
-    emptyState.hidden = false;
+    showEmptyState(emptyMessage, showResetButton);
     return;
   }
 
-  emptyState.hidden = true;
+  hideEmptyState();
 
   products.forEach((product, i) => {
     const card = createProductCard(product, i);
@@ -360,6 +347,11 @@ function createProductCard(product, index = 0) {
 
 // ─── DEMO PRODUCTS (cuando no hay Shopify conectado) ──────────
 function renderDemoProducts() {
+  allProducts = [];
+  filteredProducts = [];
+  renderProducts([], false, { emptyMessage: EMPTY_MESSAGES.error });
+  return;
+
   const demoProducts = [
     { id: 'd1', variantId: 'dv1', title: 'Fertilizante Orgánico 1kg', description: 'Fertilizante de origen natural para huerta y jardín.', category: 'agro', price: 2500, comparePrice: 0, currency: 'ARS', image: null, imageAlt: '', tags: ['agro'], available: true },
     { id: 'd2', variantId: 'dv2', title: 'Semillas de Tomate Cherry', description: 'Pack de semillas seleccionadas para mayor producción.', category: 'agro', price: 1200, comparePrice: 1500, currency: 'ARS', image: null, imageAlt: '', tags: ['agro'], available: true },
@@ -380,7 +372,11 @@ function renderDemoProducts() {
 
 // ─── LOADING STATE ─────────────────────────────────────────────
 function setLoadingState(loading) {
+  if (loading) {
+    hideEmptyState();
+  }
   loadingState.hidden = !loading;
+  loadingState.style.display = loading ? 'flex' : 'none';
 }
 
 function setStatus(state, message) {
@@ -422,31 +418,6 @@ const ADD_TO_CART_MUTATION = `
 async function addToCart(productId, variantId) {
   const product = allProducts.find(p => p.id === productId);
   if (!product) return;
-
-  // Si hay Shopify conectado, usamos la API
-  if (SHOPIFY_DOMAIN && SHOPIFY_TOKEN && variantId && !variantId.startsWith('dv')) {
-    try {
-      if (!shopifyCartId) {
-        // Crear carrito nuevo en Shopify
-        const data = await shopifyFetch(CREATE_CART_MUTATION, {
-          lines: [{ merchandiseId: variantId, quantity: 1 }],
-        });
-        const cartData = data.cartCreate.cart;
-        shopifyCartId = cartData.id;
-        localStorage.setItem('mk_cart_id', shopifyCartId);
-        localStorage.setItem('mk_checkout_url', cartData.checkoutUrl);
-      } else {
-        // Agregar al carrito existente
-        await shopifyFetch(ADD_TO_CART_MUTATION, {
-          cartId: shopifyCartId,
-          lines: [{ merchandiseId: variantId, quantity: 1 }],
-        });
-      }
-    } catch (err) {
-      console.warn('Error al sincronizar con Shopify cart:', err);
-      // Continuamos con carrito local de todas formas
-    }
-  }
 
   // Carrito local (siempre)
   const existing = cart.find(item => item.id === productId);
@@ -566,19 +537,15 @@ function closeCart() {
 
 // ─── CHECKOUT ─────────────────────────────────────────────────
 function handleCheckout() {
-  const checkoutUrl = localStorage.getItem('mk_checkout_url');
-  if (checkoutUrl) {
-    window.open(checkoutUrl, '_blank', 'noopener,noreferrer');
-  } else {
-    // Si no hay URL de Shopify, mandamos por WhatsApp
-    handleWhatsAppOrder();
-  }
+  // Tiendanube requiere integración de checkout vía API más compleja.
+  // Por ahora, usamos WhatsApp como canal de cierre directo.
+  handleWhatsAppOrder();
 }
 
 function handleWhatsAppOrder() {
   if (!cart.length) return;
 
-  let msg = '¡Hola Makena! Quiero hacer un pedido:\n\n';
+  let msg = '¡Hola Makena! Vi estos productos en la web y quiero hacer un pedido:\n\n';
   cart.forEach(item => {
     msg += `• ${item.qty}x ${item.title} — ${formatPrice(item.price * item.qty, 'ARS')}\n`;
   });
@@ -591,19 +558,29 @@ function handleWhatsAppOrder() {
 
 // ─── BÚSQUEDA ─────────────────────────────────────────────────
 function handleSearch() {
+  if (connectionState !== 'connected') {
+    loadMoreRow.hidden = true;
+    setStatus('error', 'Error al conectar con Tiendanube.');
+    renderDemoProducts();
+    return;
+  }
+
   const query = searchInput.value.trim();
   filteredProducts = applyLocalFilter(allProducts, currentFilter, query);
-  renderProducts(filteredProducts, false);
+  renderProducts(filteredProducts, false, {
+    emptyMessage: allProducts.length === 0 ? EMPTY_MESSAGES.comingSoon : EMPTY_MESSAGES.noResults,
+    showResetButton: Boolean(query || currentFilter !== 'all'),
+  });
 
   if (query) {
     document.getElementById('productos')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 }
 
-// ─── CONFIG SHOPIFY ───────────────────────────────────────────
+// ─── CONFIG TIENDANUBE ────────────────────────────────────────
 function openConfig() {
-  inputDomain.value = SHOPIFY_DOMAIN;
-  inputToken.value = SHOPIFY_TOKEN;
+  inputDomain.value = TN_STORE_ID;
+  inputToken.value = TN_TOKEN;
   configPanel.classList.add('active');
   configOverlay.classList.add('active');
 }
@@ -614,25 +591,33 @@ function closeConfig() {
 }
 
 function saveConfig() {
-  const domain = inputDomain.value.trim().replace(/^https?:\/\//, '').replace(/\/$/, '');
-  const token  = inputToken.value.trim();
+  const storeId = inputDomain.value.trim();
+  const token   = inputToken.value.trim();
 
-  if (!domain || !token) {
-    showToast('⚠ Completá el dominio y el token.');
+  if (!storeId || !token) {
+    showToast('⚠ Completá el ID de tienda y el token.');
     return;
   }
 
-  SHOPIFY_DOMAIN = domain;
-  SHOPIFY_TOKEN  = token;
-  localStorage.setItem('mk_domain', domain);
+  TN_STORE_ID = storeId;
+  TN_TOKEN    = token;
+  localStorage.setItem('mk_domain', storeId);
   localStorage.setItem('mk_token', token);
 
   closeConfig();
   showToast('✓ Credenciales guardadas. Cargando productos...');
 
+  connectionState = 'connecting';
+  setStatus('', 'Conectando con Tiendanube...');
+  currentFilter = 'all';
+  filterPills.forEach(pill => {
+    pill.classList.toggle('active', pill.dataset.filter === 'all');
+  });
   allProducts = [];
-  currentCursor = null;
-  loadProducts('all', null, false);
+  filteredProducts = [];
+  clearRenderedProducts();
+  currentPage = 1;
+  loadProducts('all', 1, false);
 }
 
 // ─── NAVBAR SCROLL & HAMBURGER ────────────────────────────────
@@ -684,7 +669,7 @@ searchInput.addEventListener('keydown', e => {
 
 // Load more
 loadMoreBtn.addEventListener('click', () => {
-  loadProducts(currentFilter, currentCursor, true);
+  loadProducts(currentFilter, currentPage + 1, true);
 });
 
 // Checkout y WhatsApp
@@ -739,20 +724,21 @@ async function init() {
 
   loadLocalCart();
 
-  // Shopify cart ID previo
-  shopifyCartId = localStorage.getItem('mk_cart_id') || null;
-
-  // Rellenar inputs de config si hay credenciales guardadas
-  inputDomain.value = SHOPIFY_DOMAIN;
-  inputToken.value  = SHOPIFY_TOKEN;
-
-  if (SHOPIFY_DOMAIN && SHOPIFY_TOKEN) {
-    setStatus('', 'Conectando con Shopify...');
-    await loadProducts('all', null, false);
-    reconcileCart();
+  if (TN_STORE_ID && TN_TOKEN) {
+    inputDomain.value = TN_STORE_ID;
+    inputToken.value  = TN_TOKEN;
+    connectionState = 'connecting';
+    setStatus('', 'Conectando con Tiendanube...');
+    await loadProducts('all', 1, false);
+    if (connectionState === 'connected') {
+      reconcileCart();
+    }
   } else {
-    setStatus('error', 'Sin conexión — configurá Shopify con el botón ⚙️');
-    renderDemoProducts();
+    connectionState = 'error';
+    loadMoreRow.hidden = true;
+    setStatus('error', 'Error: Tiendanube no está configurado.');
+    setLoadingState(false);
+    renderProducts([], false, { emptyMessage: EMPTY_MESSAGES.error });
   }
 
   updateCartUI();
