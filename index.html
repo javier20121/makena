@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Makena | Bazar · Papelería · Agro</title>
   <meta name="description" content="Makena — todo lo que necesitás para el hogar, la oficina y el campo. Bazar, papelería y productos agro con envío a todo el país.">
-  <meta name="theme-color" content="#8F6BFF">
+  <meta name="theme-color" content="#1a1a2e">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,700;0,900;1,300;1,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -16,8 +16,10 @@
   <!-- NAVBAR -->
   <header class="navbar" id="navbar">
     <div class="navbar-inner">
-      <a href="#" class="logo">
-        <span class="logo-mark">M</span>
+      <a href="#inicio" class="logo">
+        <div class="logo-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 2L3 7l9 5 9-5-9-5z" fill="currentColor" opacity=".9"/><path d="M3 12l9 5 9-5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M3 17l9 5 9-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity=".6"/></svg>
+        </div>
         <span class="logo-text">makena</span>
       </a>
 
@@ -30,15 +32,20 @@
       </nav>
 
       <div class="navbar-actions">
-        <div class="search-wrapper">
-          <input type="text" id="searchInput" class="search-input" placeholder="Buscar...">
-          <button class="search-btn" id="searchBtn" aria-label="Buscar">
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <div class="search-wrapper" id="searchWrapper">
+          <button class="search-toggle" id="searchToggle" aria-label="Buscar">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
           </button>
+          <div class="search-expand" id="searchExpand">
+            <input type="text" id="searchInput" class="search-input" placeholder="Buscar productos..." autocomplete="off">
+            <button class="search-btn" id="searchBtn" aria-label="Buscar">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            </button>
+          </div>
         </div>
 
         <button class="cart-btn" id="cartBtn" aria-label="Ver carrito">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
           <span class="cart-badge" id="cartBadge" hidden>0</span>
         </button>
 
@@ -53,151 +60,193 @@
 
     <!-- HERO -->
     <section class="hero" id="inicio">
-      <div class="hero-bg">
-        <div class="hero-blob hero-blob-1"></div>
-        <div class="hero-blob hero-blob-2"></div>
-        <div class="hero-blob hero-blob-3"></div>
-      </div>
-      <div class="hero-content">
+      <div class="hero-noise"></div>
+      <div class="hero-glow hero-glow-1"></div>
+      <div class="hero-glow hero-glow-2"></div>
+      <div class="hero-glow hero-glow-3"></div>
+
+      <div class="hero-inner">
         <div class="hero-copy">
-          <p class="hero-eyebrow">🌿 Bazar · Papelería · Agro</p>
-          <h1 class="hero-title">Todo lo que<br><em>necesitás</em>,<br>en un lugar.</h1>
-          <p class="hero-subtitle">Desde el campo hasta la oficina. Productos de calidad con envío a todo el país.</p>
-          <div class="hero-ctas">
-            <a href="#productos" class="btn btn-primary">Ver productos</a>
-            <a href="#categorias" class="btn btn-ghost">Explorar categorías</a>
+          <div class="hero-pill">
+            <span class="hero-pill-dot"></span>
+            Envíos a todo el país
+          </div>
+          <h1 class="hero-title">
+            El lugar donde<br>encontrás <em>todo</em><br>lo que necesitás.
+          </h1>
+          <p class="hero-sub">Bazar, papelería y agro — productos de calidad directo a tu puerta desde Misiones.</p>
+          <div class="hero-actions">
+            <a href="#productos" class="btn btn-hero-primary">
+              Ver catálogo
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m9 18 6-6-6-6"/></svg>
+            </a>
+            <a href="#categorias" class="btn btn-hero-ghost">Explorar categorías</a>
           </div>
         </div>
-        <div class="hero-visual">
-          <div class="hero-cards">
-            <div class="hero-card hero-card-agro">
-              <span class="hero-card-icon">🌾</span>
-              <div>
+
+        <div class="hero-right">
+          <div class="hero-float-cards">
+            <div class="hfc hfc-agro">
+              <span class="hfc-icon">🌾</span>
+              <div class="hfc-info">
                 <strong>Agro</strong>
                 <span>Campo & jardín</span>
               </div>
+              <div class="hfc-arrow">→</div>
             </div>
-            <div class="hero-card hero-card-bazar">
-              <span class="hero-card-icon">🏠</span>
-              <div>
+            <div class="hfc hfc-bazar">
+              <span class="hfc-icon">🏠</span>
+              <div class="hfc-info">
                 <strong>Bazar</strong>
                 <span>Hogar & cocina</span>
               </div>
+              <div class="hfc-arrow">→</div>
             </div>
-            <div class="hero-card hero-card-papel">
-              <span class="hero-card-icon">📎</span>
-              <div>
+            <div class="hfc hfc-papel">
+              <span class="hfc-icon">📎</span>
+              <div class="hfc-info">
                 <strong>Papelería</strong>
                 <span>Oficina & estudio</span>
               </div>
+              <div class="hfc-arrow">→</div>
             </div>
           </div>
-          <div class="hero-badge-ring">
-            <svg viewBox="0 0 200 200" class="hero-badge-svg">
+
+          <div class="hero-ring-wrap">
+            <svg viewBox="0 0 180 180" class="hero-ring-svg">
               <defs>
-                <path id="circlePath" d="M 100,100 m -75,0 a 75,75 0 1,1 150,0 a 75,75 0 1,1 -150,0"/>
+                <path id="rp" d="M90,90 m-68,0 a68,68 0 1,1 136,0 a68,68 0 1,1 -136,0"/>
               </defs>
-              <text class="hero-badge-text">
-                <textPath href="#circlePath">ENVÍOS A TODO EL PAÍS • MAKENA • </textPath>
-              </text>
+              <text><textPath href="#rp">MAKENA • BAZAR • PAPELERÍA • AGRO • </textPath></text>
             </svg>
-            <span class="hero-badge-emoji">🌿</span>
+            <div class="hero-ring-center">🌿</div>
           </div>
         </div>
       </div>
-    </section>
 
-    <!-- STATUS BANNER -->
-    <div class="status-banner" id="statusBanner">
-      <div class="status-banner-inner">
-        <span class="status-dot" id="statusDot"></span>
-        <span id="statusText">Conectando con la tienda...</span>
+      <div class="hero-bar">
+        <div class="hero-bar-item"><strong>+50</strong><span>Productos</span></div>
+        <div class="hero-bar-sep"></div>
+        <div class="hero-bar-item"><strong>Misiones</strong><span>Origen</span></div>
+        <div class="hero-bar-sep"></div>
+        <div class="hero-bar-item"><strong>Todo el país</strong><span>Envíos</span></div>
+        <div class="hero-bar-sep"></div>
+        <div class="hero-bar-item"><strong>Lun–Sáb</strong><span>Atención</span></div>
       </div>
-    </div>
+    </section>
 
     <!-- CATEGORÍAS -->
     <section class="section" id="categorias">
-      <div class="section-header">
+      <div class="section-head">
         <p class="eyebrow">Explorá por rubro</p>
         <h2>¿Qué estás buscando?</h2>
       </div>
-      <div class="categories-grid">
-        <article class="cat-card cat-agro">
-          <div class="cat-card-body">
+      <div class="cats-grid">
+        <article class="cat-card cat-agro" tabindex="0">
+          <div class="cat-bg"></div>
+          <div class="cat-body">
+            <span class="cat-num">01</span>
             <span class="cat-icon">🌾</span>
             <h3>Agro</h3>
-            <p>Herramientas, semillas e insumos para el campo y jardín.</p>
-            <button class="btn btn-cat" data-filter="agro">Ver productos →</button>
+            <p>Herramientas, semillas e insumos para el campo y el jardín.</p>
+            <button class="btn-cat-link" data-filter="agro">Ver productos <span>→</span></button>
           </div>
         </article>
-        <article class="cat-card cat-bazar">
-          <div class="cat-card-body">
+        <article class="cat-card cat-bazar" tabindex="0">
+          <div class="cat-bg"></div>
+          <div class="cat-body">
+            <span class="cat-num">02</span>
             <span class="cat-icon">🏠</span>
             <h3>Bazar</h3>
             <p>Todo para el hogar, la cocina y la vida cotidiana.</p>
-            <button class="btn btn-cat" data-filter="bazar">Ver productos →</button>
+            <button class="btn-cat-link" data-filter="bazar">Ver productos <span>→</span></button>
           </div>
         </article>
-        <article class="cat-card cat-papel">
-          <div class="cat-card-body">
+        <article class="cat-card cat-papel" tabindex="0">
+          <div class="cat-bg"></div>
+          <div class="cat-body">
+            <span class="cat-num">03</span>
             <span class="cat-icon">📎</span>
             <h3>Papelería</h3>
-            <p>Útiles de oficina, estudio y organización.</p>
-            <button class="btn btn-cat" data-filter="papeleria">Ver productos →</button>
+            <p>Útiles de oficina, estudio y organización personal.</p>
+            <button class="btn-cat-link" data-filter="papeleria">Ver productos <span>→</span></button>
           </div>
         </article>
       </div>
     </section>
 
     <!-- PRODUCTOS -->
-    <section class="section products-section" id="productos">
-      <div class="section-header">
-        <p class="eyebrow">Catálogo completo</p>
-        <h2>Nuestros productos</h2>
-        <div class="filter-bar" id="filterBar">
-          <button class="filter-pill active" data-filter="all">Todos</button>
-          <button class="filter-pill" data-filter="agro">Agro</button>
-          <button class="filter-pill" data-filter="bazar">Bazar</button>
-          <button class="filter-pill" data-filter="papeleria">Papelería</button>
+    <section class="products-section" id="productos">
+      <div class="products-head">
+        <div class="products-head-left">
+          <p class="eyebrow">Catálogo</p>
+          <h2>Nuestros productos</h2>
+        </div>
+        <div class="filter-chips" id="filterChips">
+          <button class="chip active" data-filter="all">Todos</button>
+          <button class="chip" data-filter="agro">🌾 Agro</button>
+          <button class="chip" data-filter="bazar">🏠 Bazar</button>
+          <button class="chip" data-filter="papeleria">📎 Papelería</button>
         </div>
       </div>
 
       <div class="products-grid" id="productsGrid">
-        <div class="loading-state" id="loadingState">
-          <div class="spinner"></div>
+        <div class="loading-wrap" id="loadingState">
+          <div class="loading-dots">
+            <span></span><span></span><span></span>
+          </div>
           <p>Cargando productos...</p>
         </div>
       </div>
 
-      <p class="empty-state" id="emptyState" hidden>No se encontraron productos. <button onclick="applyFilter('all')" class="link-btn">Ver todos</button></p>
+      <p class="empty-msg" id="emptyState" hidden>
+        Sin resultados.
+        <button onclick="applyFilter('all');searchInput.value=''" class="link-btn">Ver todos</button>
+      </p>
 
-      <div class="load-more-row" id="loadMoreRow" hidden>
-        <button class="btn btn-outline" id="loadMoreBtn">Cargar más</button>
+      <div class="load-more-wrap" id="loadMoreRow" hidden>
+        <button class="btn btn-load-more" id="loadMoreBtn">
+          <span>Ver más productos</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14m7-7-7 7-7-7"/></svg>
+        </button>
       </div>
     </section>
 
     <!-- NOSOTROS -->
     <section class="section about-section" id="nosotros">
       <div class="about-grid">
-        <div class="about-visual">
+        <div class="about-left">
           <div class="about-mosaic">
-            <div class="mosaic-item">🌾</div>
-            <div class="mosaic-item">📦</div>
-            <div class="mosaic-item">🏠</div>
-            <div class="mosaic-item">📎</div>
-            <div class="mosaic-item">🌿</div>
-            <div class="mosaic-item">✂️</div>
+            <div class="mosaic-cell mc-big">🌾</div>
+            <div class="mosaic-cell">📦</div>
+            <div class="mosaic-cell">🏠</div>
+            <div class="mosaic-cell">📎</div>
+            <div class="mosaic-cell mc-big">🌿</div>
+            <div class="mosaic-cell">✂️</div>
+          </div>
+          <div class="about-stat-pills">
+            <div class="stat-pill"><strong>Misiones</strong><span>Argentina</span></div>
+            <div class="stat-pill"><strong>Familiar</strong><span>Tienda</span></div>
           </div>
         </div>
-        <div class="about-copy">
+        <div class="about-right">
           <p class="eyebrow">Quiénes somos</p>
           <h2>Makena nació<br><em>del campo.</em></h2>
           <p>Somos una tienda familiar con raíces en Misiones. Empezamos vendiendo insumos agro y hoy sumamos bazar y papelería para acompañarte en cada momento del día.</p>
-          <p>Trabajamos con proveedores de calidad y nos ocupamos personalmente de cada envío.</p>
-          <ul class="about-list">
-            <li><span>✓</span> Productos seleccionados a mano</li>
-            <li><span>✓</span> Envíos coordinados personalmente</li>
-            <li><span>✓</span> Atención directa por WhatsApp</li>
+          <p>Trabajamos con proveedores de calidad y nos ocupamos personalmente de cada envío — nada se terceriza.</p>
+          <ul class="about-checks">
+            <li>
+              <div class="check-icon">✓</div>
+              <div><strong>Productos seleccionados a mano</strong><p>Revisamos cada artículo antes de ofrecerlo.</p></div>
+            </li>
+            <li>
+              <div class="check-icon">✓</div>
+              <div><strong>Envíos coordinados personalmente</strong><p>Te acompañamos desde el pedido hasta la entrega.</p></div>
+            </li>
+            <li>
+              <div class="check-icon">✓</div>
+              <div><strong>Atención directa por WhatsApp</strong><p>Hablás con nosotros, no con un bot.</p></div>
+            </li>
           </ul>
         </div>
       </div>
@@ -205,33 +254,35 @@
 
     <!-- CONTACTO -->
     <section class="section contact-section" id="contacto">
-      <div class="contact-grid">
-        <div class="contact-copy">
+      <div class="contact-inner">
+        <div class="contact-left">
           <p class="eyebrow">Hablemos</p>
-          <h2>¿Tenés alguna consulta?</h2>
-          <p>Escribinos por WhatsApp o por mail y te respondemos a la brevedad.</p>
+          <h2>¿Tenés alguna<br>consulta?</h2>
+          <p>Escribinos por WhatsApp o email y te respondemos a la brevedad. También podés seguirnos en redes.</p>
           <div class="contact-btns">
-            <a href="https://wa.me/5493757000000" class="btn btn-whatsapp" target="_blank" rel="noreferrer">
+            <a href="https://wa.me/5493757000000" class="btn btn-wa" target="_blank" rel="noreferrer">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
               WhatsApp
             </a>
-            <a href="mailto:makena@mail.com" class="btn btn-outline-dark">
-              Enviar email
-            </a>
+            <a href="mailto:makena@mail.com" class="btn btn-email">Enviar email</a>
           </div>
         </div>
-        <div class="contact-cards">
-          <div class="info-card">
-            <span>📍</span>
+        <div class="contact-right">
+          <div class="contact-card">
+            <div class="cc-icon">📍</div>
             <div><strong>Ubicación</strong><p>Misiones, Argentina</p></div>
           </div>
-          <div class="info-card">
-            <span>🚚</span>
+          <div class="contact-card">
+            <div class="cc-icon">🚚</div>
             <div><strong>Envíos</strong><p>Todo el país — coordinados personalmente</p></div>
           </div>
-          <div class="info-card">
-            <span>🕐</span>
-            <div><strong>Atención</strong><p>Lunes a Sábado, 8:00 a 18:00</p></div>
+          <div class="contact-card">
+            <div class="cc-icon">🕐</div>
+            <div><strong>Atención</strong><p>Lunes a Sábado, 8:00 a 18:00 hs</p></div>
+          </div>
+          <div class="contact-card">
+            <div class="cc-icon">💬</div>
+            <div><strong>WhatsApp</strong><p>+54 9 3757 000-000</p></div>
           </div>
         </div>
       </div>
@@ -241,85 +292,74 @@
 
   <!-- FOOTER -->
   <footer class="footer">
-    <div class="footer-inner">
+    <div class="footer-top">
       <div class="footer-brand">
-        <a href="#" class="logo">
-          <span class="logo-mark">M</span>
+        <a href="#inicio" class="logo logo-footer">
+          <div class="logo-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 2L3 7l9 5 9-5-9-5z" fill="currentColor" opacity=".9"/><path d="M3 12l9 5 9-5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M3 17l9 5 9-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity=".6"/></svg>
+          </div>
           <span class="logo-text">makena</span>
         </a>
-        <p>Bazar · Papelería · Agro</p>
-        <p>Misiones, Argentina</p>
+        <p>Bazar · Papelería · Agro<br>Misiones, Argentina</p>
       </div>
-      <div class="footer-col">
-        <strong>Tienda</strong>
-        <a href="#productos">Todos los productos</a>
-        <a href="#categorias">Categorías</a>
-      </div>
-      <div class="footer-col">
-        <strong>Info</strong>
-        <a href="#nosotros">Nosotros</a>
-        <a href="#contacto">Contacto</a>
-        <a href="https://wa.me/5493757000000" target="_blank" rel="noreferrer">WhatsApp</a>
+      <div class="footer-links">
+        <div class="fl-col">
+          <strong>Tienda</strong>
+          <a href="#productos">Todos los productos</a>
+          <a href="#categorias">Categorías</a>
+          <a href="#nosotros">Nosotros</a>
+        </div>
+        <div class="fl-col">
+          <strong>Contacto</strong>
+          <a href="https://wa.me/5493757000000" target="_blank" rel="noreferrer">WhatsApp</a>
+          <a href="mailto:makena@mail.com">Email</a>
+          <a href="#contacto">Ubicación</a>
+        </div>
       </div>
     </div>
     <div class="footer-bottom">
       <p>&copy; <span id="currentYear"></span> Makena. Todos los derechos reservados.</p>
+      <p>Hecho con 💚 en Misiones</p>
     </div>
   </footer>
 
   <!-- CART DRAWER -->
   <div class="overlay" id="overlay"></div>
-  <aside class="cart-drawer" id="cartDrawer" aria-label="Carrito">
-    <div class="cart-header">
-      <h3>Tu carrito</h3>
-      <button class="close-btn" id="cartCloseBtn" aria-label="Cerrar">&times;</button>
+  <aside class="cart-drawer" id="cartDrawer" role="dialog" aria-modal="true" aria-label="Carrito de compras">
+    <div class="cart-top">
+      <div class="cart-top-left">
+        <h3>Tu carrito</h3>
+        <span class="cart-count-label" id="cartCountLabel">0 items</span>
+      </div>
+      <button class="close-btn" id="cartCloseBtn" aria-label="Cerrar carrito">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
     </div>
+
     <div class="cart-body" id="cartBody">
       <div class="cart-empty" id="cartEmpty">
-        <span>🛒</span>
-        <p>Tu carrito está vacío.</p>
+        <div class="cart-empty-icon">🛒</div>
+        <p>Tu carrito está vacío</p>
+        <span>Agregá productos para hacer un pedido</span>
       </div>
     </div>
-    <div class="cart-footer-panel" id="cartFooterPanel" hidden>
-      <div class="cart-total-row">
-        <span>Subtotal</span>
-        <strong id="cartSubtotal">$0</strong>
+
+    <div class="cart-foot" id="cartFooterPanel" hidden>
+      <div class="cart-summary">
+        <div class="cart-row"><span>Subtotal</span><strong id="cartSubtotal">$0</strong></div>
+        <div class="cart-row cart-row-ship"><span>🚚 Envío</span><span class="ship-tag">A coordinar</span></div>
       </div>
-      <p class="cart-note">🚚 Envío coordinado por WhatsApp</p>
-      <button class="btn btn-primary w-full" id="checkoutBtn">Ir al checkout →</button>
-      <button class="btn btn-whatsapp w-full" id="whatsappBtn">
+      <button class="btn btn-checkout" id="checkoutBtn">
+        Consultar pedido por WhatsApp
         <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
-        Consultar por WhatsApp
       </button>
+      <p class="cart-foot-note">Los precios no incluyen envío. Se coordina por WhatsApp.</p>
     </div>
   </aside>
 
   <!-- TOAST -->
-  <div class="toast" id="toast"></div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-  <!-- PANEL CONFIG TIENDANUBE -->
-  <div class="overlay config-overlay" id="configOverlay"></div>
-  <div class="config-panel" id="configPanel">
-    <div class="config-inner">
-      <button class="close-btn config-close" id="configClose">&times;</button>
-      <div class="config-icon">⚙️</div>
-      <h3>Conectar Tiendanube</h3>
-      <p>Ingresá las credenciales de tu tienda Makena en Tiendanube.</p>
-      <div class="config-field">
-        <label for="inputDomain">ID de Tienda (Nube)</label>
-        <input type="text" id="inputDomain" placeholder="Ej: 1234567">
-      </div>
-      <div class="config-field">
-        <label for="inputToken">Access Token API</label>
-        <input type="text" id="inputToken" placeholder="Pega tu token aquí">
-      </div>
-      <button class="btn btn-primary w-full" id="saveConfigBtn">Guardar y conectar</button>
-      <p class="config-hint">Usa un Token de aplicación con permisos de lectura. Los datos se guardan solo en tu navegador.</p>
-    </div>
-  </div>
-
-  <!-- FAB SETTINGS -->
-  <button class="fab-settings" id="fabSettings" title="Configurar Tiendanube">⚙️</button>
   <script src="app.js"></script>
 </body>
 </html>
