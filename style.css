@@ -27,6 +27,12 @@
   --bazar-bg:    rgba(251,146,60,0.1);
   --papel:       #60a5fa;
   --papel-bg:    rgba(96,165,250,0.1);
+  --celeste:     #38bdf8;
+  --celeste-bg:  rgba(56,189,248,0.1);
+  --lila:        #c084fc;
+  --lila-bg:     rgba(192,132,252,0.1);
+  --rosado:      #f472b6;
+  --rosado-bg:   rgba(244,114,182,0.1);
 
   --wa:          #25D366;
   --radius-sm:   8px;
@@ -366,6 +372,9 @@ em { font-style: italic; color: var(--accent-2); }
 .cat-agro .cat-bg { background: linear-gradient(145deg, #0a2218 0%, #0d3322 40%, #1a5c36 100%); }
 .cat-bazar .cat-bg { background: linear-gradient(145deg, #1f1208 0%, #2e1a0a 40%, #5c3615 100%); }
 .cat-papel .cat-bg { background: linear-gradient(145deg, #090f1f 0%, #0e1a38 40%, #1a3568 100%); }
+.cat-celeste .cat-bg { background: linear-gradient(145deg, #0a1f2e 0%, #0d2a3d 40%, #1a4c6c 100%); }
+.cat-lila .cat-bg { background: linear-gradient(145deg, #1b0a2e 0%, #240d3d 40%, #4c1a6c 100%); }
+.cat-rosado .cat-bg { background: linear-gradient(145deg, #2e0a1b 0%, #3d0d24 40%, #6c1a4c 100%); }
 
 .cat-card:hover .cat-bg { opacity: 0.85; }
 
@@ -392,6 +401,9 @@ em { font-style: italic; color: var(--accent-2); }
 .cat-agro  .btn-cat-link:hover { color: var(--agro); }
 .cat-bazar .btn-cat-link:hover { color: var(--bazar); }
 .cat-papel .btn-cat-link:hover { color: var(--papel); }
+.cat-celeste .btn-cat-link:hover { color: var(--celeste); }
+.cat-lila .btn-cat-link:hover { color: var(--lila); }
+.cat-rosado .btn-cat-link:hover { color: var(--rosado); }
 
 /* ── PRODUCTOS ──────────────────────────────────────────────── */
 .products-section {
@@ -479,6 +491,9 @@ em { font-style: italic; color: var(--accent-2); }
 .product-tag.agro     { background: var(--agro-bg); color: var(--agro); border: 1px solid rgba(74,222,128,0.25); }
 .product-tag.bazar    { background: var(--bazar-bg); color: var(--bazar); border: 1px solid rgba(251,146,60,0.25); }
 .product-tag.papeleria{ background: var(--papel-bg); color: var(--papel); border: 1px solid rgba(96,165,250,0.25); }
+.product-tag.celeste  { background: var(--celeste-bg); color: var(--celeste); border: 1px solid rgba(56,189,248,0.25); }
+.product-tag.lila     { background: var(--lila-bg); color: var(--lila); border: 1px solid rgba(192,132,252,0.25); }
+.product-tag.rosado   { background: var(--rosado-bg); color: var(--rosado); border: 1px solid rgba(244,114,182,0.25); }
 
 .product-body { padding: 1.1rem; flex:1; display:flex; flex-direction:column; }
 .product-name { font-weight: 700; font-size: 0.95rem; color: var(--ink); margin-bottom: 0.3rem; line-height: 1.35; }

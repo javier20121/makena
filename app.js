@@ -9,7 +9,7 @@ const WHATSAPP_NUMBER = '5493757000000';
 
 // ─── CONFIG ─────────────────────────────────────────────────
 const PAGE_SIZE = 12;
-const CATEGORY_EMOJIS = { agro:'🌾', bazar:'🏠', papeleria:'📎', default:'📦' };
+const CATEGORY_EMOJIS = { agro:'🌾', bazar:'🏠', papeleria:'📎', celeste:'💎', lila:'✨', rosado:'🌸', default:'📦' };
 const EMPTY_MESSAGES = {
   error:     'No pudimos cargar los productos. Intentá de nuevo más tarde.',
   comingSoon:'¡Próximamente! Los productos están en camino.',
@@ -77,6 +77,9 @@ function detectCategory(p) {
   const joined = [name, ...cats].join(' ');
   if (/agro|campo|semilla|fertiliz|herbicida|fungicida|herbici|poda|huerta|jardín|jardin/.test(joined)) return 'agro';
   if (/papel|cuaderno|resma|lapiz|lápiz|birome|carpeta|agenda|folder|archiv|marcador|sello/.test(joined)) return 'papeleria';
+  if (/celeste|azul|cielo|brillante/.test(joined)) return 'celeste';
+  if (/lila|violeta|purpura|púrpura|lavanda/.test(joined)) return 'lila';
+  if (/rosado|rosa|fucsia|pink/.test(joined)) return 'rosado';
   return 'bazar';
 }
 
@@ -237,7 +240,14 @@ function buildCard(p, i=0) {
   el.dataset.productId = p.id;
 
   const emoji = CATEGORY_EMOJIS[p.category] || CATEGORY_EMOJIS.default;
-  const tagLabel = { agro:'Agro', bazar:'Bazar', papeleria:'Papelería' }[p.category] || 'Otro';
+  const tagLabel = { 
+    agro: 'Agro', 
+    bazar: 'Bazar', 
+    papeleria: 'Papelería',
+    celeste: 'Celeste',
+    lila: 'Lila',
+    rosado: 'Rosado'
+  }[p.category] || 'Otro';
 
   const imgHtml = p.image
     ? `<img class="product-img" src="${esc(p.image)}" alt="${esc(p.imageAlt)}" loading="lazy" decoding="async">`
@@ -439,7 +449,10 @@ catBtns.forEach(btn => {
 hfcCards.forEach(card => {
   const filter = card.classList.contains('hfc-agro') ? 'agro'
                : card.classList.contains('hfc-bazar') ? 'bazar'
-               : card.classList.contains('hfc-papel') ? 'papeleria' : null;
+               : card.classList.contains('hfc-papel') ? 'papeleria'
+               : card.classList.contains('hfc-celeste') ? 'celeste'
+               : card.classList.contains('hfc-lila') ? 'lila'
+               : card.classList.contains('hfc-rosado') ? 'rosado' : null;
   if (filter) {
     card.addEventListener('click', () => {
       if (filter !== currentFilter) {
