@@ -78,18 +78,18 @@ function showToast(msg, duration=2800) {
 function detectCategory(p) {
   const tags = (p.tags || '').toLowerCase();
   
-  // Prioridad 1: Tags explícitos de Tiendanube
+  // Prioridad 1: Tags explícitos (Si en Tiendanube usás el tag 'agro', ES Agro)
   if (tags.includes('papeleria') || tags.includes('papelería')) return 'papeleria';
   if (tags.includes('agro')) return 'agro';
   if (tags.includes('bazar')) return 'bazar';
 
-  // Prioridad 2: Fallback por palabras clave en nombre/categorías
+  // Prioridad 2: Si no hay tags, buscamos palabras clave específicas
   const name = (p.name?.es || '').toLowerCase();
   const cats = (p.categories||[]).map(c=>(c.name?.es||'').toLowerCase());
   const joined = [name, ...cats].join(' ');
   
-  if (/agro|campo|semilla|fertiliz|herbicida|fungicida|herbici|poda|huerta|jardín|jardin/.test(joined)) return 'agro';
-  if (/papel|cuaderno|resma|lapiz|lápiz|birome|carpeta|agenda|folder|archiv|marcador|sello/.test(joined)) return 'papeleria';
+  if (/agro|campo|semilla|fertiliz|herbicida|fungicida|poda|huerta|jardín|jardin|manguera|riego|veneno|insecticida/.test(joined)) return 'agro';
+  if (/papel|cuaderno|resma|lapiz|lápiz|birome|carpeta|agenda|archiv|marcador|sello|oficina|escolar|tijera|pegamento/.test(joined)) return 'papeleria';
   return 'bazar';
 }
 
@@ -254,11 +254,8 @@ function buildCard(p, i=0) {
 
   const emoji = CATEGORY_EMOJIS[p.category] || CATEGORY_EMOJIS.default;
   
-  // Mostramos el primer tag real de Tiendanube como etiqueta visual. 
-  // Si no hay tags, usamos el nombre de la categoría detectada.
-  const tagLabel = (p.tags && p.tags.length > 0)
-    ? p.tags[0] 
-    : ({ agro: 'Agro', bazar: 'Bazar', papeleria: 'Papelería' }[p.category] || 'Destacado');
+  // Forzamos a que la etiqueta visual sea únicamente el nombre del rubro detectado
+  const tagLabel = ({ agro: 'Agro', bazar: 'Bazar', papeleria: 'Papelería' }[p.category] || 'Bazar');
 
   const imgHtml = p.image
     ? `<img class="product-img" src="${esc(p.image)}" alt="${esc(p.imageAlt)}" loading="lazy" decoding="async">`
