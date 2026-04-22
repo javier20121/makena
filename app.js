@@ -129,9 +129,9 @@ async function tnFetch(path, params = {}) {
   
   // Enviamos las credenciales como parámetros para que el proxy las use
   url.searchParams.append('storeId', TN_STORE_ID);
-  url.searchParams.append('token', TN_TOKEN);
+  url.searchParams.append('token', TN_TOKEN);  // ← Faltaba esto
 
-  // Filtrar parámetros para no enviar "undefined" o strings vacíos
+  // Filtrar parámetros adicionales (paginación, búsqueda, etc.)
   Object.keys(params).forEach(key => {
     if (params[key] !== undefined && params[key] !== null && params[key] !== '') {
       url.searchParams.append(key, params[key]);
