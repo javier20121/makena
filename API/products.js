@@ -13,7 +13,7 @@ export default async function handler(req, res) {
   if (!storeId || !token) {
     return res.status(400).json({ error: 'Faltan credenciales (storeId o token)' });
   }
-
+//papapapap//
   // Construimos la URL real de Tiendanube
   const tnUrl = new URL(`https://api.tiendanube.com/v1/${storeId}/products`);
 
