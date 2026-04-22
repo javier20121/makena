@@ -367,7 +367,7 @@ function renderDemoProducts() {
   allProducts = demoProducts;
   filteredProducts = demoProducts;
   renderProducts(demoProducts, false);
-  setStatus('error', '⚠ Modo demo — conectá tu tienda Shopify con el botón ⚙️');
+  setStatus('error', '⚠ Modo demo — conectá tu tienda Tiendanube con el botón ⚙️');
 }
 
 // ─── LOADING STATE ─────────────────────────────────────────────
@@ -385,36 +385,6 @@ function setStatus(state, message) {
 }
 
 // ─── CARRITO ──────────────────────────────────────────────────
-const CREATE_CART_MUTATION = `
-  mutation CreateCart($lines: [CartLineInput!]) {
-    cartCreate(input: { lines: $lines }) {
-      cart {
-        id
-        checkoutUrl
-        cost {
-          subtotalAmount { amount currencyCode }
-        }
-      }
-      userErrors { field message }
-    }
-  }
-`;
-
-const ADD_TO_CART_MUTATION = `
-  mutation AddToCart($cartId: ID!, $lines: [CartLineInput!]!) {
-    cartLinesAdd(cartId: $cartId, lines: $lines) {
-      cart {
-        id
-        checkoutUrl
-        cost {
-          subtotalAmount { amount currencyCode }
-        }
-      }
-      userErrors { field message }
-    }
-  }
-`;
-
 async function addToCart(productId, variantId) {
   const product = allProducts.find(p => p.id === productId);
   if (!product) return;
