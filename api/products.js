@@ -8,12 +8,13 @@ export default async function handler(req, res) {
     return res.status(200).end();
   }
 
-  const { storeId, token, ...params } = req.query;
+  const { storeId, ...params } = req.query;
+  // Es mejor usar el token directamente aquí o vía process.env
+  const token = 'eab22a1052be423fc56d633f7c34f8507d8e747a';
 
-  if (!storeId || !token) {
-    return res.status(400).json({ error: 'Faltan credenciales (storeId o token)' });
+  if (!storeId) {
+    return res.status(400).json({ error: 'Falta storeId' });
   }
-//papapapap//
   // Construimos la URL real de Tiendanube
   const tnUrl = new URL(`https://api.tiendanube.com/v1/${storeId}/products`);
 

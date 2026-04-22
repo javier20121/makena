@@ -5,8 +5,7 @@
    ============================================================ */
 
 // ─── CREDENCIALES (hardcodeadas — no exponer Admin API aquí) ──
-const TN_STORE_ID    = '7601778';
-const TN_TOKEN       = 'eab22a1052be423fc56d633f7c34f8507d8e747a';
+const TN_STORE_ID    = '7601778'; // Tu ID real de Tiendanube (user_id)
 const WHATSAPP_NUMBER = '5493757000000'; // ← Cambiá por tu número real
 
 // ─── CONFIG ───────────────────────────────────────────────────
@@ -85,7 +84,6 @@ function detectCategory(p) {
 async function tnFetch(params={}) {
   const url = new URL('/api/products', window.location.origin);
   url.searchParams.set('storeId', TN_STORE_ID);
-  url.searchParams.set('token',   TN_TOKEN);
   Object.entries(params).forEach(([k,v]) => {
     if (v !== undefined && v !== null && v !== '') url.searchParams.set(k, v);
   });

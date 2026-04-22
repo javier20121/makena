@@ -399,6 +399,7 @@ em { font-style: italic; color: var(--accent-2); }
   border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
   padding: 5rem 1.5rem;
+  min-height: 600px; /* Evita que la página colapse si no cargan productos */
 }
 .products-head {
   max-width: 1280px; margin: 0 auto 3rem;
