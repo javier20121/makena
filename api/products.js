@@ -61,8 +61,7 @@ export default async function handler(req, res) {
 
     const data = await response.json();
     
-    // 5. Validar que la respuesta sea un Array (Tiendanube suele devolver array directo)
-    // Si devuelve un objeto { products: [...] }, ajustamos aquí.
+    // 5. Validar que la respuesta sea un Array
     const productsArray = Array.isArray(data) ? data : (data.products || []);
 
     res.setHeader('X-Total-Count', response.headers.get('X-Total-Count') || productsArray.length);

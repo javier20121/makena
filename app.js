@@ -1,5 +1,5 @@
 /* ============================================================
-   MAKENA — app.js (VERSIÓN CORREGIDA)
+   MAKENA — app.js (VERSIÓN FINAL COMPLETA)
    Tiendanube via Vercel Proxy
    ============================================================ */
 
@@ -24,7 +24,7 @@ let currentFilter    = 'all';
 let currentPage      = 1;
 let hasNextPage      = false;
 let connectionState  = 'idle';
-let isLoading        = false;  // ✅ PREVIENE BUCLE INFINITO
+let isLoading        = false;
 
 // ─── DOM ────────────────────────────────────────────────────
 const $ = id => document.getElementById(id);
@@ -71,12 +71,19 @@ function showToast(msg, duration=2800) {
   _toastTimer = setTimeout(() => toast.classList.remove('show'), duration);
 }
 
+// ─── CLASIFICACIÓN DE CATEGORÍAS (MEJORADA) ─────────────────
 function detectCategory(p) {
   const name = (p.name?.es || '').toLowerCase();
   const cats = (p.categories||[]).map(c=>(c.name?.es||'').toLowerCase());
   const joined = [name, ...cats].join(' ');
-  if (/agro|campo|semilla|fertiliz|herbicida|fungicida|herbici|poda|huerta|jardín|jardin/.test(joined)) return 'agro';
-  if (/papel|cuaderno|resma|lapiz|lápiz|birome|carpeta|agenda|folder|archiv|marcador|sello/.test(joined)) return 'papeleria';
+  
+  // 🌾 AGRO - Palabras clave ampliadas
+  if (/agro|campo|semilla|fertiliz|abono|herbicida|fungicida|insecticida|plaga|poda|huerta|jardín|jardin|tierra|suelo|maceta|riego|pala|rastrillo|cultivo|cosecha|tractor|ganado|animal|veterinario/.test(joined)) return 'agro';
+  
+  // 📎 PAPELERÍA - Palabras clave ampliadas
+  if (/papel|cuaderno|resma|lapiz|lápiz|birome|carpeta|agenda|folder|archiv|marcador|sello|goma|tijera|engrampadora|clip|chincheta|sobre|carta|escritorio|oficina|útil|utiles/.test(joined)) return 'papeleria';
+  
+  // 🏠 BAZAR (default)
   return 'bazar';
 }
 
@@ -92,19 +99,17 @@ async function tnFetch(params={}) {
 
   const res = await fetch(url);
   
-  // ✅ VALIDAR RESPUESTA
   if (!res.ok) {
-    const errorData = await res.json().catch(() => ({}));
+    const errorData = await res.json().catch(() => ({ error: 'Error de red' }));
     console.error('[tnFetch] Error HTTP:', res.status, errorData);
-    throw new Error(`HTTP ${res.status}: ${errorData.error || 'Error desconocido'}`);
+    throw new Error(`HTTP ${res.status}: ${errorData.error || 'Falló la conexión'}`);
   }
 
   const data = await res.json();
   
-  // ✅ VALIDAR QUE DATA SEA ARRAY
   if (!Array.isArray(data)) {
-    console.error('[tnFetch] Data no es array:', data);
-    throw new Error('La respuesta de la API no es un array válido');
+    console.warn('[tnFetch] Data no es array, usando vacío.', data);
+    return { data: [], total: 0 };
   }
 
   return { data, total: res.headers.get('X-Total-Count') };
@@ -112,7 +117,6 @@ async function tnFetch(params={}) {
 
 // ─── CARGAR PRODUCTOS ───────────────────────────────────────
 async function loadProducts(filter='all', page=1, append=false) {
-  // ✅ PREVENIR BUCLE INFINITO
   if (isLoading) {
     console.log('[loadProducts] Ya hay una carga en progreso, saltando...');
     return;
@@ -134,7 +138,7 @@ async function loadProducts(filter='all', page=1, append=false) {
     hasNextPage = (page * PAGE_SIZE) < totalCount;
     currentPage = page;
 
-    // ✅ VALIDAR DATA ANTES DE MAPEAR
+    // ✅ VALIDAR DATA ANTES DE MAPEAR + AGREGAR PERMALINK
     const products = Array.isArray(data) ? data.map(p => {
       const v = p.variants?.[0] || {};
       return {
@@ -148,6 +152,7 @@ async function loadProducts(filter='all', page=1, append=false) {
         imageAlt:     p.name?.es || '',
         available:    v.stock !== 0,
         category:     detectCategory(p),
+        permalink:    p.permalink || '#', // ✅ URL del producto en Tiendanube
       };
     }) : [];
 
@@ -179,7 +184,7 @@ async function loadProducts(filter='all', page=1, append=false) {
     if (!append) renderProducts([], false, EMPTY_MESSAGES.error);
     else showToast('Error al cargar más productos.');
   } finally {
-    isLoading = false;  // ✅ LIBERAR BLOQUEO
+    isLoading = false;
     setLoading(false);
   }
 }
@@ -196,7 +201,6 @@ function logicFilter(products, filter, search='') {
 
 // ─── APLICAR FILTRO ─────────────────────────────────────────
 window.applyFilter = function(filter) {
-  // ✅ PREVENIR BUCLE INFINITO
   if (isLoading || currentFilter === filter) {
     console.log('[applyFilter] Saltando, filtro igual o carga en progreso');
     return;
@@ -205,7 +209,6 @@ window.applyFilter = function(filter) {
   currentFilter = filter;
   currentPage = 1;
   
-  // Actualizar chips visualmente
   chips.forEach(c => c.classList.toggle('active', c.dataset.filter === filter));
   
   allProducts = []; 
@@ -216,20 +219,23 @@ window.applyFilter = function(filter) {
 
 // ─── RENDER PRODUCTOS ───────────────────────────────────────
 function renderProducts(products, append=false, emptyMsg=EMPTY_MESSAGES.noResults, showReset=false) {
+  const safeProducts = (products && Array.isArray(products)) ? products : [];
+
   if (!append) {
     productsGrid.querySelectorAll('.product-card').forEach(el=>el.remove());
   }
 
-  if (!products.length && !append) {
+  if (safeProducts.length === 0 && !append) {
     emptyState.innerHTML = `${esc(emptyMsg)} ${showReset ? '<button onclick="applyFilter(\'all\');searchInput.value=\'\'" class="link-btn">Ver todos</button>' : ''}`;
     emptyState.hidden = false;
     return;
   }
 
   emptyState.hidden = true;
-  products.forEach((p, i) => productsGrid.appendChild(buildCard(p, i)));
+  safeProducts.forEach((p, i) => productsGrid.appendChild(buildCard(p, i)));
 }
 
+// ─── BUILD CARD (CON BOTÓN COMPRAR TIENDANUBE) ──────────────
 function buildCard(p, i=0) {
   const el = document.createElement('article');
   el.className = 'product-card fade-up';
@@ -247,6 +253,11 @@ function buildCard(p, i=0) {
     ? `<div><span class="product-compare">${fmt(p.comparePrice)}</span> <span class="product-price">${fmt(p.price)}</span></div>`
     : `<span class="product-price">${fmt(p.price)}</span>`;
 
+  // ✅ Botón Comprar solo si hay stock
+  const buyButtonHtml = p.available 
+    ? `<a href="${esc(p.permalink)}" target="_blank" rel="noopener noreferrer" class="btn-buy-tn">Comprar</a>` 
+    : `<span class="btn-buy-tn disabled">Agotado</span>`;
+
   el.innerHTML = `
     <div class="product-img-wrap">
       ${imgHtml}
@@ -257,7 +268,10 @@ function buildCard(p, i=0) {
       <p class="product-desc">${esc(p.description || '')}</p>
       <div class="product-foot">
         ${priceHtml}
-        <button class="add-btn" data-product-id="${esc(p.id)}" aria-label="Agregar ${esc(p.title)}" ${!p.available?'disabled title="Sin stock"':''}>+</button>
+        <div class="product-actions">
+          <button class="add-btn" data-product-id="${esc(p.id)}" aria-label="Agregar ${esc(p.title)}" ${!p.available?'disabled title="Sin stock"':''}>+</button>
+          ${buyButtonHtml}
+        </div>
       </div>
     </div>`;
 
@@ -417,7 +431,6 @@ productsGrid.addEventListener('click', e => {
   addToCart(btn.dataset.productId);
 });
 
-// ✅ FILTROS CHIPS - SIN BUCLE INFINITO
 chips.forEach(c => {
   c.addEventListener('click', () => {
     const filter = c.dataset.filter;
