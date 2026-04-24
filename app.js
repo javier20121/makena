@@ -405,12 +405,39 @@ function sendWhatsApp() {
 
 function sendToTiendaNube() {
   if (!cart.length) return;
-  // Usamos el formato de "Add" de Tienda Nube para el último producto
-  // Nota: Tienda Nube no permite añadir múltiples productos vía URL fácilmente en todos los temas
-  // pero este enlace asegura que al menos el carrito se abra con el último ítem
   const lastItem = cart[cart.length - 1];
-  const url = `${TN_BASE_URL}/cart/add/${lastItem.variantId}`;
-  window.open(url, '_blank', 'noopener,noreferrer');
+  
+  // Simulamos un formulario oficial de Tienda Nube (Método POST)
+  const form = document.createElement('form');
+  form.method = 'POST';
+  form.action = `${TN_BASE_URL}/cart/add/`;
+  form.target = '_blank';
+
+  // ID del producto (Tienda Nube acepta add_to_cart o variant_id)
+  const inputAdd = document.createElement('input');
+  inputAdd.type = 'hidden';
+  inputAdd.name = 'add_to_cart';
+  inputAdd.value = lastItem.variantId;
+  
+  const inputVar = document.createElement('input');
+  inputVar.type = 'hidden';
+  inputVar.name = 'variant_id';
+  inputVar.value = lastItem.variantId;
+
+  const inputQty = document.createElement('input');
+  inputQty.type = 'hidden';
+  inputQty.name = 'quantity';
+  inputQty.value = lastItem.qty;
+
+  form.appendChild(inputAdd);
+  form.appendChild(inputVar);
+  form.appendChild(inputQty);
+
+  document.body.appendChild(form);
+  form.submit();
+  
+  // Limpieza
+  setTimeout(() => document.body.removeChild(form), 1000);
 }
 
 // ─── BÚSQUEDA ───────────────────────────────────────────────
@@ -530,8 +557,28 @@ function openProductModal(id) {
 
   // Acciones
   $('pmAddToCart').onclick = () => { addToCart(p.id); closeProductModal(); };
-  $('pmBuyNow').href = `${TN_BASE_URL}/cart/add/${p.variantId}`;
-  $('pmBuyNow').hidden = !p.variantId;
+  
+  const btnBuyNow = $('pmBuyNow');
+  btnBuyNow.hidden = !p.variantId;
+  btnBuyNow.href = '#';
+  btnBuyNow.onclick = (e) => {
+    e.preventDefault();
+    if (!p.variantId) return;
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = `${TN_BASE_URL}/cart/add/`;
+    form.target = '_blank';
+    
+    const iAdd = document.createElement('input'); iAdd.type = 'hidden'; iAdd.name = 'add_to_cart'; iAdd.value = p.variantId;
+    const iVar = document.createElement('input'); iVar.type = 'hidden'; iVar.name = 'variant_id'; iVar.value = p.variantId;
+    const iQty = document.createElement('input'); iQty.type = 'hidden'; iQty.name = 'quantity'; iQty.value = '1';
+    
+    form.appendChild(iAdd); form.appendChild(iVar); form.appendChild(iQty);
+    document.body.appendChild(form);
+    form.submit();
+    setTimeout(() => document.body.removeChild(form), 1000);
+  };
+
   $('pmWhatsApp').href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent('¡Hola! Me interesa este producto: ' + p.title + '\n' + (p.permalink || ''))}`;
 
   // Mostrar modal
