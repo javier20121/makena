@@ -315,9 +315,9 @@ function addToCart(productId) {
   saveCart(); updateCartUI();
   showToast(`✓ ${p.title}`);
   
-  // Sincronización silenciosa con Tienda Nube
+  // Sincronización silenciosa con Tienda Nube (Formato Query String)
   if (p.variantId) {
-    fetch(`${TN_BASE_URL}/cart/add/${p.variantId}`, { mode: 'no-cors' })
+    fetch(`${TN_BASE_URL}/cart/add/?variant_id=${p.variantId}`, { mode: 'no-cors' })
       .then(() => console.log('[TN Sync] Producto añadido al fondo'))
       .catch(e => console.warn('[TN Sync] Error silencioso:', e));
   }
@@ -408,9 +408,9 @@ function sendWhatsApp() {
 
 function sendToTiendaNube() {
   if (!cart.length) return;
-  // Formato: /cart/add/VAR_ID:QTY,VAR_ID:QTY
-  const items = cart.map(i => `${i.variantId}:${i.qty}`).join(',');
-  const url = `${TN_BASE_URL}/cart/add/${items}`;
+  // Usamos el último producto añadido para forzar la entrada al carrito de TN
+  const lastItem = cart[cart.length - 1];
+  const url = `${TN_BASE_URL}/cart/add/?variant_id=${lastItem.variantId}&quantity=${lastItem.qty}`;
   window.open(url, '_blank', 'noopener,noreferrer');
 }
 
@@ -531,8 +531,8 @@ function openProductModal(id) {
 
   // Acciones
   $('pmAddToCart').onclick = () => { addToCart(p.id); closeProductModal(); };
-  $('pmBuyNow').href = p.permalink || '#';
-  $('pmBuyNow').hidden = !p.permalink;
+  $('pmBuyNow').href = `${TN_BASE_URL}/cart/add/?variant_id=${p.variantId}`;
+  $('pmBuyNow').hidden = !p.variantId;
   $('pmWhatsApp').href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent('¡Hola! Me interesa este producto: ' + p.title + '\n' + (p.permalink || ''))}`;
 
   // Mostrar modal
