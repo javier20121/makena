@@ -5,6 +5,7 @@
 
 // ─── CREDENCIALES ───────────────────────────────────────────
 const TN_STORE_ID = '7601778';
+const TN_BASE_URL = 'https://rere9.mitiendanube.com';
 const WHATSAPP_NUMBER = '5493757000000';
 
 // ─── CONFIG ─────────────────────────────────────────────────
@@ -43,6 +44,7 @@ const cartFooter     = $('cartFooterPanel');
 const cartSubtotal   = $('cartSubtotal');
 const cartCountLabel = $('cartCountLabel');
 const checkoutBtn    = $('checkoutBtn');
+const checkoutTNBtn  = $('checkoutTNBtn');
 const overlay        = $('overlay');
 const toast          = $('toast');
 const searchInput    = $('searchInput');
@@ -312,6 +314,14 @@ function addToCart(productId) {
 
   saveCart(); updateCartUI();
   showToast(`✓ ${p.title}`);
+  
+  // Sincronización silenciosa con Tienda Nube
+  if (p.variantId) {
+    fetch(`${TN_BASE_URL}/cart/add/${p.variantId}`, { mode: 'no-cors' })
+      .then(() => console.log('[TN Sync] Producto añadido al fondo'))
+      .catch(e => console.warn('[TN Sync] Error silencioso:', e));
+  }
+
   cartBtn.classList.add('pop');
   setTimeout(() => cartBtn.classList.remove('pop'), 320);
 }
@@ -396,6 +406,14 @@ function sendWhatsApp() {
   window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank', 'noopener,noreferrer');
 }
 
+function sendToTiendaNube() {
+  if (!cart.length) return;
+  // Formato: /cart/add/VAR_ID:QTY,VAR_ID:QTY
+  const items = cart.map(i => `${i.variantId}:${i.qty}`).join(',');
+  const url = `${TN_BASE_URL}/cart/add/${items}`;
+  window.open(url, '_blank', 'noopener,noreferrer');
+}
+
 // ─── BÚSQUEDA ───────────────────────────────────────────────
 function doSearch() {
   if (connectionState !== 'connected') return;
@@ -433,6 +451,7 @@ cartBtn.addEventListener('click', openCart);
 cartCloseBtn.addEventListener('click', closeCart);
 overlay.addEventListener('click', () => { closeCart(); closeProductModal(); });
 checkoutBtn.addEventListener('click', sendWhatsApp);
+if (checkoutTNBtn) checkoutTNBtn.addEventListener('click', sendToTiendaNube);
 
 cartBody.addEventListener('click', e => {
   const btn = e.target.closest('[data-action]');
