@@ -321,18 +321,6 @@ function addToCart(productId) {
   const ex = cart.find(x => x.id === productId);
   ex ? ex.qty++ : cart.push({...p, qty:1});
 
-  // 🔄 Sincronización silenciosa con Tiendanube
-  if (p.variantId) {
-    const body = new URLSearchParams();
-    body.append('add_to_cart', p.variantId);
-    body.append('variant_id', p.variantId);
-    body.append('quantity', '1');
-
-    console.log(`[Tiendanube Sync] Enviando a /cart/add/: variantId=${p.variantId}, quantity=1`); // ✅ LOG DE DEPURACIÓN
-    fetch(`${TN_BASE_URL}/cart/add/`, { method: 'POST', mode: 'no-cors', body })
-      .catch(err => console.warn('[Tiendanube Sync] Falló:', err));
-  }
-
   saveCart(); updateCartUI();
   showToast(`✓ ${p.title}`);
   
@@ -344,18 +332,6 @@ function changeQty(id, delta) {
   const item = cart.find(x => x.id === id);
   if (!item) return;
   item.qty += delta;
-
-  // Si el usuario incrementa, sincronizamos también en la nube
-  if (delta > 0 && item.variantId) { // ✅ VALIDACIÓN item.variantId
-    const body = new URLSearchParams();
-    body.append('add_to_cart', item.variantId);
-    body.append('variant_id', item.variantId);
-    body.append('quantity', '1');
-
-    console.log(`[Tiendanube Sync] Incrementando en /cart/add/: variantId=${item.variantId}, quantity=1`); // ✅ LOG DE DEPURACIÓN
-    fetch(`${TN_BASE_URL}/cart/add/`, { method: 'POST', mode: 'no-cors', body })
-      .catch(() => {});
-  }
 
   if (item.qty <= 0) cart = cart.filter(x => x.id !== id);
   saveCart(); updateCartUI();
@@ -435,36 +411,24 @@ function sendWhatsApp() {
 
 function sendToTiendaNube() {
   if (!cart.length) return;
-  
-  // Usamos el último ítem para abrir el carrito de Tiendanube
-  // La sincronización previa (fetch) ya debería haber cargado los demás
-  const item = cart[cart.length - 1];
-  if (!item.variantId) return;
 
-  const form = document.createElement('form');
-  form.method = 'POST';
-  form.action = `${TN_BASE_URL}/cart/add/`;
-  form.target = '_blank';
-
-  const fields = {
-    'add_to_cart': item.variantId,
-    'variant_id': item.variantId,
-    'quantity': item.qty
-  };
-
-  for (const [key, val] of Object.entries(fields)) {
-    const input = document.createElement('input');
-    input.type = 'hidden';
-    input.name = key;
-    input.value = val;
-    form.appendChild(input);
+  // Filtramos solo ítems con variantId válido
+  const validItems = cart.filter(i => i.variantId);
+  if (!validItems.length) {
+    showToast('⚠️ Ningún producto tiene variante válida para checkout.');
+    return;
   }
 
-  document.body.appendChild(form);
-  form.submit();
-  
-  // Limpieza
-  setTimeout(() => document.body.removeChild(form), 1000);
+  // Tiendanube acepta múltiples productos en la URL con este formato:
+  // /checkout/cart/add/?items[0][variant_id]=X&items[0][quantity]=N&items[1][variant_id]=Y...
+  // Esto funciona cross-domain sin necesidad de cookies previas.
+  const url = new URL(`${TN_BASE_URL}/checkout/cart/add/`);
+  validItems.forEach((item, idx) => {
+    url.searchParams.append(`items[${idx}][variant_id]`, item.variantId);
+    url.searchParams.append(`items[${idx}][quantity]`, item.qty);
+  });
+
+  window.open(url.toString(), '_blank', 'noopener,noreferrer');
 }
 
 // ─── BÚSQUEDA ───────────────────────────────────────────────
@@ -591,23 +555,10 @@ function openProductModal(id) {
   btnBuyNow.onclick = (e) => {
     e.preventDefault();
     if (!p.variantId) return;
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = `${TN_BASE_URL}/cart/add/`;
-    form.target = '_blank';
-    
-    const fields = { 
-      'add_to_cart': p.variantId, 
-      'variant_id': p.variantId, 
-      'quantity': '1' 
-    };
-    for (const [k, v] of Object.entries(fields)) {
-      const input = document.createElement('input'); input.type = 'hidden'; input.name = k; input.value = v;
-      form.appendChild(input);
-    }
-    document.body.appendChild(form);
-    form.submit();
-    setTimeout(() => document.body.removeChild(form), 1000);
+    const url = new URL(`${TN_BASE_URL}/checkout/cart/add/`);
+    url.searchParams.append('items[0][variant_id]', p.variantId);
+    url.searchParams.append('items[0][quantity]', '1');
+    window.open(url.toString(), '_blank', 'noopener,noreferrer');
   };
 
   $('pmWhatsApp').href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent('¡Hola! Me interesa este producto: ' + p.title + '\n' + (p.permalink || ''))}`;
