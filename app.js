@@ -3,7 +3,7 @@
    Tiendanube via Vercel Proxy
    ============================================================ */
 
-// ─── CREDENCIALES ───────────────────────────────────────────
+// ─── CREDENCIALEcccccS ───────────────────────────────────────────
 const TN_STORE_ID = '7614377';
 const TN_BASE_URL = 'https://makenashop1.mitiendanube.com/';
 const WHATSAPP_NUMBER = '5493757000000'; // No olvides verificar si este número sigue siendo el mismo
