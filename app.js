@@ -23,6 +23,9 @@ let filteredProducts = [];
 let cart             = [];
 let currentFilter    = 'all';
 let currentPage      = 1;
+let minPrice         = 0; // ✅ NUEVO ESTADO: FILTRO POR PRECIO
+let maxPrice         = Infinity; // ✅ NUEVO ESTADO: FILTRO POR PRECIO
+let currentSort      = 'default'; // ✅ NUEVO ESTADO: ORDENAR PRODUCTOS
 let hasNextPage      = false;
 let connectionState  = 'idle';
 let isLoading        = false;  // ✅ PREVIENE BUCLE INFINITO
@@ -50,6 +53,10 @@ const toast          = $('toast');
 const searchInput    = $('searchInput');
 const searchBtn      = $('searchBtn');
 const searchToggle   = $('searchToggle');
+const searchSuggestions = $('searchSuggestions'); // ✅ NUEVO: SUGERENCIAS DE BÚSQUEDA
+const minPriceInput  = $('minPrice'); // ✅ NUEVO: FILTRO POR PRECIO
+const maxPriceInput  = $('maxPrice'); // ✅ NUEVO: FILTRO POR PRECIO
+const applyPriceFilterBtn = $('applyPriceFilter'); // ✅ NUEVO: FILTRO POR PRECIO
 const searchExpand   = $('searchExpand');
 const chips          = document.querySelectorAll('.chip');
 const catBtns        = document.querySelectorAll('.btn-cat-link');
@@ -208,13 +215,32 @@ async function loadProducts(filter='all', page=1, append=false) {
     setLoading(false);
   }
 }
-
+// ─── LÓGICA DE FILTRADO Y ORDENAMIENTO ──────────────────────
 function logicFilter(products, filter, search='') {
   let r = Array.isArray(products) ? products : [];
   if (filter !== 'all') r = r.filter(p => p.category === filter);
   if (search.trim()) {
     const q = search.toLowerCase();
     r = r.filter(p => p.title.toLowerCase().includes(q) || (p.description||'').toLowerCase().includes(q));
+  }
+
+  // ✅ FILTRO POR PRECIO
+  r = r.filter(p => p.price >= minPrice && p.price <= maxPrice);
+
+  // ✅ ORDENAR PRODUCTOS
+  switch (currentSort) {
+    case 'price-asc':
+      r.sort((a, b) => a.price - b.price);
+      break;
+    case 'price-desc':
+      r.sort((a, b) => b.price - a.price);
+      break;
+    case 'name-asc':
+      r.sort((a, b) => a.title.localeCompare(b.title));
+      break;
+    case 'name-desc':
+      r.sort((a, b) => b.title.localeCompare(a.title));
+      break;
   }
   return r;
 }
@@ -234,7 +260,10 @@ window.applyFilter = function(filter) {
   chips.forEach(c => c.classList.toggle('active', c.dataset.filter === filter));
   
   allProducts = []; 
-  loadProducts(filter, 1, false);
+  // ✅ Al aplicar filtro, también aplicamos los filtros de precio y ordenamiento actuales
+  minPrice = parseFloat(minPriceInput.value) || 0;
+  maxPrice = parseFloat(maxPriceInput.value) || Infinity;
+  loadProducts(filter, 1, false); // Recarga productos con el nuevo filtro
   
   document.getElementById('productos')?.scrollIntoView({ behavior:'smooth', block:'start' });
 };
@@ -299,6 +328,50 @@ function buildCard(p, i=0) {
     </div>`;
 
   return el;
+}
+
+// ─── LÓGICA DEL CARRUSEL DE TARJETAS ────────────────────────
+function initCardCarousel(cardElement) {
+  const carousel = cardElement.querySelector('.product-card-carousel');
+  if (!carousel || carousel.querySelectorAll('.product-img').length <= 1) return; // Solo si hay más de una imagen
+
+  const imagesContainer = carousel.querySelector('.carousel-images-container');
+  const images = carousel.querySelectorAll('.product-img');
+  const prevBtn = carousel.querySelector('.carousel-nav-prev');
+  const nextBtn = carousel.querySelector('.carousel-nav-next');
+  const dotsContainer = carousel.querySelector('.carousel-dots');
+  const dots = dotsContainer ? dotsContainer.querySelectorAll('.dot') : [];
+
+  let currentIndex = 0;
+
+  function updateCarousel() {
+    imagesContainer.style.transform = `translateX(-${currentIndex * 100}%)`;
+    dots.forEach((dot, idx) => {
+      dot.classList.toggle('active', idx === currentIndex);
+    });
+  }
+
+  prevBtn.addEventListener('click', (e) => {
+    e.stopPropagation(); // Evitar que el clic se propague a la tarjeta
+    currentIndex = (currentIndex - 1 + images.length) % images.length;
+    updateCarousel();
+  });
+
+  nextBtn.addEventListener('click', (e) => {
+    e.stopPropagation(); // Evitar que el clic se propague a la tarjeta
+    currentIndex = (currentIndex + 1) % images.length;
+    updateCarousel();
+  });
+
+  dots.forEach(dot => {
+    dot.addEventListener('click', (e) => {
+      e.stopPropagation(); // Evitar que el clic se propague a la tarjeta
+      currentIndex = parseInt(e.target.dataset.index);
+      updateCarousel();
+    });
+  });
+
+  updateCarousel(); // Inicializar la posición
 }
 
 // ─── LOADING ────────────────────────────────────────────────
@@ -408,7 +481,7 @@ function sendWhatsApp() {
   msg += '\n\n¿Me podés confirmar disponibilidad y coordinar el envío?';
   window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank', 'noopener,noreferrer');
 }
-
+// ─── CHECKOUT → TIENDANUBE ──────────────────────────────────
 function sendToTiendaNube() {
   if (!cart.length) return;
   const validItems = cart.filter(i => i.permalink);
@@ -420,6 +493,38 @@ function sendToTiendaNube() {
   }
 }
 
+// ─── BÚSQUEDA MEJORADA CON SUGERENCIAS ──────────────────────
+
+function showSearchSuggestions() {
+  const query = searchInput.value.trim().toLowerCase();
+  if (query.length < 2) { // Mínimo 2 caracteres para sugerencias
+    hideSearchSuggestions();
+    return;
+  }
+
+  const suggestions = allProducts
+    .filter(p => p.title.toLowerCase().includes(query) || (p.description || '').toLowerCase().includes(query))
+    .slice(0, 5); // Mostrar hasta 5 sugerencias
+
+  if (suggestions.length === 0) {
+    hideSearchSuggestions();
+    return;
+  }
+
+  searchSuggestions.innerHTML = suggestions.map(p => `
+    <div class="suggestion-item" data-product-id="${esc(p.id)}">
+      <img src="${esc(p.image || 'img/placeholder.png')}" alt="${esc(p.title)}" class="suggestion-img">
+      <span class="suggestion-title">${esc(p.title)}</span>
+    </div>
+  `).join('');
+  searchSuggestions.classList.add('open');
+}
+
+function hideSearchSuggestions() {
+  searchSuggestions.classList.remove('open');
+  searchSuggestions.innerHTML = '';
+}
+
 // ─── BÚSQUEDA ───────────────────────────────────────────────
 function doSearch() {
   if (connectionState !== 'connected') return;
@@ -428,6 +533,7 @@ function doSearch() {
   const hasQuery = q || currentFilter !== 'all';
   renderProducts(filteredProducts, false, EMPTY_MESSAGES.noResults, hasQuery);
   if (q) document.getElementById('productos')?.scrollIntoView({behavior:'smooth', block:'start'});
+  hideSearchSuggestions(); // Ocultar sugerencias después de buscar
 }
 
 // ─── NAVBAR & UI ────────────────────────────────────────────
@@ -447,7 +553,13 @@ window.addEventListener('scroll', () => {
 searchToggle.addEventListener('click', () => {
   const open = searchExpand.classList.toggle('open');
   if (open) setTimeout(()=>searchInput.focus(), 50);
+  else hideSearchSuggestions(); // Ocultar sugerencias al cerrar la búsqueda
 });
+
+searchInput.addEventListener('input', debounce(() => {
+  showSearchSuggestions();
+}, 300)); // Debounce para evitar muchas llamadas
+
 document.addEventListener('click', e => {
   if (!e.target.closest('.search-wrapper')) searchExpand.classList.remove('open');
 });
@@ -491,6 +603,14 @@ productsGrid.addEventListener('click', e => {
   if (card) {
     openProductModal(card.dataset.productId);
   }
+});
+
+searchSuggestions.addEventListener('click', e => {
+  const suggestionItem = e.target.closest('.suggestion-item');
+  if (!suggestionItem) return;
+  const productId = suggestionItem.dataset.productId;
+  openProductModal(productId); // Abrir modal del producto sugerido
+  hideSearchSuggestions();
 });
 
 // ─── LÓGICA DEL MODAL DE PRODUCTO ───────────────────────────
@@ -608,8 +728,27 @@ hfcCards.forEach(card => {
 });
 
 searchBtn.addEventListener('click', doSearch);
-searchInput.addEventListener('keydown', e => e.key==='Enter' && doSearch());
-searchInput.addEventListener('input', () => { if (!searchInput.value) doSearch(); });
+// searchInput.addEventListener('keydown', e => e.key==='Enter' && doSearch()); // Reemplazado por debounce y showSearchSuggestions
+// searchInput.addEventListener('input', () => { if (!searchInput.value) doSearch(); }); // Reemplazado por debounce y showSearchSuggestions
+searchInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    doSearch();
+    searchExpand.classList.remove('open'); // Cerrar la barra de búsqueda expandida
+  }
+});
+
+// ✅ FILTRO POR PRECIO Y ORDENAMIENTO
+applyPriceFilterBtn.addEventListener('click', () => {
+  minPrice = parseFloat(minPriceInput.value) || 0;
+  maxPrice = parseFloat(maxPriceInput.value) || Infinity;
+  applyFilter(currentFilter); // Re-aplicar el filtro actual con los nuevos precios
+});
+
+const sortSelect = $('sortSelect');
+sortSelect.addEventListener('change', () => {
+  currentSort = sortSelect.value;
+  applyFilter(currentFilter); // Re-aplicar el filtro actual con el nuevo orden
+});
 
 loadMoreBtn.addEventListener('click', () => {
   if (!isLoading && hasNextPage) {
@@ -640,6 +779,93 @@ function setupObserver() {
 const popStyle = document.createElement('style');
 popStyle.textContent = `.cart-btn.pop{animation:cartPop .32s ease}@keyframes cartPop{0%,100%{transform:scale(1)}50%{transform:scale(1.3)}}`;
 document.head.appendChild(popStyle);
+
+// ─── INIT ───────────────────────────────────────────────────
+// ─── BANNER PROMOCIONAL / CAROUSEL DE OFERTAS ────────────────
+function initPromoCarousel() {
+  const promoCarousel = $('promoCarousel');
+  if (!promoCarousel) return;
+
+  const track = promoCarousel.querySelector('.promo-carousel-track');
+  const slides = promoCarousel.querySelectorAll('.promo-slide');
+  const prevBtn = promoCarousel.querySelector('.promo-nav-prev');
+  const nextBtn = promoCarousel.querySelector('.promo-nav-next');
+  const dotsContainer = promoCarousel.querySelector('.promo-dots');
+  const dots = dotsContainer ? dotsContainer.querySelectorAll('.dot') : [];
+
+  let currentSlide = 0;
+  let autoPlayInterval;
+
+  function updatePromoCarousel() {
+    track.style.transform = `translateX(-${currentSlide * 100}%)`;
+    dots.forEach((dot, idx) => {
+      dot.classList.toggle('active', idx === currentSlide);
+    });
+  }
+
+  function nextSlide() {
+    currentSlide = (currentSlide + 1) % slides.length;
+    updatePromoCarousel();
+  }
+
+  function prevSlide() {
+    currentSlide = (currentSlide - 1 + slides.length) % slides.length;
+    updatePromoCarousel();
+  }
+
+  function startAutoPlay() {
+    stopAutoPlay(); // Clear any existing interval
+    autoPlayInterval = setInterval(nextSlide, 5000); // Change slide every 5 seconds
+  }
+
+  function stopAutoPlay() {
+    clearInterval(autoPlayInterval);
+  }
+
+  prevBtn.addEventListener('click', () => { prevSlide(); startAutoPlay(); });
+  nextBtn.addEventListener('click', () => { nextSlide(); startAutoPlay(); });
+
+  dots.forEach(dot => {
+    dot.addEventListener('click', (e) => {
+      currentSlide = parseInt(e.target.dataset.index);
+      updatePromoCarousel();
+      startAutoPlay();
+    });
+  });
+
+  promoCarousel.addEventListener('mouseenter', stopAutoPlay);
+  promoCarousel.addEventListener('mouseleave', startAutoPlay);
+
+  updatePromoCarousel();
+  startAutoPlay();
+}
+
+// ─── SECCIÓN DE PRODUCTOS DESTACADOS ───────────────────────
+async function loadFeaturedProducts() {
+  const featuredProductsGrid = $('featuredProductsGrid');
+  if (!featuredProductsGrid) return;
+
+  // Para simplificar, tomamos los primeros 4 productos cargados como "destacados"
+  // En un caso real, esto vendría de una API o una selección manual
+  const featured = allProducts.slice(0, 4);
+
+  if (featured.length === 0) {
+    featuredProductsGrid.innerHTML = '<p class="empty-msg">No hay productos destacados.</p>';
+    return;
+  }
+
+  featuredProductsGrid.innerHTML = featured.map((p, i) => {
+    const el = buildCard(p, i); // Reutilizamos buildCard
+    // Ajustes para el layout de destacados si es necesario
+    el.classList.add('featured-card');
+    return el.outerHTML;
+  }).join('');
+
+  // Inicializar carruseles para las tarjetas destacadas
+  featuredProductsGrid.querySelectorAll('.product-card').forEach(card => {
+    initCardCarousel(card);
+  });
+}
 
 // ─── INIT ───────────────────────────────────────────────────
 async function init() {
@@ -675,6 +901,8 @@ async function init() {
     await loadProducts('all', 1, false);
 
     if (connectionState === 'connected') reconcileCart();
+    initPromoCarousel(); // Inicializar el carrusel promocional
+    loadFeaturedProducts(); // Cargar productos destacados
   } catch (e) {
     console.error("Falla crítica en init:", e);
   }
