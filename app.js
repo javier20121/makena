@@ -315,18 +315,10 @@ function addToCart(productId) {
   saveCart(); updateCartUI();
   showToast(`✓ ${p.title}`);
   
-  // Sincronización silenciosa con Tienda Nube (Método Pixel de Alta Compatibilidad)
-  if (p.variantId) {
-    const syncUrl = `${TN_BASE_URL}/comprar/?variant_id=${p.variantId}&quantity=1`;
-    console.log('[TN Sync] Intentando sincronizar vía Pixel:', syncUrl);
-    
-    // Usamos un objeto Image para saltar restricciones de CORS/Fetch
-    const imgSync = new Image();
-    imgSync.src = syncUrl;
-    imgSync.onload = () => console.log('[TN Sync] Sincronización completada');
-    imgSync.onerror = () => console.log('[TN Sync] Petición enviada (respuesta ignorada por seguridad)');
-  }
-
+  // Sincronización local
+  saveCart(); updateCartUI();
+  showToast(`✓ ${p.title}`);
+  
   cartBtn.classList.add('pop');
   setTimeout(() => cartBtn.classList.remove('pop'), 320);
 }
@@ -413,10 +405,11 @@ function sendWhatsApp() {
 
 function sendToTiendaNube() {
   if (!cart.length) return;
-  // Usamos el último producto para forzar la entrada al checkout
+  // Usamos el formato de "Add" de Tienda Nube para el último producto
+  // Nota: Tienda Nube no permite añadir múltiples productos vía URL fácilmente en todos los temas
+  // pero este enlace asegura que al menos el carrito se abra con el último ítem
   const lastItem = cart[cart.length - 1];
-  const url = `${TN_BASE_URL}/comprar/?variant_id=${lastItem.variantId}&quantity=${lastItem.qty}`;
-  console.log('[TN Redirect] Redirigiendo a compra directa:', url);
+  const url = `${TN_BASE_URL}/cart/add/${lastItem.variantId}`;
   window.open(url, '_blank', 'noopener,noreferrer');
 }
 
@@ -537,7 +530,7 @@ function openProductModal(id) {
 
   // Acciones
   $('pmAddToCart').onclick = () => { addToCart(p.id); closeProductModal(); };
-  $('pmBuyNow').href = `${TN_BASE_URL}/comprar/?variant_id=${p.variantId}&quantity=1`;
+  $('pmBuyNow').href = `${TN_BASE_URL}/cart/add/${p.variantId}`;
   $('pmBuyNow').hidden = !p.variantId;
   $('pmWhatsApp').href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent('¡Hola! Me interesa este producto: ' + p.title + '\n' + (p.permalink || ''))}`;
 
