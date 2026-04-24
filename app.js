@@ -151,10 +151,15 @@ async function loadProducts(filter='all', page=1, append=false) {
 
     // ✅ VALIDAR DATA ANTES DE MAPEAR
     const products = Array.isArray(data) ? data.map(p => {
-      const v = p.variants?.[0] || {};
+      // Logueamos las variantes reales de Tiendanube para asegurar el ID correcto
+      console.log(`[Tiendanube Debug] Producto: ${p.name?.es}, Variantes:`, p.variants);
+
+      // Accedemos directamente a la primera variante como solicitaste
+      const v = (p.variants && p.variants.length > 0) ? p.variants[0] : {};
+      
       return {
         id:           String(p.id),
-        variantId:    String(v.id || ''),
+        variantId:    v.id ? String(v.id) : '',
         title:        p.name?.es || p.name?.[Object.keys(p.name||{})[0]] || 'Producto',
         description:  stripHtml(p.description?.es || ''),
         price:        parseFloat(v.promotional_price || v.price || 0),
@@ -172,7 +177,6 @@ async function loadProducts(filter='all', page=1, append=false) {
     }) : [];
 
     console.log('[loadProducts] Productos procesados:', products.length);
-    if (products.length) console.log('[DEBUG] Primer producto permalink:', products[0]?.permalink, '| raw:', data[0]?.permalink, '| canonical:', data[0]?.canonical_url);
 
     allProducts = append ? [...allProducts, ...products] : products;
     filteredProducts = logicFilter(allProducts, currentFilter, searchInput.value);
