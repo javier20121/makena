@@ -260,11 +260,14 @@ function buildCard(p, i=0) {
   // Forzamos a que la etiqueta visual sea únicamente el nombre del rubro detectado
   const tagLabel = ({ agro: 'Agro', bazar: 'Bazar', papeleria: 'Papelería' }[p.category] || 'Bazar');
 
+  const hasSale = p.comparePrice > p.price && p.price > 0;
+  const discount = hasSale ? Math.round(((p.comparePrice - p.price) / p.comparePrice) * 100) : 0;
+
   const imgHtml = p.image
     ? `<img class="product-img" src="${esc(p.image)}" alt="${esc(p.imageAlt)}" loading="lazy" decoding="async">`
     : `<div class="product-img-placeholder">${emoji}</div>`;
 
-  const priceHtml = (p.comparePrice > p.price && p.price > 0)
+  const priceHtml = hasSale
     ? `<div><span class="product-compare">${fmt(p.comparePrice)}</span> <span class="product-price">${fmt(p.price)}</span></div>`
     : `<span class="product-price">${p.price > 0 ? fmt(p.price) : 'Consultar'}</span>`;
 
@@ -272,6 +275,10 @@ function buildCard(p, i=0) {
     <div class="product-img-wrap">
       ${imgHtml}
       <span class="product-tag ${esc(p.category)}">${tagLabel}</span>
+      ${hasSale ? `<span class="badge-sale">${discount}% OFF</span>` : ''}
+      <button class="wishlist-btn" aria-label="Favorito">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l8.72-8.72 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+      </button>
     </div>
     <div class="product-body">
       <p class="product-name">${esc(p.title)}</p>
@@ -440,6 +447,14 @@ productsGrid.addEventListener('click', e => {
   if (btn) {
     if (btn.disabled) return;
     addToCart(btn.dataset.productId);
+    return;
+  }
+
+  // Wishlist heart toggle
+  const wishBtn = e.target.closest('.wishlist-btn');
+  if (wishBtn) {
+    wishBtn.classList.toggle('active');
+    e.stopPropagation(); // Evitar abrir el modal al tocar el corazón
     return;
   }
 
