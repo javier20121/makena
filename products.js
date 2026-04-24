@@ -1,16 +1,32 @@
+// /api/products.js
 export default async function handler(req, res) {
-  const { storeId, ...params } = req.query;
-  const token = 'eab22a1052be423fc56d633f7c34f8507d8e747a';
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
-  if (!storeId) {
-    return res.status(400).json({ error: 'Falta storeId' });
+  if (req.method === 'OPTIONS') return res.status(200).end();
+  if (req.method !== 'GET') return res.status(405).json({ error: 'Método no permitido' });
+
+  const token = process.env.TIENDANUBE_TOKEN;
+  const defaultStoreId = process.env.TIENDANUBE_STORE_ID;
+  const { storeId, ...params } = req.query;
+
+  if (!token) {
+    console.error('[ERROR] Falta TIENDANUBE_TOKEN en variables de entorno');
+    return res.status(500).json({ error: 'Error de configuración del servidor' });
   }
 
-  // Construimos la URL real de Tiendanube
-  const tnUrl = new URL(`https://api.tiendanube.com/v1/${storeId}/products`);
-  
-  // Pasamos los parámetros de búsqueda/paginación
-  Object.keys(params).forEach(key => tnUrl.searchParams.append(key, params[key]));
+  const finalStoreId = storeId || defaultStoreId;
+  if (!finalStoreId) return res.status(400).json({ error: 'Falta storeId' });
+
+  const tnUrl = new URL(`https://api.tiendanube.com/v1/${finalStoreId}/products`);
+  Object.keys(params).forEach(key => {
+    if (params[key] !== undefined && params[key] !== '') {
+      tnUrl.searchParams.append(key, params[key]);
+    }
+  });
+
+  console.log(`[Proxy] Conectando a Tiendanube: ${finalStoreId}`);
 
   try {
     const response = await fetch(tnUrl.toString(), {
@@ -18,15 +34,28 @@ export default async function handler(req, res) {
       headers: {
         'Authentication': `bearer ${token}`,
         'Content-Type': 'application/json',
-        'User-Agent': 'Makena Proxy (Vercel)'
+        'User-Agent': 'Makena-Proxy/1.0'
       },
     });
 
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`[Tiendanube] Error ${response.status}:`, errorText);
+      return res.status(response.status).json({
+        error: 'Error al conectar con Tiendanube',
+        status: response.status,
+        details: errorText
+      });
+    }
+
     const data = await response.json();
-    // Reenviamos el header de total de productos para la paginación
-    res.setHeader('X-Total-Count', response.headers.get('X-Total-Count') || '0');
-    return res.status(response.status).json(data);
+    const productsArray = Array.isArray(data) ? data : (data.products || []);
+
+    res.setHeader('X-Total-Count', response.headers.get('X-Total-Count') || productsArray.length);
+    return res.status(200).json(productsArray);
+
   } catch (error) {
-    return res.status(500).json({ error: 'Error en el servidor proxy', details: error.message });
+    console.error('[Proxy] Excepción de red:', error.message);
+    return res.status(500).json({ error: 'Error interno del proxy', details: error.message });
   }
 }

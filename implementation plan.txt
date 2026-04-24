@@ -1,0 +1,80 @@
+🚀 Plan de Mejoras — Makena Shop
+La página ya tiene una base sólida. Estas mejoras la van a llevar a un nivel premium.
+
+🎨 Mejoras Visuales (Alto Impacto)
+1. Hero con imagen real de fondo
+Reemplazar el fondo plano del hero con una imagen lifestyle (productos del negocio o paisaje de Misiones) con overlay de gradiente. Esto da un impacto visual inmediato.
+
+2. Marquee animado en la barra de beneficios
+En lugar de los 4 items estáticos, un marquee infinito que se desplaza suavemente con los beneficios. Se ve muy moderno y profesional.
+
+3. Contadores animados
+Los números en la hero bar (ej: "+500 productos vendidos") que cuentan de 0 al valor cuando entran en vista. Genera confianza.
+
+4. Efecto parallax suave
+Las secciones con un ligero efecto parallax al hacer scroll — da profundidad y sensación premium.
+
+5. Transiciones entre secciones
+Agregar formas SVG curvas o diagonales entre las secciones para romper la monotonía de bloques rectangulares.
+
+🛍️ Funcionalidad (Mejora la experiencia de compra)
+6. Modal de vista rápida de producto
+Al hacer click en un producto se abre un modal con imagen grande, descripción completa y botones de acción. Actualmente solo se ve un resumen.
+
+7. Galería de imágenes por producto
+Si el producto tiene varias fotos en Tiendanube, mostrar un mini carrusel en la tarjeta.
+
+8. Buscador mejorado con sugerencias
+Que al escribir muestre resultados en tiempo real debajo del input, tipo dropdown.
+
+9. Filtro por precio
+Agregar un slider de rango de precio además de los filtros por categoría.
+
+10. Ordenar productos
+Botón para ordenar por: precio menor/mayor, más nuevos, nombre A-Z.
+
+📱 Secciones Nuevas
+11. Banner promocional / Carousel de ofertas
+Una sección entre el hero y las categorías con banners de ofertas o destacados que rotan automáticamente.
+
+12. Sección de "Productos Destacados"
+Una fila horizontal scrolleable con los productos más populares o elegidos a mano.
+
+13. Testimonios / Opiniones de clientes
+Carrusel con reseñas de clientes reales. Genera mucha confianza para comprar.
+
+14. Sección FAQ (Preguntas frecuentes)
+Acordeón con preguntas comunes: envíos, pagos, devoluciones, etc.
+
+15. Sección "Cómo comprar" (paso a paso)
+3-4 pasos ilustrados: elegí → agregá al carrito → consultá por WhatsApp → recibí en tu casa.
+
+✨ Detalles Premium
+16. Dark mode toggle
+Botón para cambiar entre modo claro y oscuro. Muy moderno.
+
+17. Barra de progreso de scroll
+Una línea fina en la parte superior que muestra cuánto scrolleaste de la página.
+
+18. Animaciones de entrada mejoradas
+Cada sección aparece con animación al entrar en vista (fade-up, slide-in).
+
+19. Cursor personalizado
+Un cursor custom sutil en desktop que cambie al pasar por elementos interactivos.
+
+20. Loader de página inicial
+Una animación con el logo de Makena Shop al cargar la página por primera vez.
+
+User Review Required
+IMPORTANT
+
+¿Cuáles querés que implemente? Podés decirme:
+
+"Todas" — las voy haciendo una por una
+Los números que más te gusten — ej: "la 2, 6, 11, 13 y 15"
+"Las visuales" — solo las de la sección 🎨
+O cualquier combinación
+NOTE
+
+Algunas mejoras como testimonios (#13) y FAQ (#14) necesitan que me pases el contenido (opiniones reales, preguntas frecuentes, etc.)
+
