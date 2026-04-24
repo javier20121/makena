@@ -4,9 +4,9 @@
    ============================================================ */
 
 // ─── CREDENCIALES ───────────────────────────────────────────
-const TN_STORE_ID = '7601778';
-const TN_BASE_URL = 'https://rere9.mitiendanube.com';
-const WHATSAPP_NUMBER = '5493757000000';
+const TN_STORE_ID = '7614377';
+const TN_BASE_URL = 'https://makenashop1.mitiendanube.com/';
+const WHATSAPP_NUMBER = '5493757000000'; // No olvides verificar si este número sigue siendo el mismo
 
 // ─── CONFIG ─────────────────────────────────────────────────
 const PAGE_SIZE = 12;
@@ -20,6 +20,7 @@ const EMPTY_MESSAGES = {
 // ─── ESTADO ─────────────────────────────────────────────────
 let allProducts      = [];
 let filteredProducts = [];
+let lenis            = null; // ✅ Variable global para control
 let cart             = [];
 let currentFilter    = 'all';
 let currentPage      = 1;
@@ -636,18 +637,103 @@ function setupObserver() {
   document.querySelectorAll('.cat-card, .contact-card, .mosaic-cell, .about-checks li, .stat-pill').forEach(el => obs.observe(el));
 }
 
+// ─── DRAGGABLE DECORATIONS ──────────────────────────────────
+function initDraggableDeco() {
+  const elements = document.querySelectorAll('.deco-el');
+  
+  elements.forEach(el => {
+    let isDragging = false;
+    let startX, startY, initialLeft, initialTop;
+
+    const startDrag = (e) => {
+      isDragging = true;
+      el.classList.add('is-dragging');
+
+      const rect = el.getBoundingClientRect();
+      const parentRect = el.offsetParent.getBoundingClientRect();
+      
+      // Guardamos posición inicial en pixeles
+      initialLeft = rect.left - parentRect.left;
+      initialTop = rect.top - parentRect.top;
+
+      const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+      const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
+
+      startX = clientX;
+      startY = clientY;
+
+      // Cambiamos a posicionamiento absoluto en px para el arrastre
+      el.style.left = initialLeft + 'px';
+      el.style.top = initialTop + 'px';
+      el.style.right = 'auto';
+      el.style.bottom = 'auto';
+      
+      if (e.type === 'touchstart') e.preventDefault();
+    };
+
+    const doDrag = (e) => {
+      if (!isDragging) return;
+      
+      const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+      const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
+
+      const dx = clientX - startX;
+      const dy = clientY - startY;
+
+      el.style.left = (initialLeft + dx) + 'px';
+      el.style.top = (initialTop + dy) + 'px';
+      
+      if (e.type === 'touchmove') e.preventDefault();
+    };
+
+    const endDrag = () => {
+      if (isDragging) {
+        isDragging = false;
+        el.classList.remove('is-dragging');
+      }
+    };
+
+    // Mouse Events
+    el.addEventListener('mousedown', startDrag);
+    window.addEventListener('mousemove', doDrag);
+    window.addEventListener('mouseup', endDrag);
+
+    // Touch Events
+    el.addEventListener('touchstart', startDrag, { passive: false });
+    window.addEventListener('touchmove', doDrag, { passive: false });
+    window.addEventListener('touchend', endDrag);
+  });
+}
+
 // ─── POP ANIMATION ──────────────────────────────────────────
 const popStyle = document.createElement('style');
 popStyle.textContent = `.cart-btn.pop{animation:cartPop .32s ease}@keyframes cartPop{0%,100%{transform:scale(1)}50%{transform:scale(1.3)}}`;
 document.head.appendChild(popStyle);
 
 // ─── INIT ───────────────────────────────────────────────────
+// ✅ INICIALIZACIÓN DE LENIS MEJORADA
+function initSmoothScroll() {
+  lenis = new Lenis({
+    duration: 1.2, // Un poco más lento para que se sienta el efecto premium
+    easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+    smoothWheel: true
+  });
+
+  function raf(time) {
+    lenis.raf(time);
+    requestAnimationFrame(raf);
+  }
+  requestAnimationFrame(raf);
+}
+
 async function init() {
   try {
     $('currentYear').textContent = new Date().getFullYear();
     loadCart();
     updateCartUI();
     setupObserver();
+    initSmoothScroll(); // ✅ Se inicializa junto con la app
+    initDraggableDeco(); // ✅ Habilitar arrastre de hojas
 
     // Announce bar
     const announceBar = $('announceBar');
@@ -700,17 +786,4 @@ init();
     const pct = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
     bar.style.width = Math.min(pct, 100) + '%';
   }, { passive: true });
-})();
-
-// ─── SCROLL REVEAL ───────────────────────────────────────────
-(function() {
-  const obs = new IntersectionObserver((entries) => {
-    entries.forEach(e => {
-      if (e.isIntersecting) {
-        e.target.classList.add('visible');
-        obs.unobserve(e.target);
-      }
-    });
-  }, { threshold: 0.1, rootMargin: '0px 0px -36px 0px' });
-  document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
 })();
