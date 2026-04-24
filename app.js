@@ -312,10 +312,12 @@ function addToCart(productId) {
   const ex = cart.find(x => x.id === productId);
   ex ? ex.qty++ : cart.push({...p, qty:1});
 
-  saveCart(); updateCartUI();
-  showToast(`✓ ${p.title}`);
-  
-  // Sincronización local
+  // 🔄 Sincronización con Tiendanube (Cloud Sync)
+  if (p.variantId) {
+    fetch(`${TN_BASE_URL}/cart/add/${p.variantId}/?quantity=1`, { mode: 'no-cors' })
+      .catch(err => console.warn('[Tiendanube Sync] Falló:', err));
+  }
+
   saveCart(); updateCartUI();
   showToast(`✓ ${p.title}`);
   
@@ -327,6 +329,13 @@ function changeQty(id, delta) {
   const item = cart.find(x => x.id === id);
   if (!item) return;
   item.qty += delta;
+
+  // Si incrementa la cantidad, sincronizamos con la nube
+  if (delta > 0 && item.variantId) {
+    fetch(`${TN_BASE_URL}/cart/add/${item.variantId}/?quantity=1`, { mode: 'no-cors' })
+      .catch(() => {});
+  }
+
   if (item.qty <= 0) cart = cart.filter(x => x.id !== id);
   saveCart(); updateCartUI();
 }
@@ -405,33 +414,30 @@ function sendWhatsApp() {
 
 function sendToTiendaNube() {
   if (!cart.length) return;
-  const lastItem = cart[cart.length - 1];
+
+  // Como ya intentamos sincronizar los productos al añadirlos, 
+  // el botón de finalizar ahora asegura que el usuario llegue al checkout de Tiendanube.
   
-  // Simulamos un formulario oficial de Tienda Nube (Método POST)
+  const lastItem = cart[cart.length - 1];
   const form = document.createElement('form');
   form.method = 'POST';
   form.action = `${TN_BASE_URL}/cart/add/`;
   form.target = '_blank';
 
-  // ID del producto (Tienda Nube acepta add_to_cart o variant_id)
-  const inputAdd = document.createElement('input');
-  inputAdd.type = 'hidden';
-  inputAdd.name = 'add_to_cart';
-  inputAdd.value = lastItem.variantId;
-  
-  const inputVar = document.createElement('input');
-  inputVar.type = 'hidden';
-  inputVar.name = 'variant_id';
-  inputVar.value = lastItem.variantId;
+  // Enviamos el último item como confirmación final para forzar la apertura del carrito
+  const fields = {
+    'add_to_cart': lastItem.variantId,
+    'variant_id':  lastItem.variantId,
+    'quantity':    lastItem.qty
+  };
 
-  const inputQty = document.createElement('input');
-  inputQty.type = 'hidden';
-  inputQty.name = 'quantity';
-  inputQty.value = lastItem.qty;
-
-  form.appendChild(inputAdd);
-  form.appendChild(inputVar);
-  form.appendChild(inputQty);
+  Object.entries(fields).forEach(([name, value]) => {
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = name;
+    input.value = value;
+    form.appendChild(input);
+  });
 
   document.body.appendChild(form);
   form.submit();
