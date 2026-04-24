@@ -315,13 +315,16 @@ function addToCart(productId) {
   saveCart(); updateCartUI();
   showToast(`✓ ${p.title}`);
   
-  // Sincronización silenciosa con Tienda Nube (Formato Localizado)
+  // Sincronización silenciosa con Tienda Nube (Método Pixel de Alta Compatibilidad)
   if (p.variantId) {
-    const syncUrl = `${TN_BASE_URL}/carrito/agregar/${p.variantId}/`;
-    console.log('[TN Sync] Intentando sincronizar:', syncUrl);
-    fetch(syncUrl, { mode: 'no-cors' })
-      .then(() => console.log('[TN Sync] Petición enviada correctamente'))
-      .catch(e => console.error('[TN Sync] Error en fetch:', e));
+    const syncUrl = `${TN_BASE_URL}/comprar/?variant_id=${p.variantId}&quantity=1`;
+    console.log('[TN Sync] Intentando sincronizar vía Pixel:', syncUrl);
+    
+    // Usamos un objeto Image para saltar restricciones de CORS/Fetch
+    const imgSync = new Image();
+    imgSync.src = syncUrl;
+    imgSync.onload = () => console.log('[TN Sync] Sincronización completada');
+    imgSync.onerror = () => console.log('[TN Sync] Petición enviada (respuesta ignorada por seguridad)');
   }
 
   cartBtn.classList.add('pop');
@@ -410,10 +413,10 @@ function sendWhatsApp() {
 
 function sendToTiendaNube() {
   if (!cart.length) return;
+  // Usamos el último producto para forzar la entrada al checkout
   const lastItem = cart[cart.length - 1];
-  // Probamos la ruta en español que es más común en TN Argentina
-  const url = `${TN_BASE_URL}/carrito/agregar/${lastItem.variantId}/?quantity=${lastItem.qty}`;
-  console.log('[TN Redirect] Redirigiendo a:', url);
+  const url = `${TN_BASE_URL}/comprar/?variant_id=${lastItem.variantId}&quantity=${lastItem.qty}`;
+  console.log('[TN Redirect] Redirigiendo a compra directa:', url);
   window.open(url, '_blank', 'noopener,noreferrer');
 }
 
@@ -534,7 +537,7 @@ function openProductModal(id) {
 
   // Acciones
   $('pmAddToCart').onclick = () => { addToCart(p.id); closeProductModal(); };
-  $('pmBuyNow').href = `${TN_BASE_URL}/carrito/agregar/${p.variantId}/`;
+  $('pmBuyNow').href = `${TN_BASE_URL}/comprar/?variant_id=${p.variantId}&quantity=1`;
   $('pmBuyNow').hidden = !p.variantId;
   $('pmWhatsApp').href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent('¡Hola! Me interesa este producto: ' + p.title + '\n' + (p.permalink || ''))}`;
 
