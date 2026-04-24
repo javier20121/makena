@@ -412,23 +412,22 @@ function sendWhatsApp() {
 function sendToTiendaNube() {
   if (!cart.length) return;
 
-  // Filtramos solo ítems con variantId válido
-  const validItems = cart.filter(i => i.variantId);
-  if (!validItems.length) {
-    showToast('⚠️ Ningún producto tiene variante válida para checkout.');
-    return;
+  const validItems = cart.filter(i => i.permalink);
+
+  if (validItems.length === 1) {
+    // Un solo producto: ir directo a su página en Tiendanube
+    window.open(validItems[0].permalink, '_blank', 'noopener,noreferrer');
+  } else if (validItems.length > 1) {
+    // Varios productos: abrir la tienda. El cliente elige y agrega desde ahí.
+    // Mostramos un toast explicativo antes de redirigir
+    showToast('🛍️ Abriendo tu tienda para completar la compra…', 3000);
+    setTimeout(() => {
+      window.open(TN_BASE_URL, '_blank', 'noopener,noreferrer');
+    }, 600);
+  } else {
+    // Ninguno tiene permalink: ir a la tienda directamente
+    window.open(TN_BASE_URL, '_blank', 'noopener,noreferrer');
   }
-
-  // Tiendanube acepta múltiples productos en la URL con este formato:
-  // /checkout/cart/add/?items[0][variant_id]=X&items[0][quantity]=N&items[1][variant_id]=Y...
-  // Esto funciona cross-domain sin necesidad de cookies previas.
-  const url = new URL(`${TN_BASE_URL}/checkout/cart/add/`);
-  validItems.forEach((item, idx) => {
-    url.searchParams.append(`items[${idx}][variant_id]`, item.variantId);
-    url.searchParams.append(`items[${idx}][quantity]`, item.qty);
-  });
-
-  window.open(url.toString(), '_blank', 'noopener,noreferrer');
 }
 
 // ─── BÚSQUEDA ───────────────────────────────────────────────
@@ -550,16 +549,11 @@ function openProductModal(id) {
   $('pmAddToCart').onclick = () => { addToCart(p.id); closeProductModal(); };
   
   const btnBuyNow = $('pmBuyNow');
-  btnBuyNow.hidden = !p.variantId;
-  btnBuyNow.href = '#';
-  btnBuyNow.onclick = (e) => {
-    e.preventDefault();
-    if (!p.variantId) return;
-    const url = new URL(`${TN_BASE_URL}/checkout/cart/add/`);
-    url.searchParams.append('items[0][variant_id]', p.variantId);
-    url.searchParams.append('items[0][quantity]', '1');
-    window.open(url.toString(), '_blank', 'noopener,noreferrer');
-  };
+  btnBuyNow.hidden = !p.permalink;
+  btnBuyNow.href = p.permalink || '#';
+  btnBuyNow.target = '_blank';
+  btnBuyNow.rel = 'noopener noreferrer';
+  btnBuyNow.onclick = null; // dejar que el href haga su trabajo
 
   $('pmWhatsApp').href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent('¡Hola! Me interesa este producto: ' + p.title + '\n' + (p.permalink || ''))}`;
 
