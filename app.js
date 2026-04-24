@@ -312,9 +312,10 @@ function addToCart(productId) {
   const ex = cart.find(x => x.id === productId);
   ex ? ex.qty++ : cart.push({...p, qty:1});
 
-  // 🔄 Sincronización con Tiendanube (Cloud Sync)
+  // 🔄 Sincronización silenciosa con Tiendanube
   if (p.variantId) {
-    fetch(`${TN_BASE_URL}/cart/add/${p.variantId}/?quantity=1`, { mode: 'no-cors' })
+    // Usamos el formato de query string que es más robusto para peticiones no-cors
+    fetch(`${TN_BASE_URL}/cart/add/?variant_id=${p.variantId}&quantity=1`, { mode: 'no-cors' })
       .catch(err => console.warn('[Tiendanube Sync] Falló:', err));
   }
 
@@ -330,9 +331,9 @@ function changeQty(id, delta) {
   if (!item) return;
   item.qty += delta;
 
-  // Si incrementa la cantidad, sincronizamos con la nube
+  // Si el usuario incrementa, sincronizamos también en la nube
   if (delta > 0 && item.variantId) {
-    fetch(`${TN_BASE_URL}/cart/add/${item.variantId}/?quantity=1`, { mode: 'no-cors' })
+    fetch(`${TN_BASE_URL}/cart/add/?variant_id=${item.variantId}&quantity=1`, { mode: 'no-cors' })
       .catch(() => {});
   }
 
@@ -414,30 +415,27 @@ function sendWhatsApp() {
 
 function sendToTiendaNube() {
   if (!cart.length) return;
-
-  // Como ya intentamos sincronizar los productos al añadirlos, 
-  // el botón de finalizar ahora asegura que el usuario llegue al checkout de Tiendanube.
   
-  const lastItem = cart[cart.length - 1];
+  // Usamos el último ítem para abrir el carrito de Tiendanube
+  // La sincronización previa (fetch) ya debería haber cargado los demás
+  const item = cart[cart.length - 1];
+  if (!item.variantId) return;
+
   const form = document.createElement('form');
   form.method = 'POST';
   form.action = `${TN_BASE_URL}/cart/add/`;
   form.target = '_blank';
 
-  // Enviamos el último item como confirmación final para forzar la apertura del carrito
-  const fields = {
-    'add_to_cart': lastItem.variantId,
-    'variant_id':  lastItem.variantId,
-    'quantity':    lastItem.qty
-  };
-
-  Object.entries(fields).forEach(([name, value]) => {
+  // Parámetros estándar de Tiendanube para agregar al carrito
+  const params = { variant_id: item.variantId, quantity: item.qty };
+  
+  for (const [key, val] of Object.entries(params)) {
     const input = document.createElement('input');
     input.type = 'hidden';
-    input.name = name;
-    input.value = value;
+    input.name = key;
+    input.value = val;
     form.appendChild(input);
-  });
+  }
 
   document.body.appendChild(form);
   form.submit();
