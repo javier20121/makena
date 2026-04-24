@@ -160,8 +160,8 @@ async function loadProducts(filter='all', page=1, append=false) {
         price:        parseFloat(v.promotional_price || v.price || 0),
         comparePrice: parseFloat(v.price || 0),
         image:        p.images?.[0]?.src || null,
-        imageAlt:     p.name?.es || '',
-        available:    v.stock !== 0,
+        imageAlt:     p.name?.es || 'Imagen de producto',
+        available:    v.stock !== 0 && !!v.id, // ✅ Un producto es "available" si tiene stock Y un variantId válido
         category:     detectCategory(p),
         permalink:    p.canonical_url || (typeof p.permalink === 'object' ? p.permalink?.es : p.permalink) || null,
         images:       p.images || [],
@@ -272,7 +272,7 @@ function buildCard(p, i=0) {
   const priceHtml = hasSale
     ? `<div><span class="product-compare">${fmt(p.comparePrice)}</span> <span class="product-price">${fmt(p.price)}</span></div>`
     : `<span class="product-price">${p.price > 0 ? fmt(p.price) : 'Consultar'}</span>`;
-
+  const addBtnDisabled = !p.available || !p.variantId ? 'disabled title="Sin stock o sin variante para agregar"' : '';
   el.innerHTML = `
     <div class="product-img-wrap">
       ${imgHtml}
@@ -288,8 +288,8 @@ function buildCard(p, i=0) {
       <div class="product-foot">
         ${priceHtml}
         <div class="product-actions">
-          ${p.permalink ? `<a class="buy-btn" href="${esc(p.permalink)}" target="_blank" rel="noopener noreferrer" aria-label="Comprar ${esc(p.title)}">Comprar</a>` : ''}
-          <button class="add-btn" data-product-id="${esc(p.id)}" aria-label="Agregar ${esc(p.title)}" ${!p.available?'disabled title="Sin stock"':''}>+ Carrito</button>
+          ${p.permalink ? `<a class="buy-btn" href="${esc(p.permalink)}" target="_blank" rel="noopener noreferrer" aria-label="Ver ${esc(p.title)}">Ver</a>` : ''}
+          <button class="add-btn" data-product-id="${esc(p.id)}" aria-label="Agregar ${esc(p.title)}" ${addBtnDisabled}>+ Carrito</button>
         </div>
       </div>
     </div>`;
@@ -308,6 +308,11 @@ function setLoading(on) {
 function addToCart(productId) {
   const p = allProducts.find(x => x.id === productId);
   if (!p) return;
+  if (!p.variantId) { // ✅ NUEVA VALIDACIÓN
+    console.warn(`[addToCart] Producto ${p.title} (${p.id}) no tiene variantId, no se puede agregar a Tiendanube.`);
+    showToast(`⚠️ No se puede agregar ${p.title} a Tiendanube.`);
+    return;
+  }
 
   const ex = cart.find(x => x.id === productId);
   ex ? ex.qty++ : cart.push({...p, qty:1});
@@ -319,6 +324,7 @@ function addToCart(productId) {
     body.append('variant_id', p.variantId);
     body.append('quantity', '1');
 
+    console.log(`[Tiendanube Sync] Enviando a /cart/add/: variantId=${p.variantId}, quantity=1`); // ✅ LOG DE DEPURACIÓN
     fetch(`${TN_BASE_URL}/cart/add/`, { method: 'POST', mode: 'no-cors', body })
       .catch(err => console.warn('[Tiendanube Sync] Falló:', err));
   }
@@ -336,12 +342,13 @@ function changeQty(id, delta) {
   item.qty += delta;
 
   // Si el usuario incrementa, sincronizamos también en la nube
-  if (delta > 0 && item.variantId) {
+  if (delta > 0 && item.variantId) { // ✅ VALIDACIÓN item.variantId
     const body = new URLSearchParams();
     body.append('add_to_cart', item.variantId);
     body.append('variant_id', item.variantId);
     body.append('quantity', '1');
 
+    console.log(`[Tiendanube Sync] Incrementando en /cart/add/: variantId=${item.variantId}, quantity=1`); // ✅ LOG DE DEPURACIÓN
     fetch(`${TN_BASE_URL}/cart/add/`, { method: 'POST', mode: 'no-cors', body })
       .catch(() => {});
   }
@@ -602,7 +609,7 @@ function openProductModal(id) {
   $('pmWhatsApp').href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent('¡Hola! Me interesa este producto: ' + p.title + '\n' + (p.permalink || ''))}`;
 
   // Mostrar modal
-  productModal.classList.add('open');
+  productModal.classList.add('open'); // ✅ Asegurarse de que el modal se abre
   overlay.classList.add('active');
   document.body.style.overflow = 'hidden';
 }
