@@ -314,8 +314,11 @@ function addToCart(productId) {
 
   // 🔄 Sincronización silenciosa con Tiendanube
   if (p.variantId) {
-    // Usamos el formato de query string que es más robusto para peticiones no-cors
-    fetch(`${TN_BASE_URL}/cart/add/?variant_id=${p.variantId}&quantity=1`, { mode: 'no-cors' })
+    const body = new URLSearchParams();
+    body.append('variant_id', p.variantId);
+    body.append('quantity', '1');
+
+    fetch(`${TN_BASE_URL}/cart/add`, { method: 'POST', mode: 'no-cors', body })
       .catch(err => console.warn('[Tiendanube Sync] Falló:', err));
   }
 
@@ -333,7 +336,11 @@ function changeQty(id, delta) {
 
   // Si el usuario incrementa, sincronizamos también en la nube
   if (delta > 0 && item.variantId) {
-    fetch(`${TN_BASE_URL}/cart/add/?variant_id=${item.variantId}&quantity=1`, { mode: 'no-cors' })
+    const body = new URLSearchParams();
+    body.append('variant_id', item.variantId);
+    body.append('quantity', '1');
+
+    fetch(`${TN_BASE_URL}/cart/add`, { method: 'POST', mode: 'no-cors', body })
       .catch(() => {});
   }
 
@@ -423,13 +430,16 @@ function sendToTiendaNube() {
 
   const form = document.createElement('form');
   form.method = 'POST';
-  form.action = `${TN_BASE_URL}/cart/add/`;
+  form.action = `${TN_BASE_URL}/cart/add`;
   form.target = '_blank';
 
-  // Parámetros estándar de Tiendanube para agregar al carrito
-  const params = { variant_id: item.variantId, quantity: item.qty };
-  
-  for (const [key, val] of Object.entries(params)) {
+  const fields = {
+    'add_to_cart': item.variantId,
+    'variant_id': item.variantId,
+    'quantity': item.qty
+  };
+
+  for (const [key, val] of Object.entries(fields)) {
     const input = document.createElement('input');
     input.type = 'hidden';
     input.name = key;
@@ -570,14 +580,18 @@ function openProductModal(id) {
     if (!p.variantId) return;
     const form = document.createElement('form');
     form.method = 'POST';
-    form.action = `${TN_BASE_URL}/cart/add/`;
+    form.action = `${TN_BASE_URL}/cart/add`;
     form.target = '_blank';
     
-    const iAdd = document.createElement('input'); iAdd.type = 'hidden'; iAdd.name = 'add_to_cart'; iAdd.value = p.variantId;
-    const iVar = document.createElement('input'); iVar.type = 'hidden'; iVar.name = 'variant_id'; iVar.value = p.variantId;
-    const iQty = document.createElement('input'); iQty.type = 'hidden'; iQty.name = 'quantity'; iQty.value = '1';
-    
-    form.appendChild(iAdd); form.appendChild(iVar); form.appendChild(iQty);
+    const fields = { 
+      'add_to_cart': p.variantId, 
+      'variant_id': p.variantId, 
+      'quantity': '1' 
+    };
+    for (const [k, v] of Object.entries(fields)) {
+      const input = document.createElement('input'); input.type = 'hidden'; input.name = k; input.value = v;
+      form.appendChild(input);
+    }
     document.body.appendChild(form);
     form.submit();
     setTimeout(() => document.body.removeChild(form), 1000);
