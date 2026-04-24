@@ -18,6 +18,9 @@
 </head>
 <body>
 
+  <!-- SCROLL PROGRESS -->
+  <div class="scroll-progress" id="scrollProgress"></div>
+
   <!-- BARRA DE ANUNCIO -->
   <div class="announce-bar" id="announceBar">
     <div class="announce-inner">
@@ -150,6 +153,12 @@
 
     <!-- CATEGORÍAS -->
     <section class="section" id="categorias">
+      <!-- Wave de transición desde el Hero -->
+      <div class="wave-top" aria-hidden="true">
+        <svg viewBox="0 0 1440 110" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+          <path d="M0,80 C240,110 480,30 720,60 C960,90 1200,20 1440,50 L1440,0 L0,0 Z" fill="var(--bg)"/>
+        </svg>
+      </div>
       <div class="section-head">
         <p class="eyebrow">Explorá por rubro</p>
         <h2>¿Qué estás buscando?</h2>
@@ -224,6 +233,12 @@
 
     <!-- PRODUCTOS -->
     <section class="products-section" id="productos">
+      <!-- Wave de transición desde marquee/categorías -->
+      <div class="wave-top" aria-hidden="true">
+        <svg viewBox="0 0 1440 110" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+          <path d="M0,40 C360,100 720,0 1080,60 C1260,90 1380,30 1440,50 L1440,0 L0,0 Z" fill="var(--ink)"/>
+        </svg>
+      </div>
       <div class="products-head">
         <div class="products-head-left">
           <p class="eyebrow">Catálogo</p>
@@ -261,6 +276,12 @@
 
     <!-- NOSOTROS -->
     <section class="section about-section" id="nosotros">
+      <!-- Wave de transición desde productos (blanco) -->
+      <div class="wave-top" aria-hidden="true">
+        <svg viewBox="0 0 1440 110" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+          <path d="M0,60 C200,20 400,100 720,50 C1000,10 1250,90 1440,40 L1440,0 L0,0 Z" fill="#ffffff"/>
+        </svg>
+      </div>
       <div class="about-grid">
         <div class="about-left">
           <div class="about-mosaic">
@@ -301,6 +322,12 @@
 
     <!-- CONTACTO -->
     <section class="section contact-section" id="contacto">
+      <!-- Wave de transición desde nosotros (bg-2) -->
+      <div class="wave-top" aria-hidden="true">
+        <svg viewBox="0 0 1440 110" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+          <path d="M0,50 C300,110 600,10 900,70 C1100,110 1300,20 1440,60 L1440,0 L0,0 Z" fill="var(--bg-2)"/>
+        </svg>
+      </div>
       <div class="contact-inner">
         <div class="contact-left">
           <p class="eyebrow">Hablemos</p>
