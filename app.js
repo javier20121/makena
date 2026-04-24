@@ -315,11 +315,13 @@ function addToCart(productId) {
   saveCart(); updateCartUI();
   showToast(`✓ ${p.title}`);
   
-  // Sincronización silenciosa con Tienda Nube (Formato Query String)
+  // Sincronización silenciosa con Tienda Nube (Formato Localizado)
   if (p.variantId) {
-    fetch(`${TN_BASE_URL}/cart/add/?variant_id=${p.variantId}`, { mode: 'no-cors' })
-      .then(() => console.log('[TN Sync] Producto añadido al fondo'))
-      .catch(e => console.warn('[TN Sync] Error silencioso:', e));
+    const syncUrl = `${TN_BASE_URL}/carrito/agregar/${p.variantId}/`;
+    console.log('[TN Sync] Intentando sincronizar:', syncUrl);
+    fetch(syncUrl, { mode: 'no-cors' })
+      .then(() => console.log('[TN Sync] Petición enviada correctamente'))
+      .catch(e => console.error('[TN Sync] Error en fetch:', e));
   }
 
   cartBtn.classList.add('pop');
@@ -408,9 +410,10 @@ function sendWhatsApp() {
 
 function sendToTiendaNube() {
   if (!cart.length) return;
-  // Usamos el último producto añadido para forzar la entrada al carrito de TN
   const lastItem = cart[cart.length - 1];
-  const url = `${TN_BASE_URL}/cart/add/?variant_id=${lastItem.variantId}&quantity=${lastItem.qty}`;
+  // Probamos la ruta en español que es más común en TN Argentina
+  const url = `${TN_BASE_URL}/carrito/agregar/${lastItem.variantId}/?quantity=${lastItem.qty}`;
+  console.log('[TN Redirect] Redirigiendo a:', url);
   window.open(url, '_blank', 'noopener,noreferrer');
 }
 
@@ -531,7 +534,7 @@ function openProductModal(id) {
 
   // Acciones
   $('pmAddToCart').onclick = () => { addToCart(p.id); closeProductModal(); };
-  $('pmBuyNow').href = `${TN_BASE_URL}/cart/add/?variant_id=${p.variantId}`;
+  $('pmBuyNow').href = `${TN_BASE_URL}/carrito/agregar/${p.variantId}/`;
   $('pmBuyNow').hidden = !p.variantId;
   $('pmWhatsApp').href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent('¡Hola! Me interesa este producto: ' + p.title + '\n' + (p.permalink || ''))}`;
 
