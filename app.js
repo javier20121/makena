@@ -315,10 +315,11 @@ function addToCart(productId) {
   // 🔄 Sincronización silenciosa con Tiendanube
   if (p.variantId) {
     const body = new URLSearchParams();
+    body.append('add_to_cart', p.variantId);
     body.append('variant_id', p.variantId);
     body.append('quantity', '1');
 
-    fetch(`${TN_BASE_URL}/cart/add`, { method: 'POST', mode: 'no-cors', body })
+    fetch(`${TN_BASE_URL}/cart/add/`, { method: 'POST', mode: 'no-cors', body })
       .catch(err => console.warn('[Tiendanube Sync] Falló:', err));
   }
 
@@ -337,10 +338,11 @@ function changeQty(id, delta) {
   // Si el usuario incrementa, sincronizamos también en la nube
   if (delta > 0 && item.variantId) {
     const body = new URLSearchParams();
+    body.append('add_to_cart', item.variantId);
     body.append('variant_id', item.variantId);
     body.append('quantity', '1');
 
-    fetch(`${TN_BASE_URL}/cart/add`, { method: 'POST', mode: 'no-cors', body })
+    fetch(`${TN_BASE_URL}/cart/add/`, { method: 'POST', mode: 'no-cors', body })
       .catch(() => {});
   }
 
@@ -430,7 +432,7 @@ function sendToTiendaNube() {
 
   const form = document.createElement('form');
   form.method = 'POST';
-  form.action = `${TN_BASE_URL}/cart/add`;
+  form.action = `${TN_BASE_URL}/cart/add/`;
   form.target = '_blank';
 
   const fields = {
@@ -580,7 +582,7 @@ function openProductModal(id) {
     if (!p.variantId) return;
     const form = document.createElement('form');
     form.method = 'POST';
-    form.action = `${TN_BASE_URL}/cart/add`;
+    form.action = `${TN_BASE_URL}/cart/add/`;
     form.target = '_blank';
     
     const fields = { 
