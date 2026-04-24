@@ -497,6 +497,8 @@ function openProductModal(id) {
 
   // Acciones
   $('pmAddToCart').onclick = () => { addToCart(p.id); closeProductModal(); };
+  $('pmBuyNow').href = p.permalink || '#';
+  $('pmBuyNow').hidden = !p.permalink;
   $('pmWhatsApp').href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent('¡Hola! Me interesa este producto: ' + p.title + '\n' + (p.permalink || ''))}`;
 
   // Mostrar modal
