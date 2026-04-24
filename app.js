@@ -162,6 +162,9 @@ async function loadProducts(filter='all', page=1, append=false) {
         available:    v.stock !== 0,
         category:     detectCategory(p),
         permalink:    p.canonical_url || (typeof p.permalink === 'object' ? p.permalink?.es : p.permalink) || null,
+        images:       p.images || [],
+        fullDescription: p.description?.es || '',
+        allVariants:  p.variants || [],
         tags:         p.tags ? p.tags.split(',').map(t => t.trim()).filter(t => t !== '') : []
       };
     }) : [];
@@ -421,7 +424,7 @@ document.addEventListener('click', e => {
 // ─── EVENT LISTENERS ────────────────────────────────────────
 cartBtn.addEventListener('click', openCart);
 cartCloseBtn.addEventListener('click', closeCart);
-overlay.addEventListener('click', closeCart);
+overlay.addEventListener('click', () => { closeCart(); closeProductModal(); });
 checkoutBtn.addEventListener('click', sendWhatsApp);
 
 cartBody.addEventListener('click', e => {
@@ -434,8 +437,91 @@ cartBody.addEventListener('click', e => {
 
 productsGrid.addEventListener('click', e => {
   const btn = e.target.closest('.add-btn');
-  if (!btn || btn.disabled) return;
-  addToCart(btn.dataset.productId);
+  if (btn) {
+    if (btn.disabled) return;
+    addToCart(btn.dataset.productId);
+    return;
+  }
+
+  // Si hace clic en el enlace de comprar, dejar que siga su curso
+  if (e.target.closest('.buy-btn')) return;
+
+  // Si hace clic en cualquier otra parte de la tarjeta, abrir modal
+  const card = e.target.closest('.product-card');
+  if (card) {
+    openProductModal(card.dataset.productId);
+  }
+});
+
+// ─── LÓGICA DEL MODAL DE PRODUCTO ───────────────────────────
+const productModal = $('productModal');
+const pmClose      = $('pmClose');
+
+function openProductModal(id) {
+  const p = allProducts.find(x => x.id === id);
+  if (!p) return;
+
+  // Poblar datos básicos
+  $('pmTag').textContent = ({ agro:'Agro', bazar:'Bazar', papeleria:'Papelería' }[p.category] || 'Bazar');
+  $('pmTitle').textContent = p.title;
+  $('pmPrice').textContent = fmt(p.price);
+  $('pmCompare').textContent = (p.comparePrice > p.price) ? fmt(p.comparePrice) : '';
+  $('pmDescription').innerHTML = p.fullDescription || '<p>Sin descripción disponible.</p>';
+  
+  // Galería
+  const mainImg = $('pmMainImg');
+  const thumbs  = $('pmThumbs');
+  mainImg.src = p.image || '';
+  
+  thumbs.innerHTML = p.images.map((img, idx) => `
+    <div class="pm-thumb ${idx === 0 ? 'active' : ''}" data-src="${esc(img.src)}">
+      <img src="${esc(img.src)}" alt="Miniatura ${idx + 1}">
+    </div>
+  `).join('');
+
+  // Variantes (Simplificado: mostramos si hay más de una)
+  const varContainer = $('pmVariants');
+  if (p.allVariants && p.allVariants.length > 1) {
+    varContainer.innerHTML = `
+      <div class="pm-variant-group">
+        <span class="pm-variant-label">Opciones disponibles:</span>
+        <div class="pm-variant-options">
+          ${p.allVariants.map(v => `<span class="pm-opt">${esc(v.values?.[0]?.es || 'Opción')}</span>`).join('')}
+        </div>
+      </div>
+    `;
+    varContainer.hidden = false;
+  } else {
+    varContainer.hidden = true;
+  }
+
+  // Acciones
+  $('pmAddToCart').onclick = () => { addToCart(p.id); closeProductModal(); };
+  $('pmWhatsApp').href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent('¡Hola! Me interesa este producto: ' + p.title + '\n' + (p.permalink || ''))}`;
+
+  // Mostrar modal
+  productModal.classList.add('open');
+  overlay.classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeProductModal() {
+  productModal.classList.remove('open');
+  if (!cartDrawer.classList.contains('open')) {
+    overlay.classList.remove('active');
+    document.body.style.overflow = '';
+  }
+}
+
+pmClose.addEventListener('click', closeProductModal);
+
+// Cambiar imagen principal al tocar miniatura
+$('pmThumbs').addEventListener('click', e => {
+  const thumb = e.target.closest('.pm-thumb');
+  if (!thumb) return;
+  document.querySelectorAll('.pm-thumb').forEach(t => t.classList.remove('active'));
+  thumb.classList.add('active');
+  $('pmMainImg').src = thumb.dataset.src;
 });
 
 // ✅ FILTROS CHIPS - SIN BUCLE INFINITO
@@ -489,7 +575,7 @@ document.querySelectorAll('.nav-link').forEach(l => l.addEventListener('click', 
   hamburger.classList.remove('open');
 }));
 
-document.addEventListener('keydown', e => { if (e.key==='Escape') { closeCart(); searchExpand.classList.remove('open'); } });
+document.addEventListener('keydown', e => { if (e.key==='Escape') { closeCart(); closeProductModal(); searchExpand.classList.remove('open'); } });
 
 // ─── ANIMACIONES SCROLL ─────────────────────────────────────
 function setupObserver() {
