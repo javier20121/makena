@@ -153,18 +153,12 @@
 
     <!-- CATEGORÍAS -->
     <section class="section" id="categorias">
-      <!-- Wave de transición desde el Hero -->
-      <div class="wave-top" aria-hidden="true">
-        <svg viewBox="0 0 1440 110" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
-          <path d="M0,80 C240,110 480,30 720,60 C960,90 1200,20 1440,50 L1440,0 L0,0 Z" fill="var(--bg)"/>
-        </svg>
-      </div>
-      <div class="section-head">
+      <div class="section-head reveal">
         <p class="eyebrow">Explorá por rubro</p>
         <h2>¿Qué estás buscando?</h2>
       </div>
-      <div class="cats-grid">
-        <article class="cat-card cat-agro" tabindex="0">
+      <div class="cats-grid reveal-group">
+        <article class="cat-card cat-agro reveal" tabindex="0">
           <div class="cat-bg"></div>
           <div class="cat-body">
             <span class="cat-num">01</span>
@@ -174,7 +168,7 @@
             <button class="btn-cat-link" data-filter="agro">Ver productos <span>→</span></button>
           </div>
         </article>
-        <article class="cat-card cat-bazar" tabindex="0">
+        <article class="cat-card cat-bazar reveal" tabindex="0">
           <div class="cat-bg"></div>
           <div class="cat-body">
             <span class="cat-num">02</span>
@@ -184,7 +178,7 @@
             <button class="btn-cat-link" data-filter="bazar">Ver productos <span>→</span></button>
           </div>
         </article>
-        <article class="cat-card cat-papel" tabindex="0">
+        <article class="cat-card cat-papel reveal" tabindex="0">
           <div class="cat-bg"></div>
           <div class="cat-body">
             <span class="cat-num">03</span>
@@ -233,13 +227,7 @@
 
     <!-- PRODUCTOS -->
     <section class="products-section" id="productos">
-      <!-- Wave de transición desde marquee/categorías -->
-      <div class="wave-top" aria-hidden="true">
-        <svg viewBox="0 0 1440 110" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
-          <path d="M0,40 C360,100 720,0 1080,60 C1260,90 1380,30 1440,50 L1440,0 L0,0 Z" fill="var(--ink)"/>
-        </svg>
-      </div>
-      <div class="products-head">
+      <div class="products-head reveal">
         <div class="products-head-left">
           <p class="eyebrow">Catálogo</p>
           <h2>Nuestros productos</h2>
@@ -276,14 +264,8 @@
 
     <!-- NOSOTROS -->
     <section class="section about-section" id="nosotros">
-      <!-- Wave de transición desde productos (blanco) -->
-      <div class="wave-top" aria-hidden="true">
-        <svg viewBox="0 0 1440 110" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
-          <path d="M0,60 C200,20 400,100 720,50 C1000,10 1250,90 1440,40 L1440,0 L0,0 Z" fill="#ffffff"/>
-        </svg>
-      </div>
       <div class="about-grid">
-        <div class="about-left">
+        <div class="about-left reveal">
           <div class="about-mosaic">
             <div class="mosaic-cell mc-big">🌾</div>
             <div class="mosaic-cell">📦</div>
@@ -297,7 +279,7 @@
             <div class="stat-pill"><strong>Familiar</strong><span>Tienda</span></div>
           </div>
         </div>
-        <div class="about-right">
+        <div class="about-right reveal">
           <p class="eyebrow">Quiénes somos</p>
           <h2>Makena Shop nació<br><em>del campo.</em></h2>
           <p>Somos una tienda familiar con raíces en Andresito, Misiones. Empezamos vendiendo insumos agro y hoy sumamos bazar y papelería para acompañarte en cada momento del día.</p>
@@ -322,14 +304,8 @@
 
     <!-- CONTACTO -->
     <section class="section contact-section" id="contacto">
-      <!-- Wave de transición desde nosotros (bg-2) -->
-      <div class="wave-top" aria-hidden="true">
-        <svg viewBox="0 0 1440 110" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
-          <path d="M0,50 C300,110 600,10 900,70 C1100,110 1300,20 1440,60 L1440,0 L0,0 Z" fill="var(--bg-2)"/>
-        </svg>
-      </div>
       <div class="contact-inner">
-        <div class="contact-left">
+        <div class="contact-left reveal">
           <p class="eyebrow">Hablemos</p>
           <h2>¿Tenés alguna<br>consulta?</h2>
           <p>Escribinos por WhatsApp o Instagram y te respondemos a la brevedad. Seguinos en redes para ver novedades.</p>
@@ -344,24 +320,24 @@
             </a>
           </div>
         </div>
-        <div class="contact-right">
-          <div class="contact-card">
+        <div class="contact-right reveal-group">
+          <div class="contact-card reveal">
             <div class="cc-icon">📍</div>
             <div><strong>Ubicación</strong><p>Andresito, Misiones — Argentina</p></div>
           </div>
-          <div class="contact-card">
+          <div class="contact-card reveal">
             <div class="cc-icon">🚚</div>
             <div><strong>Envíos</strong><p>Todo el país — coordinados personalmente</p></div>
           </div>
-          <div class="contact-card">
+          <div class="contact-card reveal">
             <div class="cc-icon">💳</div>
             <div><strong>Medios de pago</strong><p>Transferencia bancaria · Efectivo</p></div>
           </div>
-          <div class="contact-card">
+          <div class="contact-card reveal">
             <div class="cc-icon">🕐</div>
             <div><strong>Atención</strong><p>Lunes a Sábado, 8:00 a 18:00 hs</p></div>
           </div>
-          <div class="contact-card">
+          <div class="contact-card reveal">
             <div class="cc-icon">📸</div>
             <div><strong>Instagram</strong><p><a href="https://www.instagram.com/makenashop1" target="_blank" rel="noreferrer" style="color:var(--lila-2);font-weight:600;">@makenashop1</a></p></div>
           </div>
@@ -431,7 +407,10 @@
             <!-- Opciones de variantes si hay -->
           </div>
           <div class="pm-actions">
-            <a href="#" class="btn btn-hero-primary w-full" id="pmBuyNow" target="_blank">Comprar ahora</a>
+            <a href="#" class="btn btn-hero-primary w-full" id="pmBuyNow" target="_blank" rel="noopener noreferrer">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              Comprar en la tienda
+            </a>
             <button class="btn btn-hero-ghost w-full" id="pmAddToCart">Agregar al carrito</button>
             <a href="#" class="btn btn-wa w-full" id="pmWhatsApp" target="_blank">Consultar por WhatsApp</a>
           </div>

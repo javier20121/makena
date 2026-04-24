@@ -321,18 +321,6 @@ function addToCart(productId) {
   const ex = cart.find(x => x.id === productId);
   ex ? ex.qty++ : cart.push({...p, qty:1});
 
-  // 🔄 Sincronización silenciosa con Tiendanube
-  if (p.variantId) {
-    const body = new URLSearchParams();
-    body.append('add_to_cart', p.variantId);
-    body.append('variant_id', p.variantId);
-    body.append('quantity', '1');
-
-    console.log(`[Tiendanube Sync] Enviando a /cart/add/: variantId=${p.variantId}, quantity=1`); // ✅ LOG DE DEPURACIÓN
-    fetch(`${TN_BASE_URL}/cart/add/`, { method: 'POST', mode: 'no-cors', body })
-      .catch(err => console.warn('[Tiendanube Sync] Falló:', err));
-  }
-
   saveCart(); updateCartUI();
   showToast(`✓ ${p.title}`);
   
@@ -344,18 +332,6 @@ function changeQty(id, delta) {
   const item = cart.find(x => x.id === id);
   if (!item) return;
   item.qty += delta;
-
-  // Si el usuario incrementa, sincronizamos también en la nube
-  if (delta > 0 && item.variantId) { // ✅ VALIDACIÓN item.variantId
-    const body = new URLSearchParams();
-    body.append('add_to_cart', item.variantId);
-    body.append('variant_id', item.variantId);
-    body.append('quantity', '1');
-
-    console.log(`[Tiendanube Sync] Incrementando en /cart/add/: variantId=${item.variantId}, quantity=1`); // ✅ LOG DE DEPURACIÓN
-    fetch(`${TN_BASE_URL}/cart/add/`, { method: 'POST', mode: 'no-cors', body })
-      .catch(() => {});
-  }
 
   if (item.qty <= 0) cart = cart.filter(x => x.id !== id);
   saveCart(); updateCartUI();
@@ -435,36 +411,13 @@ function sendWhatsApp() {
 
 function sendToTiendaNube() {
   if (!cart.length) return;
-  
-  // Usamos el último ítem para abrir el carrito de Tiendanube
-  // La sincronización previa (fetch) ya debería haber cargado los demás
-  const item = cart[cart.length - 1];
-  if (!item.variantId) return;
-
-  const form = document.createElement('form');
-  form.method = 'POST';
-  form.action = `${TN_BASE_URL}/cart/add/`;
-  form.target = '_blank';
-
-  const fields = {
-    'add_to_cart': item.variantId,
-    'variant_id': item.variantId,
-    'quantity': item.qty
-  };
-
-  for (const [key, val] of Object.entries(fields)) {
-    const input = document.createElement('input');
-    input.type = 'hidden';
-    input.name = key;
-    input.value = val;
-    form.appendChild(input);
+  const validItems = cart.filter(i => i.permalink);
+  if (validItems.length === 1) {
+    window.open(validItems[0].permalink, '_blank', 'noopener,noreferrer');
+  } else {
+    showToast('🛍️ Abriendo tu tienda para completar la compra…', 3000);
+    setTimeout(() => window.open(TN_BASE_URL, '_blank', 'noopener,noreferrer'), 500);
   }
-
-  document.body.appendChild(form);
-  form.submit();
-  
-  // Limpieza
-  setTimeout(() => document.body.removeChild(form), 1000);
 }
 
 // ─── BÚSQUEDA ───────────────────────────────────────────────
@@ -586,29 +539,14 @@ function openProductModal(id) {
   $('pmAddToCart').onclick = () => { addToCart(p.id); closeProductModal(); };
   
   const btnBuyNow = $('pmBuyNow');
-  btnBuyNow.hidden = !p.variantId;
-  btnBuyNow.href = '#';
-  btnBuyNow.onclick = (e) => {
-    e.preventDefault();
-    if (!p.variantId) return;
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = `${TN_BASE_URL}/cart/add/`;
-    form.target = '_blank';
-    
-    const fields = { 
-      'add_to_cart': p.variantId, 
-      'variant_id': p.variantId, 
-      'quantity': '1' 
-    };
-    for (const [k, v] of Object.entries(fields)) {
-      const input = document.createElement('input'); input.type = 'hidden'; input.name = k; input.value = v;
-      form.appendChild(input);
-    }
-    document.body.appendChild(form);
-    form.submit();
-    setTimeout(() => document.body.removeChild(form), 1000);
-  };
+  // "Comprar en la tienda": va a la página del producto en Tiendanube
+  // Si tiene permalink → enlace directo. Si no → va a la tienda principal.
+  const buyUrl = p.permalink || TN_BASE_URL;
+  btnBuyNow.hidden = false;
+  btnBuyNow.href = buyUrl;
+  btnBuyNow.target = '_blank';
+  btnBuyNow.rel = 'noopener noreferrer';
+  btnBuyNow.onclick = null;
 
   $('pmWhatsApp').href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent('¡Hola! Me interesa este producto: ' + p.title + '\n' + (p.permalink || ''))}`;
 
@@ -759,48 +697,20 @@ init();
   const bar = document.getElementById('scrollProgress');
   if (!bar) return;
   window.addEventListener('scroll', () => {
-    const scrolled = window.scrollY;
-    const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
-    const pct = maxScroll > 0 ? (scrolled / maxScroll) * 100 : 0;
-    bar.style.width = pct + '%';
+    const pct = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
+    bar.style.width = Math.min(pct, 100) + '%';
   }, { passive: true });
 })();
 
 // ─── SCROLL REVEAL ───────────────────────────────────────────
 (function() {
-  // Agregamos clase reveal a los elementos que queremos animar
-  const selectors = [
-    '.section-head',
-    '.about-right',
-    '.about-left',
-    '.contact-left',
-    '.contact-card',
-    '.cat-card',
-    '.stat-pill',
-    '.mosaic-cell',
-  ];
-
-  selectors.forEach(sel => {
-    document.querySelectorAll(sel).forEach(el => {
-      if (!el.classList.contains('reveal')) {
-        el.classList.add('reveal');
-      }
-    });
-  });
-
-  // Grupos para efecto escalonado
-  document.querySelectorAll('.contact-right').forEach(group => {
-    group.classList.add('reveal-group');
-  });
-
   const obs = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('visible');
-        obs.unobserve(entry.target);
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        obs.unobserve(e.target);
       }
     });
-  }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
-
+  }, { threshold: 0.1, rootMargin: '0px 0px -36px 0px' });
   document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
 })();
