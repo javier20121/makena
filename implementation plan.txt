@@ -55,9 +55,7 @@ Botón para cambiar entre modo claro y oscuro. Muy moderno.
 
 17. Barra de progreso de scroll
 Una línea fina en la parte superior que muestra cuánto scrolleaste de la página.
-
-18. Animaciones de entrada mejoradas
-Cada sección aparece con animación al entrar en vista (fade-up, slide-in).
+s.
 
 19. Cursor personalizado
 Un cursor custom sutil en desktop que cambie al pasar por elementos interactivos.

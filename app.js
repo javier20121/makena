@@ -680,6 +680,19 @@ function initDraggableDeco() {
       const dx = clientX - startX;
       const dy = clientY - startY;
 
+      let nextLeft = initialLeft + dx;
+      let nextTop = initialTop + dy;
+
+      // Restricciones para evitar el navbar (aprox 80px arriba)
+      // y la barra de Andresito (aprox 100px desde el fondo del parent)
+      const parentRect = el.offsetParent.getBoundingClientRect();
+      const elRect = el.getBoundingClientRect();
+      
+      // Margen superior (Navbar)
+      const marginTop = 90; 
+      // Margen inferior (Hero Bar)
+      const marginBottom = parentRect.height - 160;
+
       el.style.left = (initialLeft + dx) + 'px';
       el.style.top = (initialTop + dy) + 'px';
       
