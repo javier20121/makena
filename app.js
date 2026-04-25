@@ -138,8 +138,13 @@ async function loadProducts(filter='all', page=1, append=false) {
   setLoading(true);
 
   try {
-    const params = { page, per_page: searchInput.value.trim() ? 50 : PAGE_SIZE };
-    if (searchInput.value.trim()) params.q = searchInput.value.trim();
+    // Si hay búsqueda, pedimos más productos por página para asegurar que encontremos las coincidencias parciales
+    const isSearch = searchInput.value.trim().length > 0;
+    const params = { 
+      page, 
+      per_page: isSearch ? 80 : PAGE_SIZE // Pedimos 80 si está buscando para tener un pool grande
+    };
+    if (isSearch) params.q = searchInput.value.trim();
 
     console.log('[loadProducts] Cargando:', { filter, page, append, params });
 
@@ -212,29 +217,22 @@ async function loadProducts(filter='all', page=1, append=false) {
 
 function logicFilter(products, filter, search='') {
   let r = Array.isArray(products) ? products : [];
+  if (filter !== 'all') r = r.filter(p => p.category === filter);
   
-  // 1. Filtro por categoría
-  if (filter !== 'all') {
-    r = r.filter(p => p.category === filter);
-  }
-  
-  // 2. Filtro de búsqueda inteligente (Parcial y Multi-palabra)
   if (search.trim()) {
-    const keywords = search.toLowerCase().split(' ').filter(w => w.length > 2);
-    const q = search.toLowerCase();
+    const q = search.toLowerCase().trim();
+    const keywords = q.split(' ').filter(w => w.length > 1); // Permitimos palabras cortas
     
     r = r.filter(p => {
-      const title = p.title.toLowerCase();
-      const desc = (p.description || '').toLowerCase();
-      
-      // Coincidencia exacta de la frase
-      if (title.includes(q) || desc.includes(q)) return true;
-      
-      // Coincidencia de cualquiera de las palabras clave (si son palabras largas)
-      return keywords.some(word => title.includes(word) || desc.includes(word));
+      const title = (p.title || '').toLowerCase();
+      const desc  = (p.description || '').toLowerCase();
+      const tags  = (p.tags || []).join(' ').toLowerCase();
+      const combined = `${title} ${desc} ${tags}`;
+
+      // Búsqueda flexible: cada palabra buscada debe estar en algún lado del producto
+      return keywords.every(kw => combined.includes(kw));
     });
   }
-  
   return r;
 }
 
