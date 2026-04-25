@@ -17,6 +17,20 @@ const EMPTY_MESSAGES = {
   noResults: 'No encontramos productos con ese criterio.',
 };
 
+// ─── ASOCIACIONES TIPO MERCADO LIBRE ────────────────────────
+const SEARCH_ASSOCIATIONS = {
+  'olla':    ['cocina', 'bazar', 'sarten', 'paila', 'menaje'],
+  'sarten':  ['cocina', 'bazar', 'olla', 'cubierto'],
+  'botella': ['termo', 'vaso', 'hidratacion', 'bazar', 'botellita'],
+  'termo':   ['botella', 'mate', 'bombilla', 'bazar'],
+  'cuaderno':['papeleria', 'escolar', 'oficina', 'lapiz', 'birome', 'anotador'],
+  'hoja':    ['papeleria', 'resma', 'escolar', 'oficina'],
+  'semilla': ['agro', 'campo', 'huerta', 'siembra'],
+  'herramienta': ['agro', 'poda', 'jardin', 'tijera'],
+  'mate':    ['termo', 'bombilla', 'yerba', 'bazar'],
+  'cocina':  ['olla', 'sarten', 'cubierto', 'bazar', 'plato', 'vaso']
+};
+
 // ─── ESTADO ─────────────────────────────────────────────────
 let allProducts      = [];
 let filteredProducts = [];
@@ -221,17 +235,39 @@ function logicFilter(products, filter, search='') {
   
   if (search.trim()) {
     const q = search.toLowerCase().trim();
-    const keywords = q.split(' ').filter(w => w.length > 1); // Permitimos palabras cortas
+    const words = q.split(' ').filter(w => w.length > 1);
     
-    r = r.filter(p => {
+    // Encontrar términos relacionados (Asociaciones)
+    let relatedTerms = [];
+    words.forEach(w => {
+      // Si la palabra está en nuestro mapa de asociaciones, sumamos esos términos
+      for (let key in SEARCH_ASSOCIATIONS) {
+        if (key.includes(w) || w.includes(key)) {
+          relatedTerms = [...relatedTerms, ...SEARCH_ASSOCIATIONS[key]];
+        }
+      }
+    });
+    
+    // Combinar palabras originales con términos relacionados (sin duplicar)
+    const allSearchTerms = [...new Set([...words, ...relatedTerms])];
+    
+    // Filtrar y puntuar (para que los exactos salgan primero)
+    return r.map(p => {
       const title = (p.title || '').toLowerCase();
       const desc  = (p.description || '').toLowerCase();
       const tags  = (p.tags || []).join(' ').toLowerCase();
-      const combined = `${title} ${desc} ${tags}`;
-
-      // Búsqueda flexible: cada palabra buscada debe estar en algún lado del producto
-      return keywords.every(kw => combined.includes(kw));
-    });
+      const text  = `${title} ${desc} ${tags}`;
+      
+      let score = 0;
+      // Puntaje por coincidencia de palabras originales (prioridad alta)
+      words.forEach(w => { if (text.includes(w)) score += 10; });
+      // Puntaje por términos relacionados (prioridad baja)
+      relatedTerms.forEach(rt => { if (text.includes(rt)) score += 2; });
+      
+      return { ...p, _score: score };
+    })
+    .filter(p => p._score > 0)
+    .sort((a, b) => b._score - a._score); // Ordenar por relevancia
   }
   return r;
 }
