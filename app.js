@@ -448,8 +448,8 @@ function updateCartUI() {
   }).join('');
 }
 
-function openCart()  { cartDrawer.classList.add('open'); overlay.classList.add('active'); document.body.style.overflow='hidden'; }
-function closeCart() { cartDrawer.classList.remove('open'); overlay.classList.remove('active'); document.body.style.overflow=''; }
+function openCart()  { cartDrawer.classList.add('open'); overlay.classList.add('active'); document.body.style.overflow='hidden'; if (lenis) lenis.stop(); }
+function closeCart() { cartDrawer.classList.remove('open'); overlay.classList.remove('active'); document.body.style.overflow=''; if (lenis) lenis.start(); }
 
 // ─── CHECKOUT → WHATSAPP ────────────────────────────────────
 function sendWhatsApp() {
@@ -619,6 +619,7 @@ function openProductModal(id) {
   productModal.classList.add('open'); // ✅ Asegurarse de que el modal se abre
   overlay.classList.add('active');
   document.body.style.overflow = 'hidden';
+  if (lenis) lenis.stop();
 }
 
 function closeProductModal() {
@@ -626,6 +627,7 @@ function closeProductModal() {
   if (!cartDrawer.classList.contains('open')) {
     overlay.classList.remove('active');
     document.body.style.overflow = '';
+    if (lenis) lenis.start();
   }
 }
 
