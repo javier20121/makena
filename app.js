@@ -422,13 +422,25 @@ function sendToTiendaNube() {
 }
 
 // ─── BÚSQUEDA ───────────────────────────────────────────────
+// ─── BÚSQUEDA MEJORADA ──────────────────────────────────────────
 function doSearch() {
-  if (connectionState !== 'connected') return;
   const q = searchInput.value.trim();
-  filteredProducts = logicFilter(allProducts, currentFilter, q);
-  const hasQuery = q || currentFilter !== 'all';
-  renderProducts(filteredProducts, false, EMPTY_MESSAGES.noResults, hasQuery);
-  if (q) document.getElementById('productos')?.scrollIntoView({behavior:'smooth', block:'start'});
+  
+  // Si hay búsqueda, reiniciamos la paginación y cargamos desde el servidor
+  currentPage = 1;
+  allProducts = []; 
+  
+  loadProducts(currentFilter, 1, false);
+  
+  if (q) {
+    const productsEl = document.getElementById('productos');
+    if (productsEl) {
+      window.scrollTo({
+        top: productsEl.offsetTop - 100,
+        behavior: 'smooth'
+      });
+    }
+  }
 }
 
 // ─── NAVBAR & UI ────────────────────────────────────────────

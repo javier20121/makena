@@ -1361,32 +1361,30 @@ em {
   margin-right: auto;
 }
 
-/* Tarjeta de producto */
+/* Tarjeta de producto Premium */
 .product-card {
-  background: #ffffff;
-  border-radius: 18px;
+  background: var(--surface);
+  border-radius: 24px;
   overflow: hidden;
-  border: 1px solid rgba(61, 43, 31, 0.06);
+  border: 1px solid var(--border);
   display: flex;
   flex-direction: column;
-  transition:
-    transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 0.35s ease,
-    border-color 0.25s ease;
+  transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1), box-shadow 0.4s ease, border-color 0.3s ease;
   cursor: pointer;
-  box-shadow: 0 2px 12px rgba(61,43,31,0.06), 0 1px 3px rgba(0,0,0,0.04);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.03);
   position: relative;
+  height: 100%;
 }
 
 .product-card:hover {
-  transform: translateY(-6px) scale(1.008);
-  box-shadow: 0 20px 48px rgba(61,43,31,0.12), 0 4px 12px rgba(0,0,0,0.06);
-  border-color: rgba(188, 117, 90, 0.15);
+  transform: translateY(-10px);
+  box-shadow: 0 30px 60px rgba(0,0,0,0.08);
+  border-color: var(--rosa-2);
 }
 
 .product-img-wrap {
   aspect-ratio: 1;
-  background: #fdfaf7;
+  background: #fdfdfd;
   overflow: hidden;
   position: relative;
 }
@@ -1395,26 +1393,26 @@ em {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
+  transition: transform 1.2s cubic-bezier(0.165, 0.84, 0.44, 1);
 }
 
 .product-card:hover .product-img {
-  transform: scale(1.08);
+  transform: scale(1.1);
 }
 
-/* Badge de Oferta */
+/* Badge de Oferta Premium */
 .badge-sale {
   position: absolute;
-  top: 0.75rem;
-  right: 0.75rem;
+  top: 1rem;
+  right: 1rem;
   background: var(--accent);
   color: white;
-  padding: 0.25rem 0.6rem;
-  border-radius: 6px;
-  font-size: 0.7rem;
+  padding: 0.35rem 0.8rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
   font-weight: 800;
   z-index: 5;
-  box-shadow: 0 4px 12px rgba(188, 117, 90, 0.3);
+  box-shadow: 0 8px 20px rgba(107, 173, 174, 0.3);
 }
 
 /* Botón Wishlist */
@@ -1454,15 +1452,18 @@ em {
 
 .product-tag {
   position: absolute;
-  top: 0.75rem;
-  left: 0.75rem;
-  padding: 0.3rem 0.7rem;
-  border-radius: 999px;
-  font-size: 0.62rem;
-  font-weight: 800;
+  top: 1rem;
+  left: 1rem;
+  padding: 0.4rem 0.9rem;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.05em;
+  background: rgba(255, 255, 255, 0.8);
   backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  z-index: 5;
 }
 
 .product-tag.agro {
@@ -1502,11 +1503,11 @@ em {
 }
 
 .product-body {
-  padding: 1.2rem 1.25rem 1.25rem;
+  padding: 1.5rem;
   flex: 1;
   display: flex;
   flex-direction: column;
-  background: #ffffff;
+  background: var(--surface);
 }
 
 .product-name {
@@ -1542,10 +1543,10 @@ em {
 
 .product-price {
   font-weight: 900;
-  font-size: 1.1rem;
-  color: #0d0d14;
+  font-size: 1.25rem;
+  color: var(--ink);
   font-family: 'Fraunces', serif;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.01em;
 }
 
 .product-compare {
