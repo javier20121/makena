@@ -138,7 +138,7 @@ async function loadProducts(filter='all', page=1, append=false) {
   setLoading(true);
 
   try {
-    const params = { page, per_page: PAGE_SIZE };
+    const params = { page, per_page: searchInput.value.trim() ? 50 : PAGE_SIZE };
     if (searchInput.value.trim()) params.q = searchInput.value.trim();
 
     console.log('[loadProducts] Cargando:', { filter, page, append, params });
@@ -212,11 +212,29 @@ async function loadProducts(filter='all', page=1, append=false) {
 
 function logicFilter(products, filter, search='') {
   let r = Array.isArray(products) ? products : [];
-  if (filter !== 'all') r = r.filter(p => p.category === filter);
-  if (search.trim()) {
-    const q = search.toLowerCase();
-    r = r.filter(p => p.title.toLowerCase().includes(q) || (p.description||'').toLowerCase().includes(q));
+  
+  // 1. Filtro por categoría
+  if (filter !== 'all') {
+    r = r.filter(p => p.category === filter);
   }
+  
+  // 2. Filtro de búsqueda inteligente (Parcial y Multi-palabra)
+  if (search.trim()) {
+    const keywords = search.toLowerCase().split(' ').filter(w => w.length > 2);
+    const q = search.toLowerCase();
+    
+    r = r.filter(p => {
+      const title = p.title.toLowerCase();
+      const desc = (p.description || '').toLowerCase();
+      
+      // Coincidencia exacta de la frase
+      if (title.includes(q) || desc.includes(q)) return true;
+      
+      // Coincidencia de cualquiera de las palabras clave (si son palabras largas)
+      return keywords.some(word => title.includes(word) || desc.includes(word));
+    });
+  }
+  
   return r;
 }
 
