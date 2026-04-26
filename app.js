@@ -106,7 +106,7 @@ function detectCategory(p) {
   const joined = [name, ...cats].join(' ');
   
   if (/agro|campo|semilla|fertiliz|herbicida|fungicida|poda|huerta|jardín|jardin|manguera|riego|veneno|insecticida/.test(joined)) return 'agro';
-  if (/papel|cuaderno|resma|lapiz|lápiz|birome|carpeta|agenda|archiv|marcador|sello|oficina|escolar|tijera|pegamento/.test(joined)) return 'papeleria';
+  if (/globo|papel|cuaderno|resma|lapiz|lápiz|birome|carpeta|agenda|archiv|marcador|sello|oficina|escolar|tijera|pegamento/.test(joined)) return 'papeleria';
   return 'bazar';
 }
 
