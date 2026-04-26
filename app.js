@@ -29,8 +29,9 @@ const SEARCH_ASSOCIATIONS = {
   'vaso': ['taza', 'jarra', 'termo', 'botella', 'bazar', 'beber'],
   'taza': ['vaso', 'jarra', 'cafe', 'te', 'desayuno', 'bazar'],
   'jarra': ['vaso', 'taza', 'botella', 'agua', 'bazar'],
-  'cocina': ['olla', 'sarten', 'cubierto', 'plato', 'menaje', 'bazar', 'comida'],
+  'cocina': ['olla', 'sarten', 'cubierto', 'plato', 'menaje', 'bazar', 'comida', 'utensilio', 'vajilla', 'batidora', 'licuadora', 'pava', 'cafetera', 'tostadora', 'jarra', 'taza', 'vaso', 'repuesto', 'accesorios cocina'],
   'menaje': ['olla', 'sarten', 'vajilla', 'cocina', 'bazar', 'utensilios'],
+  'utensilio': ['cocina', 'bazar', 'menaje', 'herramienta', 'olla', 'sarten', 'cubierto'],
   'termo': ['mate', 'bombilla', 'botella', 'bazar', 'agua caliente', 'acero'],
   'mate': ['termo', 'bombilla', 'yerba', 'bazar', 'infusion'],
   'bombilla': ['mate', 'termo', 'yerba', 'bazar', 'acero'],
@@ -220,7 +221,7 @@ function detectCategory(p) {
   const agroRx = /\b(agro|campo|semilla|fertiliz|herbicida|fungicida|insecticida|plaguicida|fitosanitario|poda|jardin|huerta|siembra|cultivo|manguera|aspersor|riego|rastrillo|azada|pala|fumigadora|mochila fumig|alambrado|tranquera|gallinero|granja|bovino|porcino|aviar|ovino|caprino|veterinari|agroquimico|abono|compost|sustrato|tierra para maceta|maceta|plantin|trebol|maiz|soja|trigo|girasol|mani|tabaco|yerba mate|te de campo)\b/;
 
   // PAPELERÍA — palabras clave expandidas
-  const papelRx = /\b(papeleria|escolar|cuaderno|libreta|anotador|agenda|lapiz|lapicera|birome|boligrafo|marcador|resaltador|fibra|carpeta|archivo|folio|resma|hoja|papel|sello|pegamento|cola vinilica|tijera de papel|cinta adhesiva|scotch|engrapadora|abrochadora|grampa|calculadora|regla|compas|cartuchera|mochila escolar|globo|papel regalo|vinilo|cartulina|afiche|bloc|block|portafolio|bibliorato|separador|index|post.?it|nota adhesiva|corrector|tipex|bicolor|multicolor)\b/;
+  const papelRx = /\b(papeleria|escolar|cuaderno|libreta|anotador|agenda|lapiz|lapicera|birome|boligrafo|marcador|resaltador|fibra|carpeta|archivo|folio|resma|hoja|papel|sello|pegamento|cola vinilica|tijera de papel|cinta adhesiva|scotch|engrapadora|abrochadora|grampa|calculadora|regla|compas|cartuchera|mochila escolar|globos?|fiesta|cotillon|cumpleaños|papel regalo|vinilo|cartulina|afiche|bloc|block|portafolio|bibliorato|separador|index|post.?it|nota adhesiva|corrector|tipex|bicolor|multicolor)\b/;
 
   // BAZAR — palabras clave expandidas
   const bazarRx = /\b(bazar|cocina|olla|cacerola|sarten|wok|paila|cubierto|vajilla|plato|taza|vaso|jarra|jarro|tazon|bol|fuente|escurridor|colador|tabla de picar|cuchillo|utensilio|menaje|mate|termo|botella|botellon|hidratacion|limpieza|escoba|trapeador|trapo|balde|cesto|canasto|organizador|percha|toalla|sabana|almohada|funda|mantel|repasador|lampara|velador|adorno|espejo|decoracion|hogar|cortina|ropa de cama|textil|baño|detergente|higiene)\b/;
@@ -231,7 +232,7 @@ function detectCategory(p) {
 
   // Prioridad 4: scoring por densidad de términos
   const agroScore = (text.match(/\b(campo|cultivo|planta|tierra|jardin|herramienta|agro)\b/g) || []).length;
-  const papelScore = (text.match(/\b(hoja|papel|escolar|oficina|escribir|anotar)\b/g) || []).length;
+  const papelScore = (text.match(/\b(hoja|papel|escolar|oficina|escribir|anotar|fiesta|regalo|globo|globos)\b/g) || []).length;
   const bazarScore = (text.match(/\b(cocina|hogar|casa|decorar|limpiar|mesa|cama)\b/g) || []).length;
 
   if (agroScore > papelScore && agroScore > bazarScore) return 'agro';
