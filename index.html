@@ -53,6 +53,7 @@
             <button class="search-btn" id="searchBtn" aria-label="Buscar">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7.5"/><path d="m20.5 20.5-4.8-4.8"/></svg>
             </button>
+            <div class="search-results" id="searchResults"></div>
           </div>
         </div>
 
@@ -77,24 +78,16 @@
       <div class="hero-glow hero-glow-2"></div>
       <div class="hero-glow hero-glow-3"></div>
 
-      <!-- Elementos Decorativos -->
+      <!-- Elementos Decorativos (Máximo 10 en toda la página) -->
       <span class="deco-el" style="top: 25%; left: 8%; font-size: 3.8rem; animation-delay: 0s; animation-name: decoPulse; animation-duration: 4s;">🍂</span>
       <span class="deco-el" style="top: 22%; right: 25%; font-size: 3.2rem; animation-delay: 1s;">🍁</span>
       <span class="deco-el" style="top: 55%; left: 4%; font-size: 2.8rem; animation-delay: 2s; animation-name: decoSpin; animation-duration: 12s;">🌿</span>
-      <span class="deco-el" style="bottom: 30%; left: 18%; font-size: 2.5rem; animation-delay: 1.5s; animation-name: floatDecoAlt;">🍄</span>
       <span class="deco-el" style="top: 35%; right: 15%; font-size: 4.5rem; animation-name: decoPulse; animation-duration: 5s;">🌾</span>
-      <span class="deco-el" style="top: 40%; left: 45%; font-size: 3.5rem; animation-delay: 0.5s; animation-name: decoFloatWide; animation-duration: 8s;">🍃</span>
-      <span class="deco-el" style="bottom: 35%; right: 10%; font-size: 4rem; animation-delay: 3s; animation-name: decoPulse; animation-duration: 3.5s;">🍎</span>
-      <span class="deco-el" style="top: 20%; right: 5%; font-size: 3rem; animation-delay: 4s; animation-name: decoSpin; animation-duration: 20s;">🌰</span>
-      <!-- Papelería -->
-      <span class="deco-el" style="top: 20%; left: 20%; font-size: 3.2rem; animation-delay: 0.2s; animation-name: floatDecoAlt;">📎</span>
       <span class="deco-el" style="top: 45%; right: 40%; font-size: 4.2rem; animation-delay: 1.2s; animation-name: swayDeco;">✏️</span>
-      <span class="deco-el" style="bottom: 25%; right: 30%; font-size: 3rem; animation-delay: 0.8s; animation-name: decoPulse; animation-duration: 4.5s;">✂️</span>
-      <span class="deco-el" style="top: 30%; left: 40%; font-size: 3.5rem; animation-delay: 2.5s; animation-name: decoFloatWide; animation-duration: 7s;">📓</span>
-      <!-- Bazar -->
       <span class="deco-el" style="top: 60%; right: 5%; font-size: 4.5rem; animation-delay: 1.5s; animation-name: decoSpin; animation-duration: 15s;">☕</span>
-      <span class="deco-el" style="bottom: 25%; left: 5%; font-size: 3.8rem; animation-delay: 3.2s; animation-name: floatDecoAlt;">🏺</span>
-      <span class="deco-el" style="top: 35%; left: 2%; font-size: 3.2rem; animation-delay: 0.4s; animation-name: decoPulse; animation-duration: 6s;">🕯️</span>
+
+      <!-- CONTENEDOR DE HOJAS CAYENDO -->
+      <div class="leaf-container" id="leafContainer"></div>
 
       <div class="hero-inner">
         <div class="hero-left">
@@ -176,20 +169,10 @@
         <p class="eyebrow">Explorá por rubro</p>
         <h2>¿Qué estás buscando?</h2>
       </div>
-      <!-- Elementos Decorativos -->
-      <span class="deco-el" style="top: 15%; right: 5%; font-size: 4.8rem; opacity: 0.7; animation-name: decoPulse; animation-duration: 5s;">🍂</span>
-      <span class="deco-el" style="top: 45%; right: 2%; font-size: 3.8rem; opacity: 0.6; animation-delay: 0.5s; animation-name: decoFloatWide; animation-duration: 9s;">🍃</span>
-      <span class="deco-el" style="bottom: 25%; left: 2%; font-size: 3.2rem; opacity: 0.6; animation-name: floatDecoAlt;">🌾</span>
-      <span class="deco-el" style="top: 20%; left: 15%; font-size: 3rem; opacity: 0.55; animation-name: decoSpin; animation-duration: 25s;">🍁</span>
-      <span class="deco-el" style="bottom: 20%; right: 15%; font-size: 4.2rem; opacity: 0.2; animation-name: decoPulse; animation-duration: 6s;">🌽</span>
-      <span class="deco-el" style="top: 60%; left: 5%; font-size: 3.5rem; opacity: 0.6; animation-name: decoFloatWide; animation-duration: 10s;">🌻</span>
-      <!-- Papelería -->
-      <span class="deco-el" style="top: 15%; left: 25%; font-size: 3.2rem; opacity: 0.5; animation-delay: 1.8s; animation-name: decoPulse; animation-duration: 4s;">📏</span>
-      <span class="deco-el" style="top: 30%; right: 20%; font-size: 4rem; opacity: 0.55; animation-name: swayDeco;">📌</span>
-      <span class="deco-el" style="bottom: 40%; left: 10%; font-size: 3.5rem; opacity: 0.5; animation-delay: 2.2s; animation-name: decoSpin; animation-duration: 18s;">🎨</span>
-      <!-- Bazar -->
-      <span class="deco-el" style="top: 75%; right: 10%; font-size: 4.5rem; opacity: 0.5; animation-delay: 0.7s; animation-name: decoFloatWide; animation-duration: 12s;">🧺</span>
-      <span class="deco-el" style="bottom: 20%; left: 35%; font-size: 3.8rem; opacity: 0.45; animation-name: decoPulse; animation-duration: 5.5s;">🧴</span>
+      <span class="deco-el" style="bottom: 20%; right: 15%; font-size: 4.2rem; opacity: 0.2;">🌽</span>
+      <span class="deco-el" style="top: 60%; left: 5%; font-size: 3.5rem; opacity: 0.6;">🌻</span>
+      <span class="deco-el" style="top: 75%; right: 10%; font-size: 4.5rem; opacity: 0.5;">🧺</span>
+      <span class="deco-el" style="bottom: 20%; left: 35%; font-size: 3.8rem; opacity: 0.45;">🏺</span>
 
       <div class="cats-grid reveal-group">
         <article class="cat-card cat-agro reveal" tabindex="0">
@@ -439,6 +422,10 @@
           </div>
           <div class="pm-variants" id="pmVariants">
             <!-- Opciones de variantes si hay -->
+          </div>
+          <div class="pm-related" id="pmRelated">
+            <h3>Productos relacionados</h3>
+            <div class="pm-related-grid" id="pmRelatedGrid"></div>
           </div>
           <div class="pm-actions">
             <a href="#" class="btn btn-hero-primary w-full" id="pmBuyNow" target="_blank" rel="noopener noreferrer">

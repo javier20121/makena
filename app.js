@@ -3,7 +3,7 @@
    Tiendanube via Vercel Proxy
    ============================================================ */
 
-// ─── CREDENCIALEcccccS ───────────────────────────────────────────
+// ─── CREDENCIALES ───────────────────────────────────────────
 const TN_STORE_ID = '7599760';
 const TN_BASE_URL = 'https://makenashop1.mitiendanube.com/';
 const WHATSAPP_NUMBER = '5493757000000'; // No olvides verificar si este número sigue siendo el mismo
@@ -152,11 +152,10 @@ async function loadProducts(filter='all', page=1, append=false) {
   setLoading(true);
 
   try {
-    // Si hay búsqueda, pedimos más productos por página para asegurar que encontremos las coincidencias parciales
     const isSearch = searchInput.value.trim().length > 0;
     const params = { 
       page, 
-      per_page: isSearch ? 80 : PAGE_SIZE // Pedimos 80 si está buscando para tener un pool grande
+      per_page: isSearch ? 80 : PAGE_SIZE 
     };
     if (isSearch) params.q = searchInput.value.trim();
 
@@ -169,12 +168,7 @@ async function loadProducts(filter='all', page=1, append=false) {
     hasNextPage = (page * PAGE_SIZE) < totalCount;
     currentPage = page;
 
-    // ✅ VALIDAR DATA ANTES DE MAPEAR
     const products = Array.isArray(data) ? data.map(p => {
-      // Logueamos las variantes reales de Tiendanube para asegurar el ID correcto
-      console.log(`[Tiendanube Debug] Producto: ${p.name?.es}, Variantes:`, p.variants);
-
-      // Accedemos directamente a la primera variante como solicitaste
       const v = (p.variants && p.variants.length > 0) ? p.variants[0] : {};
       
       return {
@@ -186,7 +180,7 @@ async function loadProducts(filter='all', page=1, append=false) {
         comparePrice: parseFloat(v.price || 0),
         image:        p.images?.[0]?.src || null,
         imageAlt:     p.name?.es || 'Imagen de producto',
-        available:    v.stock !== 0 && !!v.id, // ✅ Un producto es "available" si tiene stock Y un variantId válido
+        available:    v.stock !== 0 && !!v.id, 
         category:     detectCategory(p),
         permalink:    p.canonical_url || (typeof p.permalink === 'object' ? p.permalink?.es : p.permalink) || null,
         images:       p.images || [],
@@ -195,8 +189,6 @@ async function loadProducts(filter='all', page=1, append=false) {
         tags:         p.tags ? p.tags.split(',').map(t => t.trim()).filter(t => t !== '') : []
       };
     }) : [];
-
-    console.log('[loadProducts] Productos procesados:', products.length);
 
     allProducts = append ? [...allProducts, ...products] : products;
     filteredProducts = logicFilter(allProducts, currentFilter, searchInput.value);
@@ -216,7 +208,6 @@ async function loadProducts(filter='all', page=1, append=false) {
 
   } catch(err) {
     console.error('🔴 Error detallado de carga:', err.message);
-    console.error('Stack:', err.stack);
     connectionState = 'error';
     hasNextPage = false; 
     currentPage = 1;
@@ -224,7 +215,7 @@ async function loadProducts(filter='all', page=1, append=false) {
     if (!append) renderProducts([], false, EMPTY_MESSAGES.error);
     else showToast('Error al cargar más productos.');
   } finally {
-    isLoading = false;  // ✅ LIBERAR BLOQUEO
+    isLoading = false; 
     setLoading(false);
   }
 }
@@ -236,11 +227,8 @@ function logicFilter(products, filter, search='') {
   if (search.trim()) {
     const q = search.toLowerCase().trim();
     const words = q.split(' ').filter(w => w.length > 1);
-    
-    // Encontrar términos relacionados (Asociaciones)
     let relatedTerms = [];
     words.forEach(w => {
-      // Si la palabra está en nuestro mapa de asociaciones, sumamos esos términos
       for (let key in SEARCH_ASSOCIATIONS) {
         if (key.includes(w) || w.includes(key)) {
           relatedTerms = [...relatedTerms, ...SEARCH_ASSOCIATIONS[key]];
@@ -248,10 +236,8 @@ function logicFilter(products, filter, search='') {
       }
     });
     
-    // Combinar palabras originales con términos relacionados (sin duplicar)
     const allSearchTerms = [...new Set([...words, ...relatedTerms])];
     
-    // Filtrar y puntuar (para que los exactos salgan primero)
     return r.map(p => {
       const title = (p.title || '').toLowerCase();
       const desc  = (p.description || '').toLowerCase();
@@ -259,40 +245,27 @@ function logicFilter(products, filter, search='') {
       const text  = `${title} ${desc} ${tags}`;
       
       let score = 0;
-      // Puntaje por coincidencia de palabras originales (prioridad alta)
       words.forEach(w => { if (text.includes(w)) score += 10; });
-      // Puntaje por términos relacionados (prioridad baja)
       relatedTerms.forEach(rt => { if (text.includes(rt)) score += 2; });
       
       return { ...p, _score: score };
     })
     .filter(p => p._score > 0)
-    .sort((a, b) => b._score - a._score); // Ordenar por relevancia
+    .sort((a, b) => b._score - a._score); 
   }
   return r;
 }
 
-// ─── APLICAR FILTRO ─────────────────────────────────────────
 window.applyFilter = function(filter) {
-  // ✅ PREVENIR BUCLE INFINITO
-  if (isLoading || currentFilter === filter) {
-    console.log('[applyFilter] Saltando, filtro igual o carga en progreso');
-    return;
-  }
-  
+  if (isLoading || currentFilter === filter) return;
   currentFilter = filter;
   currentPage = 1;
-  
-  // Actualizar chips visualmente
   chips.forEach(c => c.classList.toggle('active', c.dataset.filter === filter));
-  
   allProducts = []; 
   loadProducts(filter, 1, false);
-  
   document.getElementById('productos')?.scrollIntoView({ behavior:'smooth', block:'start' });
 };
 
-// ─── RENDER PRODUCTOS ───────────────────────────────────────
 function renderProducts(products, append=false, emptyMsg=EMPTY_MESSAGES.noResults, showReset=false) {
   if (!append) {
     productsGrid.querySelectorAll('.product-card, .skeleton-card').forEach(el=>el.remove());
@@ -315,8 +288,6 @@ function buildCard(p, i=0) {
   el.dataset.productId = p.id;
 
   const emoji = CATEGORY_EMOJIS[p.category] || CATEGORY_EMOJIS.default;
-  
-  // Forzamos a que la etiqueta visual sea únicamente el nombre del rubro detectado
   const tagLabel = ({ agro: 'Agro', bazar: 'Bazar', papeleria: 'Papelería' }[p.category] || 'Bazar');
 
   const hasSale = p.comparePrice > p.price && p.price > 0;
@@ -354,9 +325,8 @@ function buildCard(p, i=0) {
   return el;
 }
 
-// ─── LOADING ────────────────────────────────────────────────
 function setLoading(on) {
-  loadingState.hidden = true; // skeletons reemplazan al spinner
+  loadingState.hidden = true;
   loadingState.style.display = 'none';
   if (on) emptyState.hidden = true;
 }
@@ -365,8 +335,7 @@ function setLoading(on) {
 function addToCart(productId) {
   const p = allProducts.find(x => x.id === productId);
   if (!p) return;
-  if (!p.variantId) { // ✅ NUEVA VALIDACIÓN
-    console.warn(`[addToCart] Producto ${p.title} (${p.id}) no tiene variantId, no se puede agregar a Tiendanube.`);
+  if (!p.variantId) {
     showToast(`⚠️ No se puede agregar ${p.title} a Tiendanube.`);
     return;
   }
@@ -376,7 +345,8 @@ function addToCart(productId) {
 
   saveCart(); updateCartUI();
   showToast(`✓ ${p.title}`);
-  
+  flyToCart(productId);
+
   cartBtn.classList.add('pop');
   setTimeout(() => cartBtn.classList.remove('pop'), 320);
 }
@@ -385,7 +355,6 @@ function changeQty(id, delta) {
   const item = cart.find(x => x.id === id);
   if (!item) return;
   item.qty += delta;
-
   if (item.qty <= 0) cart = cart.filter(x => x.id !== id);
   saveCart(); updateCartUI();
 }
@@ -451,7 +420,6 @@ function updateCartUI() {
 function openCart()  { cartDrawer.classList.add('open'); overlay.classList.add('active'); document.body.style.overflow='hidden'; if (lenis) lenis.stop(); }
 function closeCart() { cartDrawer.classList.remove('open'); overlay.classList.remove('active'); document.body.style.overflow=''; if (lenis) lenis.start(); }
 
-// ─── CHECKOUT → WHATSAPP ────────────────────────────────────
 function sendWhatsApp() {
   if (!cart.length) return;
   let msg = '¡Hola Makena! Quiero hacer un pedido:\n\n';
@@ -473,25 +441,14 @@ function sendToTiendaNube() {
   }
 }
 
-// ─── BÚSQUEDA ───────────────────────────────────────────────
-// ─── BÚSQUEDA MEJORADA ──────────────────────────────────────────
 function doSearch() {
   const q = searchInput.value.trim();
-  
-  // Si hay búsqueda, reiniciamos la paginación y cargamos desde el servidor
   currentPage = 1;
   allProducts = []; 
-  
   loadProducts(currentFilter, 1, false);
-  
   if (q) {
     const productsEl = document.getElementById('productos');
-    if (productsEl) {
-      window.scrollTo({
-        top: productsEl.offsetTop - 100,
-        behavior: 'smooth'
-      });
-    }
+    if (productsEl) window.scrollTo({ top: productsEl.offsetTop - 100, behavior: 'smooth' });
   }
 }
 
@@ -539,26 +496,17 @@ productsGrid.addEventListener('click', e => {
     addToCart(btn.dataset.productId);
     return;
   }
-
-  // Wishlist heart toggle
   const wishBtn = e.target.closest('.wishlist-btn');
   if (wishBtn) {
     wishBtn.classList.toggle('active');
-    e.stopPropagation(); // Evitar abrir el modal al tocar el corazón
+    e.stopPropagation();
     return;
   }
-
-  // Si hace clic en el enlace de comprar, dejar que siga su curso
   if (e.target.closest('.buy-btn')) return;
-
-  // Si hace clic en cualquier otra parte de la tarjeta, abrir modal
   const card = e.target.closest('.product-card');
-  if (card) {
-    openProductModal(card.dataset.productId);
-  }
+  if (card) openProductModal(card.dataset.productId);
 });
 
-// ─── LÓGICA DEL MODAL DE PRODUCTO ───────────────────────────
 const productModal = $('productModal');
 const pmClose      = $('pmClose');
 
@@ -566,14 +514,12 @@ function openProductModal(id) {
   const p = allProducts.find(x => x.id === id);
   if (!p) return;
 
-  // Poblar datos básicos
   $('pmTag').textContent = ({ agro:'Agro', bazar:'Bazar', papeleria:'Papelería' }[p.category] || 'Bazar');
   $('pmTitle').textContent = p.title;
   $('pmPrice').textContent = fmt(p.price);
   $('pmCompare').textContent = (p.comparePrice > p.price) ? fmt(p.comparePrice) : '';
   $('pmDescription').innerHTML = p.fullDescription || '<p>Sin descripción disponible.</p>';
   
-  // Galería
   const mainImg = $('pmMainImg');
   const thumbs  = $('pmThumbs');
   mainImg.src = p.image || '';
@@ -584,7 +530,6 @@ function openProductModal(id) {
     </div>
   `).join('');
 
-  // Variantes (Simplificado: mostramos si hay más de una)
   const varContainer = $('pmVariants');
   if (p.allVariants && p.allVariants.length > 1) {
     varContainer.innerHTML = `
@@ -600,12 +545,9 @@ function openProductModal(id) {
     varContainer.hidden = true;
   }
 
-  // Acciones
   $('pmAddToCart').onclick = () => { addToCart(p.id); closeProductModal(); };
   
   const btnBuyNow = $('pmBuyNow');
-  // "Comprar en la tienda": va a la página del producto en Tiendanube
-  // Si tiene permalink → enlace directo. Si no → va a la tienda principal.
   const buyUrl = p.permalink || TN_BASE_URL;
   btnBuyNow.hidden = false;
   btnBuyNow.href = buyUrl;
@@ -615,8 +557,9 @@ function openProductModal(id) {
 
   $('pmWhatsApp').href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent('¡Hola! Me interesa este producto: ' + p.title + '\n' + (p.permalink || ''))}`;
 
-  // Mostrar modal
-  productModal.classList.add('open'); // ✅ Asegurarse de que el modal se abre
+  renderRelatedProducts(p);
+
+  productModal.classList.add('open'); 
   overlay.classList.add('active');
   document.body.style.overflow = 'hidden';
   if (lenis) lenis.stop();
@@ -633,7 +576,6 @@ function closeProductModal() {
 
 pmClose.addEventListener('click', closeProductModal);
 
-// Cambiar imagen principal al tocar miniatura
 $('pmThumbs').addEventListener('click', e => {
   const thumb = e.target.closest('.pm-thumb');
   if (!thumb) return;
@@ -642,22 +584,17 @@ $('pmThumbs').addEventListener('click', e => {
   $('pmMainImg').src = thumb.dataset.src;
 });
 
-// ✅ FILTROS CHIPS - SIN BUCLE INFINITO
 chips.forEach(c => {
   c.addEventListener('click', () => {
     const filter = c.dataset.filter;
-    if (filter !== currentFilter) {
-      window.applyFilter(filter);
-    }
+    if (filter !== currentFilter) window.applyFilter(filter);
   });
 });
 
 catBtns.forEach(btn => {
   btn.addEventListener('click', () => {
     const filter = btn.dataset.filter;
-    if (filter !== currentFilter) {
-      window.applyFilter(filter);
-    }
+    if (filter !== currentFilter) window.applyFilter(filter);
   });
 });
 
@@ -665,24 +602,44 @@ hfcCards.forEach(card => {
   const filter = card.classList.contains('hfc-agro') ? 'agro'
                : card.classList.contains('hfc-bazar') ? 'bazar'
                : card.classList.contains('hfc-papel') ? 'papeleria' : null;
-  if (filter) {
-    card.addEventListener('click', () => {
-      if (filter !== currentFilter) {
-        window.applyFilter(filter);
-      }
-    });
-  }
+  if (filter) card.addEventListener('click', () => { if (filter !== currentFilter) window.applyFilter(filter); });
 });
 
 searchBtn.addEventListener('click', doSearch);
 searchInput.addEventListener('keydown', e => e.key==='Enter' && doSearch());
-searchInput.addEventListener('input', () => { if (!searchInput.value) doSearch(); });
 
-loadMoreBtn.addEventListener('click', () => {
-  if (!isLoading && hasNextPage) {
-    loadProducts(currentFilter, currentPage+1, true);
+let searchTimeout;
+searchInput.addEventListener('input', () => {
+  clearTimeout(searchTimeout);
+  const q = searchInput.value.trim().toLowerCase();
+  const resContainer = $('searchResults');
+  if (!q) {
+    resContainer.classList.remove('open');
+    if (!searchInput.value) doSearch();
+    return;
   }
+  searchTimeout = setTimeout(() => {
+    const results = logicFilter(allProducts, 'all', q).slice(0, 6);
+    if (results.length > 0) {
+      resContainer.innerHTML = results.map(p => `
+        <div class="search-res-item" onclick="openProductModal('${p.id}'); $('searchResults').classList.remove('open');">
+          <img src="${p.image || ''}" class="search-res-img" alt="">
+          <div class="search-res-info">
+            <p>${esc(p.title)}</p>
+            <span>${fmt(p.price)}</span>
+          </div>
+        </div>
+      `).join('');
+      resContainer.classList.add('open');
+    } else {
+      resContainer.classList.remove('open');
+    }
+  }, 250); 
 });
+
+document.addEventListener('click', e => { if (!e.target.closest('.search-wrapper')) $('searchResults').classList.remove('open'); });
+
+loadMoreBtn.addEventListener('click', () => { if (!isLoading && hasNextPage) loadProducts(currentFilter, currentPage+1, true); });
 
 hamburger.addEventListener('click', () => {
   const open = navLinks.classList.toggle('open');
@@ -695,7 +652,6 @@ document.querySelectorAll('.nav-link').forEach(l => l.addEventListener('click', 
 
 document.addEventListener('keydown', e => { if (e.key==='Escape') { closeCart(); closeProductModal(); searchExpand.classList.remove('open'); } });
 
-// ─── ANIMACIONES SCROLL ─────────────────────────────────────
 function setupObserver() {
   const obs = new IntersectionObserver(entries => {
     entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('fade-up'); obs.unobserve(e.target); } });
@@ -703,146 +659,74 @@ function setupObserver() {
   document.querySelectorAll('.cat-card, .contact-card, .mosaic-cell, .about-checks li, .stat-pill').forEach(el => obs.observe(el));
 }
 
-// ─── DRAGGABLE DECORATIONS ──────────────────────────────────
 function initDraggableDeco() {
   const elements = document.querySelectorAll('.deco-el');
-  
   elements.forEach(el => {
     let isDragging = false;
     let startX, startY, initialLeft, initialTop;
-
     const startDrag = (e) => {
       isDragging = true;
       el.classList.add('is-dragging');
-
       const rect = el.getBoundingClientRect();
       const parentRect = el.offsetParent.getBoundingClientRect();
-      
-      // Guardamos posición inicial en pixeles
       initialLeft = rect.left - parentRect.left;
       initialTop = rect.top - parentRect.top;
-
       const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
       const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
-
-      startX = clientX;
-      startY = clientY;
-
-      // Cambiamos a posicionamiento absoluto en px para el arrastre
+      startX = clientX; startY = clientY;
       el.style.left = initialLeft + 'px';
       el.style.top = initialTop + 'px';
-      el.style.right = 'auto';
-      el.style.bottom = 'auto';
-      
+      el.style.right = 'auto'; el.style.bottom = 'auto';
       if (e.type === 'touchstart') e.preventDefault();
     };
-
     const doDrag = (e) => {
       if (!isDragging) return;
-      
       const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
       const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
-
       const dx = clientX - startX;
       const dy = clientY - startY;
-
-      let nextLeft = initialLeft + dx;
-      let nextTop = initialTop + dy;
-
-      // Restricciones para evitar el navbar (aprox 80px arriba)
-      // y la barra de Andresito (aprox 100px desde el fondo del parent)
-      const parentRect = el.offsetParent.getBoundingClientRect();
-      const elRect = el.getBoundingClientRect();
-      
-      // Margen superior (Navbar)
-      const marginTop = 90; 
-      // Margen inferior (Hero Bar)
-      const marginBottom = parentRect.height - 160;
-
       el.style.left = (initialLeft + dx) + 'px';
       el.style.top = (initialTop + dy) + 'px';
-      
       if (e.type === 'touchmove') e.preventDefault();
     };
-
-    const endDrag = () => {
-      if (isDragging) {
-        isDragging = false;
-        el.classList.remove('is-dragging');
-      }
-    };
-
-    // Mouse Events
+    const endDrag = () => { if (isDragging) { isDragging = false; el.classList.remove('is-dragging'); } };
     el.addEventListener('mousedown', startDrag);
     window.addEventListener('mousemove', doDrag);
     window.addEventListener('mouseup', endDrag);
-
-    // Touch Events
     el.addEventListener('touchstart', startDrag, { passive: false });
     window.addEventListener('touchmove', doDrag, { passive: false });
     window.addEventListener('touchend', endDrag);
   });
 }
 
-// ─── POP ANIMATION ──────────────────────────────────────────
-const popStyle = document.createElement('style');
-popStyle.textContent = `.cart-btn.pop{animation:cartPop .32s ease}@keyframes cartPop{0%,100%{transform:scale(1)}50%{transform:scale(1.3)}}`;
-document.head.appendChild(popStyle);
-
-// ─── INIT ───────────────────────────────────────────────────
-// ✅ INICIALIZACIÓN DE LENIS MEJORADA
 function initSmoothScroll() {
   lenis = new Lenis({
-    duration: 1.2, // Un poco más lento para que se sienta el efecto premium
+    duration: 1.2,
     easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
     smoothWheel: true
   });
-
-  function raf(time) {
-    lenis.raf(time);
-    requestAnimationFrame(raf);
-  }
+  function raf(time) { lenis.raf(time); requestAnimationFrame(raf); }
   requestAnimationFrame(raf);
 }
 
 async function init() {
   try {
     $('currentYear').textContent = new Date().getFullYear();
-    loadCart();
-    updateCartUI();
-    setupObserver();
-    initSmoothScroll(); // ✅ Se inicializa junto con la app
-    initDraggableDeco(); // ✅ Habilitar arrastre de hojas
-
-    // Announce bar
+    loadCart(); updateCartUI(); setupObserver();
+    initSmoothScroll(); initDraggableDeco(); initLeaves();
     const announceBar = $('announceBar');
     const announceClose = $('announceClose');
-    if (announceClose && announceBar) {
-      announceClose.addEventListener('click', () => {
-        announceBar.classList.add('hidden');
-        // ajustar navbar top si es necesario
-      });
-    }
-
-    // Back to top
+    if (announceClose && announceBar) announceClose.addEventListener('click', () => announceBar.classList.add('hidden'));
     const backTop = $('backTop');
     if (backTop) {
-      window.addEventListener('scroll', () => {
-        backTop.classList.toggle('visible', window.scrollY > 400);
-      }, { passive: true });
+      window.addEventListener('scroll', () => backTop.classList.toggle('visible', window.scrollY > 400), { passive: true });
       backTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
     }
-
-    // Skeleton cards mientras carga
     showSkeletons(6);
-
     connectionState = 'connecting';
     await loadProducts('all', 1, false);
-
     if (connectionState === 'connected') reconcileCart();
-  } catch (e) {
-    console.error("Falla crítica en init:", e);
-  }
+  } catch (e) { console.error("Falla crítica en init:", e); }
 }
 
 function showSkeletons(n) {
@@ -857,7 +741,6 @@ function showSkeletons(n) {
 
 init();
 
-// ─── SCROLL PROGRESS BAR ────────────────────────────────────
 (function() {
   const bar = document.getElementById('scrollProgress');
   if (!bar) return;
@@ -866,3 +749,65 @@ init();
     bar.style.width = Math.min(pct, 100) + '%';
   }, { passive: true });
 })();
+
+function initLeaves() {
+  const container = $('leafContainer');
+  if (!container) return;
+  const emojis = ['🍂', '🍁', '🍃', '🌿'];
+  for (let i = 0; i < 15; i++) {
+    const leaf = document.createElement('span');
+    leaf.className = 'leaf';
+    leaf.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+    leaf.style.left = Math.random() * 100 + '%';
+    leaf.style.animationDelay = Math.random() * 12 + 's';
+    leaf.style.animationDuration = (8 + Math.random() * 8) + 's';
+    leaf.style.fontSize = (1 + Math.random() * 1.5) + 'rem';
+    container.appendChild(leaf);
+  }
+}
+
+function flyToCart(productId) {
+  const card = document.querySelector(`.product-card[data-product-id="${productId}"]`);
+  const img = card ? card.querySelector('.product-img') : null;
+  const cartBtn = document.getElementById('cartBtn');
+  if (!img || !cartBtn) return;
+  const clone = img.cloneNode();
+  const rect = img.getBoundingClientRect();
+  const cartRect = cartBtn.getBoundingClientRect();
+  clone.className = 'flying-item';
+  clone.style.position = 'fixed';
+  clone.style.left = rect.left + 'px';
+  clone.style.top = rect.top + 'px';
+  clone.style.width = rect.width + 'px';
+  clone.style.height = rect.height + 'px';
+  clone.style.zIndex = '9999';
+  clone.style.transition = 'all 0.85s cubic-bezier(0.64, 0, 0.78, 0)';
+  document.body.appendChild(clone);
+  const deltaX = (cartRect.left + cartRect.width / 2) - (rect.left + rect.width / 2);
+  const deltaY = (cartRect.top + cartRect.height / 2) - (rect.top + rect.height / 2);
+  requestAnimationFrame(() => {
+    clone.style.transform = `translate3d(${deltaX}px, ${deltaY}px, 0) scale(0.1) rotate(420deg)`;
+    clone.style.opacity = '0';
+  });
+  clone.addEventListener('transitionend', () => clone.remove(), { once: true });
+  setTimeout(() => { if(clone.parentNode) clone.remove(); }, 1000);
+}
+
+function renderRelatedProducts(currentProd) {
+  const container = document.getElementById('pmRelatedGrid');
+  if (!container) return;
+  const related = allProducts
+    .filter(p => p.category === currentProd.category && p.id !== currentProd.id)
+    .sort(() => 0.5 - Math.random())
+    .slice(0, 3);
+  if (related.length === 0) { document.getElementById('pmRelated').hidden = true; return; }
+  document.getElementById('pmRelated').hidden = false;
+  container.innerHTML = related.map(p => `
+    <div class="pm-rel-card" onclick="openProductModal('${p.id}')">
+      <div class="pm-rel-img">
+        <img src="${p.image || ''}" alt="${esc(p.title)}">
+      </div>
+      <p>${esc(p.title)}</p>
+    </div>
+  `).join('');
+}
