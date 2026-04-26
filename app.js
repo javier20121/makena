@@ -17,117 +17,117 @@ const EMPTY_MESSAGES = {
   noResults: 'No encontramos productos con ese criterio.',
 };
 
-// ─── ASOCIACIONES SEMÁNTICAS (búsqueda inteligente) ─────────
-const SEARCH_ASSOCIATIONS = {
-  // — BAZAR / Cocina (más extensa) —
-  'olla': ['cacerola', 'sarten', 'paila', 'menaje', 'cocina', 'bazar', 'hervir', 'acero', 'aluminio'],
-  'sarten': ['olla', 'cacerola', 'plancha', 'antiadherente', 'cocina', 'bazar', 'freir'],
-  'cacerola': ['olla', 'sarten', 'menaje', 'cocina', 'bazar', 'hervir'],
-  'cubierto': ['tenedor', 'cuchara', 'cuchillo', 'vajilla', 'mesa', 'bazar', 'comer'],
-  'vajilla': ['plato', 'cubierto', 'vaso', 'taza', 'bazar', 'mesa', 'servir'],
-  'plato': ['vajilla', 'cubierto', 'mesa', 'cocina', 'bazar', 'comida'],
-  'vaso': ['taza', 'jarra', 'termo', 'botella', 'bazar', 'beber'],
-  'taza': ['vaso', 'jarra', 'cafe', 'te', 'desayuno', 'bazar'],
-  'jarra': ['vaso', 'taza', 'botella', 'agua', 'bazar'],
-  'cocina': ['olla', 'sarten', 'cubierto', 'plato', 'menaje', 'bazar', 'comida', 'utensilio', 'vajilla', 'batidora', 'licuadora', 'pava', 'cafetera', 'tostadora', 'jarra', 'taza', 'vaso', 'repuesto', 'accesorios cocina'],
-  'menaje': ['olla', 'sarten', 'vajilla', 'cocina', 'bazar', 'utensilios'],
-  'utensilio': ['cocina', 'bazar', 'menaje', 'herramienta', 'olla', 'sarten', 'cubierto'],
-  'termo': ['mate', 'bombilla', 'botella', 'bazar', 'agua caliente', 'acero'],
-  'mate': ['termo', 'bombilla', 'yerba', 'bazar', 'infusion'],
-  'bombilla': ['mate', 'termo', 'yerba', 'bazar', 'acero'],
-  'botella': ['termo', 'vaso', 'jarra', 'bazar', 'agua', 'hidratacion'],
-  'colador': ['cocina', 'utensilio', 'menaje', 'bazar', 'escurrir', 'pasta'],
-  'tabla': ['cocina', 'utensilio', 'picar', 'bazar', 'madera', 'plastico'],
-  'fuente': ['horno', 'cocina', 'vajilla', 'bazar', 'bandeja'],
-  'escurridor': ['cocina', 'vajilla', 'plato', 'bazar', 'secar'],
-  'tazon': ['bol', 'ensalada', 'vajilla', 'bazar', 'desayuno'],
-  'bol': ['tazon', 'ensalada', 'vajilla', 'bazar', 'mezclar'],
+// ─── ASOCIACIONES SEMÁNTICAS — cargadas bajo demanda ────────
+// Se inicializa vacío y se llena la primera vez que el usuario escribe.
+// Así no bloquea el hilo principal en la carga inicial de la página.
+let _searchAssoc = null;
 
-  // — BAZAR / Hogar (más extensa) —
-  'limpieza': ['escoba', 'trapo', 'detergente', 'higiene', 'bazar', 'lavar', 'limpiar'],
-  'escoba': ['limpieza', 'trapeador', 'higiene', 'bazar', 'barrer'],
-  'balde': ['limpieza', 'trapo', 'higiene', 'bazar', 'agua'],
-  'cesto': ['canasto', 'organizador', 'baño', 'bazar', 'basura'],
-  'canasto': ['cesto', 'organizador', 'lavanderia', 'bazar', 'ropa'],
-  'percha': ['ropa', 'placard', 'organizador', 'bazar', 'colgar'],
-  'toalla': ['baño', 'higiene', 'tela', 'bazar', 'secar'],
-  'sabana': ['cama', 'ropa de cama', 'almohada', 'bazar', 'dormir'],
-  'almohada': ['cama', 'sabana', 'descanso', 'bazar', 'dormir'],
-  'mantel': ['mesa', 'cocina', 'comedor', 'bazar', 'proteccion'],
-  'repasador': ['cocina', 'trapo', 'menaje', 'bazar', 'secar'],
-  'organizador': ['cajones', 'cesto', 'canasto', 'orden', 'bazar', 'guardar'],
-  'lampara': ['luz', 'iluminacion', 'hogar', 'bazar', 'led'],
-  'velador': ['lampara', 'luz', 'dormitorio', 'bazar', 'mesa de luz'],
-  'adorno': ['decoracion', 'hogar', 'figura', 'bazar', 'estetica'],
-  'espejo': ['hogar', 'baño', 'decoracion', 'bazar', 'reflejo'],
-
-  // — AGRO (más extensa) —
-  'semilla': ['siembra', 'huerta', 'campo', 'cultivo', 'agro', 'plantar'],
-  'plantin': ['semilla', 'huerta', 'jardin', 'agro', 'crecimiento'],
-  'fertilizante': ['abono', 'nutricion', 'huerta', 'campo', 'agro', 'nutrir'],
-  'abono': ['fertilizante', 'compost', 'huerta', 'agro', 'organico'],
-  'herbicida': ['maleza', 'quimico', 'campo', 'agro', 'eliminar'],
-  'fungicida': ['hongo', 'tratamiento', 'planta', 'agro', 'proteccion'],
-  'insecticida': ['plaga', 'quimico', 'campo', 'agro', 'insectos'],
-  'veneno': ['plaga', 'insecticida', 'raticida', 'agro', 'control'],
-  'poda': ['tijera', 'jardin', 'arbol', 'agro', 'corte'],
-  'tijera': ['poda', 'corte', 'herramienta', 'agro', 'afilado'],
-  'manguera': ['riego', 'agua', 'jardin', 'agro', 'regar'],
-  'riego': ['manguera', 'aspersor', 'jardin', 'agro', 'agua'],
-  'aspersor': ['riego', 'manguera', 'agro', 'agua'],
-  'pala': ['herramienta', 'campo', 'tierra', 'agro', 'excavar'],
-  'azada': ['pala', 'herramienta', 'cultivo', 'agro', 'remover'],
-  'rastrillo': ['jardin', 'herramienta', 'campo', 'agro', 'juntar'],
-  'mochila': ['fumigadora', 'riego', 'agro', 'espalda'],
-  'fumigadora': ['mochila', 'insecticida', 'agro', 'aplicar'],
-  'jardin': ['planta', 'flor', 'tierra', 'maceta', 'agro', 'verde'],
-  'maceta': ['planta', 'flor', 'jardin', 'tierra', 'agro', 'decoracion'],
-  'tierra': ['sustrato', 'maceta', 'huerta', 'jardin', 'agro', 'suelo'],
-  'sustrato': ['tierra', 'maceta', 'planta', 'agro', 'nutrientes'],
-  'huerta': ['semilla', 'plantin', 'cultivo', 'agro', 'organico'],
-  'campo': ['agro', 'semilla', 'fertilizante', 'herramienta', 'rural'],
-  'gallinero': ['aves', 'pollo', 'campo', 'agro', 'granja'],
-  'alambrado': ['campo', 'cerco', 'agro', 'limite'],
-  'tranquera': ['campo', 'alambrado', 'agro', 'entrada'],
-  'bolsa': ['changuito', 'acarreo', 'agro', 'semilla', 'carga'],
-
-  // — PAPELERÍA (más extensa) —
-  'cuaderno': ['libreta', 'anotador', 'escolar', 'lapiz', 'birome', 'papeleria', 'escribir'],
-  'libreta': ['cuaderno', 'anotador', 'escolar', 'papeleria', 'notas'],
-  'anotador': ['cuaderno', 'libreta', 'nota', 'papeleria', 'apuntar'],
-  'agenda': ['calendario', 'planificador', 'papeleria', 'organizar'],
-  'lapiz': ['lapicera', 'birome', 'marcador', 'escolar', 'papeleria', 'escribir'],
-  'lapicera': ['lapiz', 'birome', 'boligrafo', 'escolar', 'papeleria', 'tinta'],
-  'birome': ['lapiz', 'lapicera', 'boligrafo', 'escolar', 'papeleria', 'tinta'],
-  'boligrafo': ['birome', 'lapicera', 'lapiz', 'papeleria', 'tinta'],
-  'marcador': ['resaltador', 'lapiz', 'escolar', 'papeleria', 'color'],
-  'resaltador': ['marcador', 'lapiz', 'escolar', 'papeleria', 'subrayar'],
-  'fibra': ['marcador', 'pintura', 'escolar', 'papeleria', 'color'],
-  'carpeta': ['archivo', 'escolar', 'folio', 'papeleria', 'guardar'],
-  'archivo': ['carpeta', 'folio', 'oficina', 'papeleria', 'guardar'],
-  'folio': ['carpeta', 'archivo', 'papeleria', 'plastico'],
-  'resma': ['hoja', 'papel', 'impresora', 'oficina', 'papeleria', 'imprimir'],
-  'hoja': ['resma', 'papel', 'cuaderno', 'papeleria', 'escribir'],
-  'papel': ['resma', 'hoja', 'impresora', 'papeleria', 'imprimir'],
-  'escolar': ['cuaderno', 'lapiz', 'mochila', 'papeleria', 'colegio'],
-  'oficina': ['carpeta', 'archivo', 'lapicera', 'resma', 'papeleria', 'trabajo'],
-  'sello': ['tinta', 'oficina', 'papeleria', 'marcar'],
-  'pegamento': ['cola', 'tijera', 'manualidades', 'papeleria', 'pegar'],
-  'cola': ['pegamento', 'manualidades', 'papeleria', 'adhesivo'],
-  'tijera': ['corte', 'papeleria', 'manualidades', 'cortar'],
-  'cinta': ['scotch', 'adhesivo', 'papeleria', 'pegar'],
-  'scotch': ['cinta', 'adhesivo', 'papeleria', 'pegar'],
-  'engrapadora': ['abrochadora', 'grampa', 'oficina', 'papeleria', 'unir'],
-  'abrochadora': ['engrapadora', 'grampa', 'oficina', 'papeleria', 'unir'],
-  'calculadora': ['matematica', 'oficina', 'escolar', 'papeleria', 'numeros'],
-  'regla': ['escolar', 'geometria', 'papeleria', 'medir'],
-  'compas': ['geometria', 'escolar', 'papeleria', 'circulo'],
-  'cartuchera': ['lapiz', 'escolar', 'estuche', 'papeleria', 'guardar'],
-  'mochila': ['escolar', 'cartuchera', 'papeleria', 'transporte'],
-  'globo': ['fiesta', 'decoracion', 'papeleria', 'inflar', 'set'],
-  'papel regalo': ['fiesta', 'envolver', 'papeleria', 'regalo'],
-  'vinilo': ['adhesivo', 'decoracion', 'papeleria', 'stickers']
-};
+function getSearchAssociations() {
+  if (_searchAssoc) return _searchAssoc;
+  _searchAssoc = {
+    // — BAZAR / Cocina —
+    olla:        ['cacerola','sarten','paila','menaje','cocina','hervir','acero','aluminio'],
+    sarten:      ['olla','cacerola','plancha','antiadherente','cocina','freir'],
+    cacerola:    ['olla','sarten','menaje','cocina','hervir'],
+    cubierto:    ['tenedor','cuchara','cuchillo','vajilla','mesa','comer'],
+    vajilla:     ['plato','cubierto','vaso','taza','mesa','servir'],
+    plato:       ['vajilla','cubierto','mesa','cocina','comida'],
+    vaso:        ['taza','jarra','termo','botella','beber'],
+    taza:        ['vaso','jarra','cafe','te','desayuno'],
+    jarra:       ['vaso','taza','botella','agua'],
+    cocina:      ['olla','sarten','cubierto','plato','menaje','utensilio','vajilla','batidora','licuadora','pava','cafetera','tostadora'],
+    menaje:      ['olla','sarten','vajilla','cocina','utensilios'],
+    utensilio:   ['cocina','menaje','olla','sarten','cubierto'],
+    termo:       ['mate','bombilla','botella','acero'],
+    mate:        ['termo','bombilla','yerba','infusion'],
+    bombilla:    ['mate','termo','yerba','acero'],
+    botella:     ['termo','vaso','jarra','agua','hidratacion'],
+    colador:     ['cocina','utensilio','menaje','escurrir','pasta'],
+    tabla:       ['cocina','utensilio','picar','madera','plastico'],
+    fuente:      ['horno','cocina','vajilla','bandeja'],
+    escurridor:  ['cocina','vajilla','plato','secar'],
+    tazon:       ['bol','ensalada','vajilla','desayuno'],
+    bol:         ['tazon','ensalada','vajilla','mezclar'],
+    // — BAZAR / Hogar —
+    limpieza:    ['escoba','trapo','detergente','higiene','lavar','limpiar'],
+    escoba:      ['limpieza','trapeador','higiene','barrer'],
+    balde:       ['limpieza','trapo','higiene','agua'],
+    cesto:       ['canasto','organizador','bano','basura'],
+    canasto:     ['cesto','organizador','lavanderia','ropa'],
+    percha:      ['ropa','placard','organizador','colgar'],
+    toalla:      ['bano','higiene','tela','secar'],
+    sabana:      ['cama','almohada','dormir'],
+    almohada:    ['cama','sabana','descanso','dormir'],
+    mantel:      ['mesa','cocina','comedor','proteccion'],
+    repasador:   ['cocina','trapo','menaje','secar'],
+    organizador: ['cajones','cesto','canasto','orden','guardar'],
+    lampara:     ['luz','iluminacion','hogar','led'],
+    velador:     ['lampara','luz','dormitorio'],
+    adorno:      ['decoracion','hogar','figura','estetica'],
+    espejo:      ['hogar','bano','decoracion','reflejo'],
+    // — AGRO —
+    semilla:     ['siembra','huerta','campo','cultivo','plantar'],
+    plantin:     ['semilla','huerta','jardin','crecimiento'],
+    fertilizante:['abono','nutricion','huerta','campo','nutrir'],
+    abono:       ['fertilizante','compost','huerta','organico'],
+    herbicida:   ['maleza','quimico','campo','eliminar'],
+    fungicida:   ['hongo','tratamiento','planta','proteccion'],
+    insecticida: ['plaga','quimico','campo','insectos'],
+    veneno:      ['plaga','insecticida','raticida','control'],
+    poda:        ['jardin','arbol','corte'],
+    manguera:    ['riego','agua','jardin','regar'],
+    riego:       ['manguera','aspersor','jardin','agua'],
+    aspersor:    ['riego','manguera','agua'],
+    pala:        ['herramienta','campo','tierra','excavar'],
+    azada:       ['pala','herramienta','cultivo','remover'],
+    rastrillo:   ['jardin','herramienta','campo','juntar'],
+    fumigadora:  ['mochila','insecticida','aplicar'],
+    jardin:      ['planta','flor','tierra','maceta','verde'],
+    maceta:      ['planta','flor','jardin','tierra','decoracion'],
+    tierra:      ['sustrato','maceta','huerta','jardin','suelo'],
+    sustrato:    ['tierra','maceta','planta','nutrientes'],
+    huerta:      ['semilla','plantin','cultivo','organico'],
+    campo:       ['semilla','fertilizante','herramienta','rural'],
+    gallinero:   ['aves','pollo','campo','granja'],
+    alambrado:   ['campo','cerco','limite'],
+    tranquera:   ['campo','alambrado','entrada'],
+    bolsa:       ['acarreo','semilla','carga'],
+    // — PAPELERÍA —
+    cuaderno:    ['libreta','anotador','escolar','lapiz','birome','escribir'],
+    libreta:     ['cuaderno','anotador','escolar','notas'],
+    anotador:    ['cuaderno','libreta','nota','apuntar'],
+    agenda:      ['calendario','planificador','organizar'],
+    lapiz:       ['lapicera','birome','marcador','escolar','escribir'],
+    lapicera:    ['lapiz','birome','boligrafo','escolar','tinta'],
+    birome:      ['lapiz','lapicera','boligrafo','escolar','tinta'],
+    boligrafo:   ['birome','lapicera','lapiz','tinta'],
+    marcador:    ['resaltador','lapiz','escolar','color'],
+    resaltador:  ['marcador','lapiz','escolar','subrayar'],
+    fibra:       ['marcador','pintura','escolar','color'],
+    carpeta:     ['archivo','escolar','folio','guardar'],
+    archivo:     ['carpeta','folio','oficina','guardar'],
+    folio:       ['carpeta','archivo','plastico'],
+    resma:       ['hoja','papel','impresora','oficina','imprimir'],
+    hoja:        ['resma','papel','cuaderno','escribir'],
+    papel:       ['resma','hoja','impresora','imprimir'],
+    escolar:     ['cuaderno','lapiz','papeleria','colegio'],
+    oficina:     ['carpeta','archivo','lapicera','resma','trabajo'],
+    sello:       ['tinta','oficina','marcar'],
+    pegamento:   ['cola','manualidades','pegar'],
+    cola:        ['pegamento','manualidades','adhesivo'],
+    cinta:       ['scotch','adhesivo','pegar'],
+    scotch:      ['cinta','adhesivo','pegar'],
+    engrapadora: ['abrochadora','grampa','oficina','unir'],
+    abrochadora: ['engrapadora','grampa','oficina','unir'],
+    calculadora: ['matematica','oficina','escolar','numeros'],
+    regla:       ['escolar','geometria','medir'],
+    compas:      ['geometria','escolar','circulo'],
+    cartuchera:  ['lapiz','escolar','estuche','guardar'],
+    globo:       ['fiesta','decoracion','inflar','set'],
+    vinilo:      ['adhesivo','decoracion','stickers'],
+  };
+  return _searchAssoc;
+}
 
 // ─── ESTADO ─────────────────────────────────────────────────
 let allProducts = [];
@@ -197,48 +197,67 @@ function norm(s = '') {
     .replace(/[^a-z0-9\s]/g, ' ');
 }
 
+// ─── REGLAS DE CATEGORÍA — fáciles de ampliar ───────────────
+// Cada regla tiene: el nombre de categoría, palabras clave en nombre del cat (TN),
+// y palabras clave a buscar en el texto completo del producto.
+// El orden importa: la primera que matchea gana (agro > papeleria > bazar).
+const CATEGORY_RULES = [
+  {
+    cat: 'agro',
+    catKw: /agro|campo|huerta|jardin|veterinaria|semilla|fertiliz|fitosanitario/,
+    textRx: /\b(agro|campo|semilla|fertiliz|herbicida|fungicida|insecticida|plaguicida|fitosanitario|poda|huerta|siembra|cultivo|manguera|aspersor|riego|rastrillo|azada|pala|fumigadora|alambrado|tranquera|gallinero|granja|bovino|porcino|aviar|ovino|caprino|veterinari|agroquimico|abono|compost|sustrato|tierra para maceta|plantin|trebol|maiz|soja|trigo|girasol|mani|tabaco|yerba mate)\b/,
+    scoreRx: /\b(campo|cultivo|planta|tierra|jardin|herramienta)\b/,
+  },
+  {
+    cat: 'papeleria',
+    catKw: /papeleria|escolar|oficina|libreria|librería|cotillon|cotillón/,
+    textRx: /\b(papeleria|escolar|cuaderno|libreta|anotador|agenda|lapiz|lapicera|birome|boligrafo|marcador|resaltador|fibra|carpeta|archivo|folio|resma|sello|pegamento|cola vinilica|scotch|engrapadora|abrochadora|grampa|calculadora|regla|compas|cartuchera|mochila escolar|globos?|cotillon|cumpleanos|papel regalo|vinilo|cartulina|afiche|bloc|block|portafolio|bibliorato|separador|corrector|tipex)\b/,
+    scoreRx: /\b(hoja|papel|escolar|oficina|escribir|anotar|fiesta|regalo|globo)\b/,
+  },
+  {
+    cat: 'bazar',
+    catKw: /bazar|cocina|hogar|menaje|limpieza|decoracion|textil|vajilla/,
+    textRx: /\b(bazar|cocina|olla|cacerola|sarten|wok|paila|cubierto|vajilla|plato|taza|vaso|jarra|jarro|tazon|bol|fuente|escurridor|colador|utensilio|menaje|mate|termo|botella|botellon|hidratacion|limpieza|escoba|trapeador|trapo|balde|cesto|canasto|organizador|percha|toalla|sabana|almohada|funda|mantel|repasador|lampara|velador|adorno|espejo|decoracion|hogar|cortina|textil|bano|detergente|higiene|cuchillo de cocina|tabla de picar)\b/,
+    scoreRx: /\b(cocina|hogar|casa|decorar|limpiar|mesa|cama)\b/,
+  },
+];
+
 function detectCategory(p) {
+  // — Prioridad 1: tags explícitos cargados en Tiendanube —
   const tags = norm(p.tags || '');
-
-  // Prioridad 1: tags explícitos en Tiendanube
   if (tags.includes('papeleria')) return 'papeleria';
-  if (tags.includes('agro')) return 'agro';
-  if (tags.includes('bazar')) return 'bazar';
+  if (tags.includes('agro'))      return 'agro';
+  if (tags.includes('bazar'))     return 'bazar';
 
-  // Prioridad 2: categorías asignadas en Tiendanube
-  const catNames = (p.categories || []).map(c => norm(c.name?.es || c.name?.[Object.keys(c.name || {})[0]] || ''));
-  const catJoined = catNames.join(' ');
-  if (/papeleria|escolar|oficina|libreria/.test(catJoined)) return 'papeleria';
-  if (/agro|campo|huerta|jardin|veterinaria|semilla|fertiliz/.test(catJoined)) return 'agro';
-  if (/bazar|cocina|hogar|menaje|limpieza|decoracion|textil/.test(catJoined)) return 'bazar';
+  // — Prioridad 2: nombre de categorías de Tiendanube —
+  const catNames = (p.categories || [])
+    .map(c => norm(c.name?.es || c.name?.[Object.keys(c.name || {})[0]] || ''))
+    .join(' ');
 
-  // Prioridad 3: palabras clave en nombre y descripción
+  for (const rule of CATEGORY_RULES) {
+    if (rule.catKw.test(catNames)) return rule.cat;
+  }
+
+  // — Prioridad 3: keywords en nombre + descripción + categorías —
   const name = norm(p.name?.es || p.name?.[Object.keys(p.name || {})[0]] || '');
   const desc = norm(p.description?.es || '');
-  const text = `${name} ${desc} ${catJoined}`;
+  const text  = `${name} ${desc} ${catNames}`;
 
-  // AGRO — palabras clave expandidas
-  const agroRx = /\b(agro|campo|semilla|fertiliz|herbicida|fungicida|insecticida|plaguicida|fitosanitario|poda|jardin|huerta|siembra|cultivo|manguera|aspersor|riego|rastrillo|azada|pala|fumigadora|mochila fumig|alambrado|tranquera|gallinero|granja|bovino|porcino|aviar|ovino|caprino|veterinari|agroquimico|abono|compost|sustrato|tierra para maceta|maceta|plantin|trebol|maiz|soja|trigo|girasol|mani|tabaco|yerba mate|te de campo)\b/;
+  for (const rule of CATEGORY_RULES) {
+    if (rule.textRx.test(text)) return rule.cat;
+  }
 
-  // PAPELERÍA — palabras clave expandidas
-  const papelRx = /\b(papeleria|escolar|cuaderno|libreta|anotador|agenda|lapiz|lapicera|birome|boligrafo|marcador|resaltador|fibra|carpeta|archivo|folio|resma|hoja|papel|sello|pegamento|cola vinilica|tijera de papel|cinta adhesiva|scotch|engrapadora|abrochadora|grampa|calculadora|regla|compas|cartuchera|mochila escolar|globos?|fiesta|cotillon|cumpleanos|papel regalo|vinilo|cartulina|afiche|bloc|block|portafolio|bibliorato|separador|index|post.?it|nota adhesiva|corrector|tipex|bicolor|multicolor)\b/;
+  // — Prioridad 4: scoring por densidad (desempate) —
+  const scores = CATEGORY_RULES.map(rule => ({
+    cat:   rule.cat,
+    score: (text.match(rule.scoreRx) || []).length,
+  }));
+  scores.sort((a, b) => b.score - a.score);
 
-  // BAZAR — palabras clave expandidas
-  const bazarRx = /\b(bazar|cocina|olla|cacerola|sarten|wok|paila|cubierto|vajilla|plato|taza|vaso|jarra|jarro|tazon|bol|fuente|escurridor|colador|tabla de picar|cuchillo|utensilio|menaje|mate|termo|botella|botellon|hidratacion|limpieza|escoba|trapeador|trapo|balde|cesto|canasto|organizador|percha|toalla|sabana|almohada|funda|mantel|repasador|lampara|velador|adorno|espejo|decoracion|hogar|cortina|ropa de cama|textil|bano|detergente|higiene)\b/;
+  // Si el ganador tiene al menos 1 punto, lo usamos
+  if (scores[0].score > 0) return scores[0].cat;
 
-  if (agroRx.test(text)) return 'agro';
-  if (papelRx.test(text)) return 'papeleria';
-  if (bazarRx.test(text)) return 'bazar';
-
-  // Prioridad 4: scoring por densidad de términos
-  const agroScore = (text.match(/\b(campo|cultivo|planta|tierra|jardin|herramienta|agro)\b/g) || []).length;
-  const papelScore = (text.match(/\b(hoja|papel|escolar|oficina|escribir|anotar|fiesta|regalo|globo|globos)\b/g) || []).length;
-  const bazarScore = (text.match(/\b(cocina|hogar|casa|decorar|limpiar|mesa|cama)\b/g) || []).length;
-
-  if (agroScore > papelScore && agroScore > bazarScore) return 'agro';
-  if (papelScore > bazarScore) return 'papeleria';
-
-  // Fallback final: bazar (el más amplio)
+  // Fallback: bazar (categoría más amplia)
   return 'bazar';
 }
 
@@ -354,57 +373,65 @@ async function loadProducts(filter = 'all', page = 1, append = false) {
 }
 
 function logicFilter(products, filter, search = '') {
-  let r = Array.isArray(products) ? products : [];
-  if (filter !== 'all') r = r.filter(p => p.category === filter);
+  const list = Array.isArray(products) ? products : [];
 
-  const query = search.toLowerCase().trim();
-  if (!query) return r;
+  const query  = norm(search.trim());
+  const words  = query ? query.split(/\s+/).filter(w => w.length > 1) : [];
+  const doFilter = filter !== 'all';
+  const doSearch = words.length > 0;
 
-  const qNorm = norm(query);
-  const words = qNorm.split(/\s+/).filter(w => w.length > 1);
-  if (!words.length) return r;
+  // Sin filtros → devuelve todo directo
+  if (!doFilter && !doSearch) return list;
 
-  // Armar términos relacionados
+  // Armar términos relacionados SOLO si hay búsqueda (carga lazy el diccionario)
   let relatedTerms = [];
-  words.forEach(w => {
-    for (const key in SEARCH_ASSOCIATIONS) {
-      if (key === w || key.includes(w)) {
-        relatedTerms = [...relatedTerms, ...SEARCH_ASSOCIATIONS[key]];
+  if (doSearch) {
+    const assoc = getSearchAssociations();
+    const termSet = new Set();
+    words.forEach(w => {
+      for (const key in assoc) {
+        if (key === w || key.startsWith(w) || w.startsWith(key)) {
+          assoc[key].forEach(t => termSet.add(t));
+        }
       }
-    }
-  });
-  relatedTerms = [...new Set(relatedTerms)];
+    });
+    relatedTerms = Array.from(termSet);
+  }
 
-  return r.map(p => {
+  // Un único recorrido: filtra por categoría Y calcula score al mismo tiempo
+  const results = [];
+  for (const p of list) {
+    // Filtro de categoría
+    if (doFilter && p.category !== filter) continue;
+
+    // Sin búsqueda activa → incluir directamente
+    if (!doSearch) { results.push(p); continue; }
+
     const title = norm(p.title || '');
-    const desc = norm(p.description || '');
-    const tags = norm((p.tags || []).join(' '));
+    const desc  = norm(p.description || '');
+    const ptags = norm((p.tags || []).join(' '));
 
     let score = 0;
-
-    // Coincidencia de palabras clave originales
-    words.forEach(w => {
-      if (new RegExp(`\\b${w}\\b`).test(title)) score += 20;
+    for (const w of words) {
+      const re = new RegExp(`\\b${w}\\b`);
+      if (re.test(title))       score += 20;
       else if (title.includes(w)) score += 10;
-
-      if (new RegExp(`\\b${w}\\b`).test(desc)) score += 6;
+      if (title.startsWith(w))  score += 5;   // bonus inicio
+      if (re.test(desc))        score += 6;
       else if (desc.includes(w)) score += 3;
-
-      if (tags.includes(w)) score += 8;
-      if (title.startsWith(w)) score += 5;
-    });
-
-    // Coincidencia de términos relacionados
-    relatedTerms.forEach(rt => {
+      if (ptags.includes(w))    score += 8;
+    }
+    for (const rt of relatedTerms) {
       if (title.includes(rt)) score += 3;
-      if (desc.includes(rt)) score += 1;
-      if (tags.includes(rt)) score += 2;
-    });
+      if (desc.includes(rt))  score += 1;
+      if (ptags.includes(rt)) score += 2;
+    }
 
-    return { ...p, _score: score };
-  })
-    .filter(p => p._score > 0)
-    .sort((a, b) => b._score - a._score);
+    if (score > 0) results.push({ ...p, _score: score });
+  }
+
+  if (doSearch) results.sort((a, b) => b._score - a._score);
+  return results;
 }
 
 window.applyFilter = function (filter) {
@@ -515,7 +542,12 @@ function saveCart() {
 }
 
 function loadCart() {
-  try { cart = JSON.parse(localStorage.getItem('mk_cart') || '[]'); } catch (e) { cart = []; }
+  try {
+    cart = JSON.parse(localStorage.getItem('mk_cart') || '[]');
+  } catch (e) {
+    cart = [];
+    try { localStorage.removeItem('mk_cart'); } catch (_) { }
+  }
 }
 
 function reconcileCart() {
@@ -604,16 +636,22 @@ function doSearch() {
 }
 
 // ─── NAVBAR & UI ────────────────────────────────────────────
+let _scrollTicking = false;
 window.addEventListener('scroll', () => {
-  navbar.classList.toggle('scrolled', window.scrollY > 50);
-  const sections = ['inicio', 'categorias', 'productos', 'nosotros', 'contacto'];
-  let current = 'inicio';
-  sections.forEach(id => {
-    const el = document.getElementById(id);
-    if (el && window.scrollY >= el.offsetTop - 120) current = id;
-  });
-  document.querySelectorAll('.nav-link').forEach(l => {
-    l.classList.toggle('active', l.getAttribute('href') === '#' + current);
+  if (_scrollTicking) return;
+  _scrollTicking = true;
+  requestAnimationFrame(() => {
+    navbar.classList.toggle('scrolled', window.scrollY > 50);
+    const sections = ['inicio', 'categorias', 'productos', 'nosotros', 'contacto'];
+    let current = 'inicio';
+    sections.forEach(id => {
+      const el = document.getElementById(id);
+      if (el && window.scrollY >= el.offsetTop - 120) current = id;
+    });
+    document.querySelectorAll('.nav-link').forEach(l => {
+      l.classList.toggle('active', l.getAttribute('href') === '#' + current);
+    });
+    _scrollTicking = false;
   });
 }, { passive: true });
 
@@ -621,8 +659,12 @@ searchToggle.addEventListener('click', () => {
   const open = searchExpand.classList.toggle('open');
   if (open) setTimeout(() => searchInput.focus(), 50);
 });
+// Cierre único para search-expand y search-results al hacer click fuera
 document.addEventListener('click', e => {
-  if (!e.target.closest('.search-wrapper')) searchExpand.classList.remove('open');
+  if (!e.target.closest('.search-wrapper')) {
+    searchExpand.classList.remove('open');
+    $('searchResults').classList.remove('open');
+  }
 });
 
 // ─── EVENT LISTENERS ────────────────────────────────────────
@@ -788,8 +830,6 @@ searchInput.addEventListener('input', () => {
   }, 250);
 });
 
-document.addEventListener('click', e => { if (!e.target.closest('.search-wrapper')) $('searchResults').classList.remove('open'); });
-
 loadMoreBtn.addEventListener('click', () => { if (!isLoading && hasNextPage) loadProducts(currentFilter, currentPage + 1, true); });
 
 hamburger.addEventListener('click', () => {
@@ -812,42 +852,55 @@ function setupObserver() {
 
 function initDraggableDeco() {
   const elements = document.querySelectorAll('.deco-el');
+  if (!elements.length) return;
+
+  // Un único estado compartido en lugar de listeners por elemento
+  let activeEl   = null;
+  let startX     = 0, startY = 0;
+  let initialLeft = 0, initialTop = 0;
+
+  function startDrag(e, el) {
+    activeEl = el;
+    el.classList.add('is-dragging');
+    const rect       = el.getBoundingClientRect();
+    const parentRect = el.offsetParent.getBoundingClientRect();
+    initialLeft = rect.left - parentRect.left;
+    initialTop  = rect.top  - parentRect.top;
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    startX = clientX; startY = clientY;
+    el.style.left   = initialLeft + 'px';
+    el.style.top    = initialTop  + 'px';
+    el.style.right  = 'auto';
+    el.style.bottom = 'auto';
+    if (e.type === 'touchstart') e.preventDefault();
+  }
+
+  function doDrag(e) {
+    if (!activeEl) return;
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    activeEl.style.left = (initialLeft + clientX - startX) + 'px';
+    activeEl.style.top  = (initialTop  + clientY - startY) + 'px';
+    if (e.type === 'touchmove') e.preventDefault();
+  }
+
+  function endDrag() {
+    if (!activeEl) return;
+    activeEl.classList.remove('is-dragging');
+    activeEl = null;
+  }
+
   elements.forEach(el => {
-    let isDragging = false;
-    let startX, startY, initialLeft, initialTop;
-    const startDrag = (e) => {
-      isDragging = true;
-      el.classList.add('is-dragging');
-      const rect = el.getBoundingClientRect();
-      const parentRect = el.offsetParent.getBoundingClientRect();
-      initialLeft = rect.left - parentRect.left;
-      initialTop = rect.top - parentRect.top;
-      const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
-      const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
-      startX = clientX; startY = clientY;
-      el.style.left = initialLeft + 'px';
-      el.style.top = initialTop + 'px';
-      el.style.right = 'auto'; el.style.bottom = 'auto';
-      if (e.type === 'touchstart') e.preventDefault();
-    };
-    const doDrag = (e) => {
-      if (!isDragging) return;
-      const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
-      const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
-      const dx = clientX - startX;
-      const dy = clientY - startY;
-      el.style.left = (initialLeft + dx) + 'px';
-      el.style.top = (initialTop + dy) + 'px';
-      if (e.type === 'touchmove') e.preventDefault();
-    };
-    const endDrag = () => { if (isDragging) { isDragging = false; el.classList.remove('is-dragging'); } };
-    el.addEventListener('mousedown', startDrag);
-    window.addEventListener('mousemove', doDrag);
-    window.addEventListener('mouseup', endDrag);
-    el.addEventListener('touchstart', startDrag, { passive: false });
-    window.addEventListener('touchmove', doDrag, { passive: false });
-    window.addEventListener('touchend', endDrag);
+    el.addEventListener('mousedown',  e => startDrag(e, el));
+    el.addEventListener('touchstart', e => startDrag(e, el), { passive: false });
   });
+
+  // Un único par de listeners en window para mover y soltar
+  window.addEventListener('mousemove', doDrag);
+  window.addEventListener('mouseup',   endDrag);
+  window.addEventListener('touchmove', doDrag, { passive: false });
+  window.addEventListener('touchend',  endDrag);
 }
 
 function initSmoothScroll() {
@@ -944,13 +997,21 @@ function flyToCart(productId) {
   setTimeout(() => { if (clone.parentNode) clone.remove(); }, 1000);
 }
 
+function fisherYates(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
 function renderRelatedProducts(currentProd) {
   const container = document.getElementById('pmRelatedGrid');
   if (!container) return;
-  const related = allProducts
-    .filter(p => p.category === currentProd.category && p.id !== currentProd.id)
-    .sort(() => 0.5 - Math.random())
-    .slice(0, 3);
+  const related = fisherYates(
+    allProducts.filter(p => p.category === currentProd.category && p.id !== currentProd.id)
+  ).slice(0, 3);
   if (related.length === 0) { document.getElementById('pmRelated').hidden = true; return; }
   document.getElementById('pmRelated').hidden = false;
   container.innerHTML = related.map(p => `
