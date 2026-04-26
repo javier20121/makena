@@ -17,18 +17,112 @@ const EMPTY_MESSAGES = {
   noResults: 'No encontramos productos con ese criterio.',
 };
 
-// ─── ASOCIACIONES TIPO MERCADO LIBRE ────────────────────────
+// ─── ASOCIACIONES SEMÁNTICAS (búsqueda inteligente) ─────────
 const SEARCH_ASSOCIATIONS = {
-  'olla':    ['cocina', 'bazar', 'sarten', 'paila', 'menaje'],
-  'sarten':  ['cocina', 'bazar', 'olla', 'cubierto'],
-  'botella': ['termo', 'vaso', 'hidratacion', 'bazar', 'botellita'],
-  'termo':   ['botella', 'mate', 'bombilla', 'bazar'],
-  'cuaderno':['papeleria', 'escolar', 'oficina', 'lapiz', 'birome', 'anotador'],
-  'hoja':    ['papeleria', 'resma', 'escolar', 'oficina'],
-  'semilla': ['agro', 'campo', 'huerta', 'siembra'],
-  'herramienta': ['agro', 'poda', 'jardin', 'tijera'],
-  'mate':    ['termo', 'bombilla', 'yerba', 'bazar'],
-  'cocina':  ['olla', 'sarten', 'cubierto', 'bazar', 'plato', 'vaso']
+  // — BAZAR / Cocina —
+  'olla':       ['cacerola', 'sarten', 'paila', 'menaje', 'cocina', 'bazar'],
+  'sarten':     ['olla', 'cacerola', 'cubierto', 'cocina', 'bazar'],
+  'cacerola':   ['olla', 'sarten', 'menaje', 'cocina', 'bazar'],
+  'cubierto':   ['tenedor', 'cuchara', 'cuchillo', 'vajilla', 'mesa', 'bazar'],
+  'vajilla':    ['plato', 'cubierto', 'vaso', 'taza', 'bazar'],
+  'plato':      ['vajilla', 'cubierto', 'mesa', 'cocina', 'bazar'],
+  'vaso':       ['taza', 'jarra', 'termo', 'botella', 'bazar'],
+  'taza':       ['vaso', 'jarra', 'cafe', 'desayuno', 'bazar'],
+  'jarra':      ['vaso', 'taza', 'botella', 'hidratacion', 'bazar'],
+  'cocina':     ['olla', 'sarten', 'cubierto', 'plato', 'menaje', 'bazar'],
+  'menaje':     ['olla', 'sarten', 'vajilla', 'cocina', 'bazar'],
+  'termo':      ['mate', 'bombilla', 'botella', 'hidratacion', 'bazar'],
+  'mate':       ['termo', 'bombilla', 'yerba', 'infusion', 'bazar'],
+  'bombilla':   ['mate', 'termo', 'yerba', 'bazar'],
+  'botella':    ['termo', 'vaso', 'jarra', 'hidratacion', 'bazar'],
+  'colador':    ['cocina', 'utensilio', 'menaje', 'bazar'],
+  'tabla':      ['cocina', 'utensilio', 'picar', 'bazar'],
+  'fuente':     ['horno', 'cocina', 'vajilla', 'bazar'],
+  'escurridor': ['cocina', 'vajilla', 'plato', 'bazar'],
+  'tazon':      ['bol', 'ensalada', 'vajilla', 'bazar'],
+  'bol':        ['tazon', 'ensalada', 'vajilla', 'bazar'],
+  // — BAZAR / Hogar —
+  'limpieza':   ['escoba', 'trapo', 'detergente', 'higiene', 'bazar'],
+  'escoba':     ['limpieza', 'trapeador', 'higiene', 'bazar'],
+  'balde':      ['limpieza', 'trapo', 'higiene', 'bazar'],
+  'cesto':      ['canasto', 'organizador', 'baño', 'bazar'],
+  'canasto':    ['cesto', 'organizador', 'lavanderia', 'bazar'],
+  'percha':     ['ropa', 'placard', 'organizador', 'bazar'],
+  'toalla':     ['baño', 'higiene', 'tela', 'bazar'],
+  'sabana':     ['cama', 'ropa de cama', 'almohada', 'bazar'],
+  'almohada':   ['cama', 'sabana', 'descanso', 'bazar'],
+  'mantel':     ['mesa', 'cocina', 'comedor', 'bazar'],
+  'repasador':  ['cocina', 'trapo', 'menaje', 'bazar'],
+  'organizador':['cajones', 'cesto', 'canasto', 'orden', 'bazar'],
+  'lampara':    ['luz', 'iluminacion', 'hogar', 'bazar'],
+  'velador':    ['lampara', 'luz', 'dormitorio', 'bazar'],
+  'adorno':     ['decoracion', 'hogar', 'figura', 'bazar'],
+  'espejo':     ['hogar', 'baño', 'decoracion', 'bazar'],
+  // — AGRO —
+  'semilla':    ['siembra', 'huerta', 'campo', 'cultivo', 'agro'],
+  'plantín':    ['semilla', 'huerta', 'jardin', 'agro'],
+  'fertilizante':['abono', 'nutricion', 'huerta', 'campo', 'agro'],
+  'abono':      ['fertilizante', 'compost', 'huerta', 'agro'],
+  'herbicida':  ['maleza', 'quimico', 'campo', 'agro'],
+  'fungicida':  ['hongo', 'tratamiento', 'planta', 'agro'],
+  'insecticida':['plaga', 'quimico', 'campo', 'agro'],
+  'veneno':     ['plaga', 'insecticida', 'raticida', 'agro'],
+  'poda':       ['tijera', 'jardin', 'arbol', 'agro'],
+  'tijera':     ['poda', 'corte', 'herramienta', 'agro'],
+  'manguera':   ['riego', 'agua', 'jardin', 'agro'],
+  'riego':      ['manguera', 'aspersor', 'jardin', 'agro'],
+  'aspersor':   ['riego', 'manguera', 'agro'],
+  'pala':       ['herramienta', 'campo', 'tierra', 'agro'],
+  'azada':      ['pala', 'herramienta', 'cultivo', 'agro'],
+  'rastrillo':  ['jardin', 'herramienta', 'campo', 'agro'],
+  'mochila':    ['fumigadora', 'riego', 'agro'],
+  'fumigadora': ['mochila', 'insecticida', 'agro'],
+  'jardin':     ['planta', 'flor', 'tierra', 'maceta', 'agro'],
+  'maceta':     ['planta', 'flor', 'jardin', 'tierra', 'agro'],
+  'tierra':     ['sustrato', 'maceta', 'huerta', 'jardin', 'agro'],
+  'sustrato':   ['tierra', 'maceta', 'planta', 'agro'],
+  'huerta':     ['semilla', 'plantín', 'cultivo', 'agro'],
+  'campo':      ['agro', 'semilla', 'fertilizante', 'herramienta'],
+  'gallinero':  ['aves', 'pollo', 'campo', 'agro'],
+  'alambrado':  ['campo', 'cerco', 'agro'],
+  'tranquera':  ['campo', 'alambrado', 'agro'],
+  'bolsa':      ['changuito', 'acarreo', 'agro', 'semilla'],
+  // — PAPELERÍA —
+  'cuaderno':   ['libreta', 'anotador', 'escolar', 'lapiz', 'birome', 'papeleria'],
+  'libreta':    ['cuaderno', 'anotador', 'escolar', 'papeleria'],
+  'anotador':   ['cuaderno', 'libreta', 'nota', 'papeleria'],
+  'agenda':     ['calendario', 'planificador', 'papeleria'],
+  'lapiz':      ['lapicera', 'birome', 'marcador', 'escolar', 'papeleria'],
+  'lapicera':   ['lapiz', 'birome', 'boligrafo', 'escolar', 'papeleria'],
+  'birome':     ['lapiz', 'lapicera', 'boligrafo', 'escolar', 'papeleria'],
+  'boligrafo':  ['birome', 'lapicera', 'lapiz', 'papeleria'],
+  'marcador':   ['resaltador', 'lapiz', 'escolar', 'papeleria'],
+  'resaltador': ['marcador', 'lapiz', 'escolar', 'papeleria'],
+  'fibra':      ['marcador', 'pintura', 'escolar', 'papeleria'],
+  'carpeta':    ['archivo', 'escolar', 'folio', 'papeleria'],
+  'archivo':    ['carpeta', 'folio', 'oficina', 'papeleria'],
+  'folio':      ['carpeta', 'archivo', 'papeleria'],
+  'resma':      ['hoja', 'papel', 'impresora', 'oficina', 'papeleria'],
+  'hoja':       ['resma', 'papel', 'cuaderno', 'papeleria'],
+  'papel':      ['resma', 'hoja', 'impresora', 'papeleria'],
+  'escolar':    ['cuaderno', 'lapiz', 'mochila', 'papeleria'],
+  'oficina':    ['carpeta', 'archivo', 'lapicera', 'resma', 'papeleria'],
+  'sello':      ['tinta', 'oficina', 'papeleria'],
+  'pegamento':  ['cola', 'tijera', 'manualidades', 'papeleria'],
+  'cola':       ['pegamento', 'manualidades', 'papeleria'],
+  'tijera':     ['corte', 'papeleria', 'manualidades'],
+  'cinta':      ['scotch', 'adhesivo', 'papeleria'],
+  'scotch':     ['cinta', 'adhesivo', 'papeleria'],
+  'engrapadora':['abrochadora', 'grampa', 'oficina', 'papeleria'],
+  'abrochadora':['engrapadora', 'grampa', 'oficina', 'papeleria'],
+  'calculadora':['matematica', 'oficina', 'escolar', 'papeleria'],
+  'regla':      ['escolar', 'geometria', 'papeleria'],
+  'compas':     ['geometria', 'escolar', 'papeleria'],
+  'cartuchera': ['lapiz', 'escolar', 'estuche', 'papeleria'],
+  'mochila':    ['escolar', 'cartuchera', 'papeleria'],
+  'globo':      ['fiesta', 'decoracion', 'papeleria'],
+  'papel regalo':['fiesta', 'envolver', 'papeleria'],
+  'vinilo':     ['adhesivo', 'decoracion', 'papeleria'],
 };
 
 // ─── ESTADO ─────────────────────────────────────────────────
@@ -92,21 +186,55 @@ function showToast(msg, duration=2800) {
   _toastTimer = setTimeout(() => toast.classList.remove('show'), duration);
 }
 
-function detectCategory(p) {
-  const tags = (p.tags || '').toLowerCase();
-  
-  // Prioridad 1: Tags explícitos (Si en Tiendanube usás el tag 'agro', ES Agro)
-  if (tags.includes('papeleria') || tags.includes('papelería')) return 'papeleria';
-  if (tags.includes('agro')) return 'agro';
-  if (tags.includes('bazar')) return 'bazar';
+// ─── NORMALIZAR TEXTO (quita acentos para comparar) ─────────
+function norm(s='') {
+  return String(s).toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9\s]/g, ' ');
+}
 
-  // Prioridad 2: Si no hay tags, buscamos palabras clave específicas
-  const name = (p.name?.es || '').toLowerCase();
-  const cats = (p.categories||[]).map(c=>(c.name?.es||'').toLowerCase());
-  const joined = [name, ...cats].join(' ');
-  
-  if (/agro|campo|semilla|fertiliz|herbicida|fungicida|poda|huerta|jardín|jardin|manguera|riego|veneno|insecticida/.test(joined)) return 'agro';
-  if (/globo|papel|cuaderno|resma|lapiz|lápiz|birome|carpeta|agenda|archiv|marcador|sello|oficina|escolar|tijera|pegamento/.test(joined)) return 'papeleria';
+function detectCategory(p) {
+  const tags = norm(p.tags || '');
+
+  // Prioridad 1: tags explícitos en Tiendanube
+  if (tags.includes('papeleria') || tags.includes('papeleria')) return 'papeleria';
+  if (tags.includes('agro'))     return 'agro';
+  if (tags.includes('bazar'))    return 'bazar';
+
+  // Prioridad 2: categorías asignadas en Tiendanube
+  const catNames = (p.categories || []).map(c => norm(c.name?.es || c.name?.[Object.keys(c.name||{})[0]] || ''));
+  const catJoined = catNames.join(' ');
+  if (/papeleria|escolar|oficina|libreria/.test(catJoined)) return 'papeleria';
+  if (/agro|campo|huerta|jardin|veterinaria|semilla|fertiliz/.test(catJoined)) return 'agro';
+  if (/bazar|cocina|hogar|menaje|limpieza|decoracion|textil/.test(catJoined)) return 'bazar';
+
+  // Prioridad 3: palabras clave en nombre y descripción
+  const name = norm(p.name?.es || p.name?.[Object.keys(p.name||{})[0]] || '');
+  const desc = norm(p.description?.es || '');
+  const text = `${name} ${desc} ${catJoined}`;
+
+  // AGRO — palabras clave expandidas
+  const agroRx = /\b(agro|campo|semilla|fertiliz|herbicida|fungicida|insecticida|plaguicida|fitosanitario|poda|jardin|huerta|siembra|cultivo|manguera|aspersor|riego|rastrillo|azada|pala|fumigadora|mochila fumig|alambrado|tranquera|gallinero|granja|bovino|porcino|aviar|ovino|caprino|veterinari|agroquimico|abono|compost|sustrato|tierra para maceta|maceta|plantín|trebol|maiz|soja|trigo|girasol|mani|tabaco|yerba mate|te de campo)\b/;
+
+  // PAPELERÍA — palabras clave expandidas
+  const papelRx = /\b(papeleria|escolar|cuaderno|libreta|anotador|agenda|lapiz|lapicera|birome|boligrafo|marcador|resaltador|fibra|carpeta|archivo|folio|resma|hoja|papel|sello|pegamento|cola vinilica|tijera de papel|cinta adhesiva|scotch|engrapadora|abrochadora|grampa|calculadora|regla|compas|cartuchera|mochila escolar|globo|papel regalo|vinilo|cartulina|afiche|bloc|block|portafolio|bibliorato|separador|index|post.?it|nota adhesiva|corrector|tipex|bicolor|multicolor)\b/;
+
+  // BAZAR — palabras clave expandidas
+  const bazarRx = /\b(bazar|cocina|olla|cacerola|sarten|wok|paila|cubierto|vajilla|plato|taza|vaso|jarra|jarro|tazón|bol|fuente|escurridor|colador|tabla de picar|cuchillo|utensilio|menaje|mate|termo|botella|botellón|hidratacion|limpieza|escoba|trapeador|trapo|balde|cesto|canasto|organizador|percha|toalla|sabana|almohada|funda|mantel|repasador|lampara|velador|adorno|espejo|decoracion|hogar|cortina|ropa de cama|textil|baño|detergente|higiene)\b/;
+
+  if (agroRx.test(text))  return 'agro';
+  if (papelRx.test(text)) return 'papeleria';
+  if (bazarRx.test(text)) return 'bazar';
+
+  // Prioridad 4: scoring por densidad de términos
+  const agroScore   = (text.match(/\b(campo|cultivo|planta|tierra|jardin|herramienta|agro)\b/g) || []).length;
+  const papelScore  = (text.match(/\b(hoja|papel|escolar|oficina|escribir|anotar)\b/g) || []).length;
+  const bazarScore  = (text.match(/\b(cocina|hogar|casa|decorar|limpiar|mesa|cama)\b/g) || []).length;
+
+  if (agroScore > papelScore && agroScore > bazarScore) return 'agro';
+  if (papelScore > bazarScore) return 'papeleria';
+
+  // Fallback final: bazar (el más amplio)
   return 'bazar';
 }
 
@@ -223,37 +351,64 @@ async function loadProducts(filter='all', page=1, append=false) {
 function logicFilter(products, filter, search='') {
   let r = Array.isArray(products) ? products : [];
   if (filter !== 'all') r = r.filter(p => p.category === filter);
-  
-  if (search.trim()) {
-    const q = search.toLowerCase().trim();
-    const words = q.split(' ').filter(w => w.length > 1);
-    let relatedTerms = [];
-    words.forEach(w => {
-      for (let key in SEARCH_ASSOCIATIONS) {
-        if (key.includes(w) || w.includes(key)) {
-          relatedTerms = [...relatedTerms, ...SEARCH_ASSOCIATIONS[key]];
-        }
+
+  if (!search.trim()) return r;
+
+  const q = norm(search);
+  const words = q.split(/\s+/).filter(w => w.length > 1);
+  if (!words.length) return r;
+
+  // Armar términos relacionados desde SEARCH_ASSOCIATIONS
+  let relatedTerms = [];
+  words.forEach(w => {
+    for (const key in SEARCH_ASSOCIATIONS) {
+      if (key === w || key.startsWith(w) || w.startsWith(key)) {
+        relatedTerms = [...relatedTerms, ...SEARCH_ASSOCIATIONS[key]];
       }
+    }
+  });
+  relatedTerms = [...new Set(relatedTerms)];
+
+  return r.map(p => {
+    const title = norm(p.title || '');
+    const desc  = norm(p.description || '');
+    const tags  = norm((p.tags || []).join(' '));
+    const cat   = p.category || '';
+
+    let score = 0;
+
+    words.forEach(w => {
+      // Coincidencia exacta de palabra completa en título → máximo peso
+      const titleWordMatch = new RegExp(`\\b${w}\\b`).test(title);
+      if (titleWordMatch)       score += 20;
+      else if (title.includes(w)) score += 10;  // parcial en título
+
+      // Coincidencia en descripción
+      const descWordMatch = new RegExp(`\\b${w}\\b`).test(desc);
+      if (descWordMatch)         score += 6;
+      else if (desc.includes(w)) score += 3;
+
+      // Tags (alta confianza si hay tag explícito)
+      if (tags.includes(w))      score += 8;
+
+      // El título empieza con la búsqueda → bonus de relevancia
+      if (title.startsWith(w))   score += 5;
     });
-    
-    const allSearchTerms = [...new Set([...words, ...relatedTerms])];
-    
-    return r.map(p => {
-      const title = (p.title || '').toLowerCase();
-      const desc  = (p.description || '').toLowerCase();
-      const tags  = (p.tags || []).join(' ').toLowerCase();
-      const text  = `${title} ${desc} ${tags}`;
-      
-      let score = 0;
-      words.forEach(w => { if (text.includes(w)) score += 10; });
-      relatedTerms.forEach(rt => { if (text.includes(rt)) score += 2; });
-      
-      return { ...p, _score: score };
-    })
-    .filter(p => p._score > 0)
-    .sort((a, b) => b._score - a._score); 
-  }
-  return r;
+
+    // Bonificación si la categoría coincide con el filtro activo
+    if (filter !== 'all' && p.category === filter) score += 3;
+
+    // Términos relacionados suman menos pero ayudan al recall
+    relatedTerms.forEach(rt => {
+      if (title.includes(rt)) score += 3;
+      if (desc.includes(rt))  score += 1;
+      if (tags.includes(rt))  score += 2;
+    });
+
+    return { ...p, _score: score };
+  })
+  .filter(p => p._score > 0)
+  .sort((a, b) => b._score - a._score);
 }
 
 window.applyFilter = function(filter) {
@@ -619,7 +774,7 @@ searchInput.addEventListener('input', () => {
     return;
   }
   searchTimeout = setTimeout(() => {
-    const results = logicFilter(allProducts, 'all', q).slice(0, 6);
+    const results = logicFilter(allProducts, currentFilter !== 'all' ? currentFilter : 'all', q).slice(0, 6);
     if (results.length > 0) {
       resContainer.innerHTML = results.map(p => `
         <div class="search-res-item" onclick="openProductModal('${p.id}'); $('searchResults').classList.remove('open');">
