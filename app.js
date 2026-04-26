@@ -123,7 +123,7 @@ const SEARCH_ASSOCIATIONS = {
   'compas': ['geometria', 'escolar', 'papeleria', 'circulo'],
   'cartuchera': ['lapiz', 'escolar', 'estuche', 'papeleria', 'guardar'],
   'mochila': ['escolar', 'cartuchera', 'papeleria', 'transporte'],
-  'globo': ['fiesta', 'decoracion', 'papeleria', 'inflar', 'set globos'],
+  'globo': ['fiesta', 'decoracion', 'papeleria', 'inflar', 'set'],
   'papel regalo': ['fiesta', 'envolver', 'papeleria', 'regalo'],
   'vinilo': ['adhesivo', 'decoracion', 'papeleria', 'stickers']
 };
