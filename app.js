@@ -10,176 +10,179 @@ const WHATSAPP_NUMBER = '5493757000000'; // No olvides verificar si este número
 
 // ─── CONFIG ─────────────────────────────────────────────────
 const PAGE_SIZE = 12;
-const CATEGORY_EMOJIS = { agro:'🌾', bazar:'🏠', papeleria:'📎', default:'📦' };
+const CATEGORY_EMOJIS = { agro: '🌾', bazar: '🏠', papeleria: '📎', default: '📦' };
 const EMPTY_MESSAGES = {
-  error:     'No pudimos cargar los productos. Intentá de nuevo más tarde.',
-  comingSoon:'¡Próximamente! Los productos están en camino.',
+  error: 'No pudimos cargar los productos. Intentá de nuevo más tarde.',
+  comingSoon: '¡Próximamente! Los productos están en camino.',
   noResults: 'No encontramos productos con ese criterio.',
 };
 
 // ─── ASOCIACIONES SEMÁNTICAS (búsqueda inteligente) ─────────
 const SEARCH_ASSOCIATIONS = {
-  // — BAZAR / Cocina —
-  'olla':       ['cacerola', 'sarten', 'paila', 'menaje', 'cocina', 'bazar'],
-  'sarten':     ['olla', 'cacerola', 'cubierto', 'cocina', 'bazar'],
-  'cacerola':   ['olla', 'sarten', 'menaje', 'cocina', 'bazar'],
-  'cubierto':   ['tenedor', 'cuchara', 'cuchillo', 'vajilla', 'mesa', 'bazar'],
-  'vajilla':    ['plato', 'cubierto', 'vaso', 'taza', 'bazar'],
-  'plato':      ['vajilla', 'cubierto', 'mesa', 'cocina', 'bazar'],
-  'vaso':       ['taza', 'jarra', 'termo', 'botella', 'bazar'],
-  'taza':       ['vaso', 'jarra', 'cafe', 'desayuno', 'bazar'],
-  'jarra':      ['vaso', 'taza', 'botella', 'hidratacion', 'bazar'],
-  'cocina':     ['olla', 'sarten', 'cubierto', 'plato', 'menaje', 'bazar'],
-  'menaje':     ['olla', 'sarten', 'vajilla', 'cocina', 'bazar'],
-  'termo':      ['mate', 'bombilla', 'botella', 'hidratacion', 'bazar'],
-  'mate':       ['termo', 'bombilla', 'yerba', 'infusion', 'bazar'],
-  'bombilla':   ['mate', 'termo', 'yerba', 'bazar'],
-  'botella':    ['termo', 'vaso', 'jarra', 'hidratacion', 'bazar'],
-  'colador':    ['cocina', 'utensilio', 'menaje', 'bazar'],
-  'tabla':      ['cocina', 'utensilio', 'picar', 'bazar'],
-  'fuente':     ['horno', 'cocina', 'vajilla', 'bazar'],
-  'escurridor': ['cocina', 'vajilla', 'plato', 'bazar'],
-  'tazon':      ['bol', 'ensalada', 'vajilla', 'bazar'],
-  'bol':        ['tazon', 'ensalada', 'vajilla', 'bazar'],
-  // — BAZAR / Hogar —
-  'limpieza':   ['escoba', 'trapo', 'detergente', 'higiene', 'bazar'],
-  'escoba':     ['limpieza', 'trapeador', 'higiene', 'bazar'],
-  'balde':      ['limpieza', 'trapo', 'higiene', 'bazar'],
-  'cesto':      ['canasto', 'organizador', 'baño', 'bazar'],
-  'canasto':    ['cesto', 'organizador', 'lavanderia', 'bazar'],
-  'percha':     ['ropa', 'placard', 'organizador', 'bazar'],
-  'toalla':     ['baño', 'higiene', 'tela', 'bazar'],
-  'sabana':     ['cama', 'ropa de cama', 'almohada', 'bazar'],
-  'almohada':   ['cama', 'sabana', 'descanso', 'bazar'],
-  'mantel':     ['mesa', 'cocina', 'comedor', 'bazar'],
-  'repasador':  ['cocina', 'trapo', 'menaje', 'bazar'],
-  'organizador':['cajones', 'cesto', 'canasto', 'orden', 'bazar'],
-  'lampara':    ['luz', 'iluminacion', 'hogar', 'bazar'],
-  'velador':    ['lampara', 'luz', 'dormitorio', 'bazar'],
-  'adorno':     ['decoracion', 'hogar', 'figura', 'bazar'],
-  'espejo':     ['hogar', 'baño', 'decoracion', 'bazar'],
-  // — AGRO —
-  'semilla':    ['siembra', 'huerta', 'campo', 'cultivo', 'agro'],
-  'plantín':    ['semilla', 'huerta', 'jardin', 'agro'],
-  'fertilizante':['abono', 'nutricion', 'huerta', 'campo', 'agro'],
-  'abono':      ['fertilizante', 'compost', 'huerta', 'agro'],
-  'herbicida':  ['maleza', 'quimico', 'campo', 'agro'],
-  'fungicida':  ['hongo', 'tratamiento', 'planta', 'agro'],
-  'insecticida':['plaga', 'quimico', 'campo', 'agro'],
-  'veneno':     ['plaga', 'insecticida', 'raticida', 'agro'],
-  'poda':       ['tijera', 'jardin', 'arbol', 'agro'],
-  'tijera':     ['poda', 'corte', 'herramienta', 'agro'],
-  'manguera':   ['riego', 'agua', 'jardin', 'agro'],
-  'riego':      ['manguera', 'aspersor', 'jardin', 'agro'],
-  'aspersor':   ['riego', 'manguera', 'agro'],
-  'pala':       ['herramienta', 'campo', 'tierra', 'agro'],
-  'azada':      ['pala', 'herramienta', 'cultivo', 'agro'],
-  'rastrillo':  ['jardin', 'herramienta', 'campo', 'agro'],
-  'mochila':    ['fumigadora', 'riego', 'agro'],
-  'fumigadora': ['mochila', 'insecticida', 'agro'],
-  'jardin':     ['planta', 'flor', 'tierra', 'maceta', 'agro'],
-  'maceta':     ['planta', 'flor', 'jardin', 'tierra', 'agro'],
-  'tierra':     ['sustrato', 'maceta', 'huerta', 'jardin', 'agro'],
-  'sustrato':   ['tierra', 'maceta', 'planta', 'agro'],
-  'huerta':     ['semilla', 'plantín', 'cultivo', 'agro'],
-  'campo':      ['agro', 'semilla', 'fertilizante', 'herramienta'],
-  'gallinero':  ['aves', 'pollo', 'campo', 'agro'],
-  'alambrado':  ['campo', 'cerco', 'agro'],
-  'tranquera':  ['campo', 'alambrado', 'agro'],
-  'bolsa':      ['changuito', 'acarreo', 'agro', 'semilla'],
-  // — PAPELERÍA —
-  'cuaderno':   ['libreta', 'anotador', 'escolar', 'lapiz', 'birome', 'papeleria'],
-  'libreta':    ['cuaderno', 'anotador', 'escolar', 'papeleria'],
-  'anotador':   ['cuaderno', 'libreta', 'nota', 'papeleria'],
-  'agenda':     ['calendario', 'planificador', 'papeleria'],
-  'lapiz':      ['lapicera', 'birome', 'marcador', 'escolar', 'papeleria'],
-  'lapicera':   ['lapiz', 'birome', 'boligrafo', 'escolar', 'papeleria'],
-  'birome':     ['lapiz', 'lapicera', 'boligrafo', 'escolar', 'papeleria'],
-  'boligrafo':  ['birome', 'lapicera', 'lapiz', 'papeleria'],
-  'marcador':   ['resaltador', 'lapiz', 'escolar', 'papeleria'],
-  'resaltador': ['marcador', 'lapiz', 'escolar', 'papeleria'],
-  'fibra':      ['marcador', 'pintura', 'escolar', 'papeleria'],
-  'carpeta':    ['archivo', 'escolar', 'folio', 'papeleria'],
-  'archivo':    ['carpeta', 'folio', 'oficina', 'papeleria'],
-  'folio':      ['carpeta', 'archivo', 'papeleria'],
-  'resma':      ['hoja', 'papel', 'impresora', 'oficina', 'papeleria'],
-  'hoja':       ['resma', 'papel', 'cuaderno', 'papeleria'],
-  'papel':      ['resma', 'hoja', 'impresora', 'papeleria'],
-  'escolar':    ['cuaderno', 'lapiz', 'mochila', 'papeleria'],
-  'oficina':    ['carpeta', 'archivo', 'lapicera', 'resma', 'papeleria'],
-  'sello':      ['tinta', 'oficina', 'papeleria'],
-  'pegamento':  ['cola', 'tijera', 'manualidades', 'papeleria'],
-  'cola':       ['pegamento', 'manualidades', 'papeleria'],
-  'tijera':     ['corte', 'papeleria', 'manualidades'],
-  'cinta':      ['scotch', 'adhesivo', 'papeleria'],
-  'scotch':     ['cinta', 'adhesivo', 'papeleria'],
-  'engrapadora':['abrochadora', 'grampa', 'oficina', 'papeleria'],
-  'abrochadora':['engrapadora', 'grampa', 'oficina', 'papeleria'],
-  'calculadora':['matematica', 'oficina', 'escolar', 'papeleria'],
-  'regla':      ['escolar', 'geometria', 'papeleria'],
-  'compas':     ['geometria', 'escolar', 'papeleria'],
-  'cartuchera': ['lapiz', 'escolar', 'estuche', 'papeleria'],
-  'mochila':    ['escolar', 'cartuchera', 'papeleria'],
-  'globo':      ['fiesta', 'decoracion', 'papeleria'],
-  'papel regalo':['fiesta', 'envolver', 'papeleria'],
-  'vinilo':     ['adhesivo', 'decoracion', 'papeleria'],
+  // — BAZAR / Cocina (más extensa) —
+  'olla': ['cacerola', 'sarten', 'paila', 'menaje', 'cocina', 'bazar', 'hervir', 'acero', 'aluminio'],
+  'sarten': ['olla', 'cacerola', 'plancha', 'antiadherente', 'cocina', 'bazar', 'freir'],
+  'cacerola': ['olla', 'sarten', 'menaje', 'cocina', 'bazar', 'hervir'],
+  'cubierto': ['tenedor', 'cuchara', 'cuchillo', 'vajilla', 'mesa', 'bazar', 'comer'],
+  'vajilla': ['plato', 'cubierto', 'vaso', 'taza', 'bazar', 'mesa', 'servir'],
+  'plato': ['vajilla', 'cubierto', 'mesa', 'cocina', 'bazar', 'comida'],
+  'vaso': ['taza', 'jarra', 'termo', 'botella', 'bazar', 'beber'],
+  'taza': ['vaso', 'jarra', 'cafe', 'te', 'desayuno', 'bazar'],
+  'jarra': ['vaso', 'taza', 'botella', 'agua', 'bazar'],
+  'cocina': ['olla', 'sarten', 'cubierto', 'plato', 'menaje', 'bazar', 'comida'],
+  'menaje': ['olla', 'sarten', 'vajilla', 'cocina', 'bazar', 'utensilios'],
+  'termo': ['mate', 'bombilla', 'botella', 'bazar', 'agua caliente', 'acero'],
+  'mate': ['termo', 'bombilla', 'yerba', 'bazar', 'infusion'],
+  'bombilla': ['mate', 'termo', 'yerba', 'bazar', 'acero'],
+  'botella': ['termo', 'vaso', 'jarra', 'bazar', 'agua', 'hidratacion'],
+  'colador': ['cocina', 'utensilio', 'menaje', 'bazar', 'escurrir', 'pasta'],
+  'tabla': ['cocina', 'utensilio', 'picar', 'bazar', 'madera', 'plastico'],
+  'fuente': ['horno', 'cocina', 'vajilla', 'bazar', 'bandeja'],
+  'escurridor': ['cocina', 'vajilla', 'plato', 'bazar', 'secar'],
+  'tazon': ['bol', 'ensalada', 'vajilla', 'bazar', 'desayuno'],
+  'bol': ['tazon', 'ensalada', 'vajilla', 'bazar', 'mezclar'],
+
+  // — BAZAR / Hogar (más extensa) —
+  'limpieza': ['escoba', 'trapo', 'detergente', 'higiene', 'bazar', 'lavar', 'limpiar'],
+  'escoba': ['limpieza', 'trapeador', 'higiene', 'bazar', 'barrer'],
+  'balde': ['limpieza', 'trapo', 'higiene', 'bazar', 'agua'],
+  'cesto': ['canasto', 'organizador', 'baño', 'bazar', 'basura'],
+  'canasto': ['cesto', 'organizador', 'lavanderia', 'bazar', 'ropa'],
+  'percha': ['ropa', 'placard', 'organizador', 'bazar', 'colgar'],
+  'toalla': ['baño', 'higiene', 'tela', 'bazar', 'secar'],
+  'sabana': ['cama', 'ropa de cama', 'almohada', 'bazar', 'dormir'],
+  'almohada': ['cama', 'sabana', 'descanso', 'bazar', 'dormir'],
+  'mantel': ['mesa', 'cocina', 'comedor', 'bazar', 'proteccion'],
+  'repasador': ['cocina', 'trapo', 'menaje', 'bazar', 'secar'],
+  'organizador': ['cajones', 'cesto', 'canasto', 'orden', 'bazar', 'guardar'],
+  'lampara': ['luz', 'iluminacion', 'hogar', 'bazar', 'led'],
+  'velador': ['lampara', 'luz', 'dormitorio', 'bazar', 'mesa de luz'],
+  'adorno': ['decoracion', 'hogar', 'figura', 'bazar', 'estetica'],
+  'espejo': ['hogar', 'baño', 'decoracion', 'bazar', 'reflejo'],
+
+  // — AGRO (más extensa) —
+  'semilla': ['siembra', 'huerta', 'campo', 'cultivo', 'agro', 'plantar'],
+  'plantin': ['semilla', 'huerta', 'jardin', 'agro', 'crecimiento'],
+  'fertilizante': ['abono', 'nutricion', 'huerta', 'campo', 'agro', 'nutrir'],
+  'abono': ['fertilizante', 'compost', 'huerta', 'agro', 'organico'],
+  'herbicida': ['maleza', 'quimico', 'campo', 'agro', 'eliminar'],
+  'fungicida': ['hongo', 'tratamiento', 'planta', 'agro', 'proteccion'],
+  'insecticida': ['plaga', 'quimico', 'campo', 'agro', 'insectos'],
+  'veneno': ['plaga', 'insecticida', 'raticida', 'agro', 'control'],
+  'poda': ['tijera', 'jardin', 'arbol', 'agro', 'corte'],
+  'tijera': ['poda', 'corte', 'herramienta', 'agro', 'afilado'],
+  'manguera': ['riego', 'agua', 'jardin', 'agro', 'regar'],
+  'riego': ['manguera', 'aspersor', 'jardin', 'agro', 'agua'],
+  'aspersor': ['riego', 'manguera', 'agro', 'agua'],
+  'pala': ['herramienta', 'campo', 'tierra', 'agro', 'excavar'],
+  'azada': ['pala', 'herramienta', 'cultivo', 'agro', 'remover'],
+  'rastrillo': ['jardin', 'herramienta', 'campo', 'agro', 'juntar'],
+  'mochila': ['fumigadora', 'riego', 'agro', 'espalda'],
+  'fumigadora': ['mochila', 'insecticida', 'agro', 'aplicar'],
+  'jardin': ['planta', 'flor', 'tierra', 'maceta', 'agro', 'verde'],
+  'maceta': ['planta', 'flor', 'jardin', 'tierra', 'agro', 'decoracion'],
+  'tierra': ['sustrato', 'maceta', 'huerta', 'jardin', 'agro', 'suelo'],
+  'sustrato': ['tierra', 'maceta', 'planta', 'agro', 'nutrientes'],
+  'huerta': ['semilla', 'plantin', 'cultivo', 'agro', 'organico'],
+  'campo': ['agro', 'semilla', 'fertilizante', 'herramienta', 'rural'],
+  'gallinero': ['aves', 'pollo', 'campo', 'agro', 'granja'],
+  'alambrado': ['campo', 'cerco', 'agro', 'limite'],
+  'tranquera': ['campo', 'alambrado', 'agro', 'entrada'],
+  'bolsa': ['changuito', 'acarreo', 'agro', 'semilla', 'carga'],
+
+  // — PAPELERÍA (más extensa) —
+  'cuaderno': ['libreta', 'anotador', 'escolar', 'lapiz', 'birome', 'papeleria', 'escribir'],
+  'libreta': ['cuaderno', 'anotador', 'escolar', 'papeleria', 'notas'],
+  'anotador': ['cuaderno', 'libreta', 'nota', 'papeleria', 'apuntar'],
+  'agenda': ['calendario', 'planificador', 'papeleria', 'organizar'],
+  'lapiz': ['lapicera', 'birome', 'marcador', 'escolar', 'papeleria', 'escribir'],
+  'lapicera': ['lapiz', 'birome', 'boligrafo', 'escolar', 'papeleria', 'tinta'],
+  'birome': ['lapiz', 'lapicera', 'boligrafo', 'escolar', 'papeleria', 'tinta'],
+  'boligrafo': ['birome', 'lapicera', 'lapiz', 'papeleria', 'tinta'],
+  'marcador': ['resaltador', 'lapiz', 'escolar', 'papeleria', 'color'],
+  'resaltador': ['marcador', 'lapiz', 'escolar', 'papeleria', 'subrayar'],
+  'fibra': ['marcador', 'pintura', 'escolar', 'papeleria', 'color'],
+  'carpeta': ['archivo', 'escolar', 'folio', 'papeleria', 'guardar'],
+  'archivo': ['carpeta', 'folio', 'oficina', 'papeleria', 'guardar'],
+  'folio': ['carpeta', 'archivo', 'papeleria', 'plastico'],
+  'resma': ['hoja', 'papel', 'impresora', 'oficina', 'papeleria', 'imprimir'],
+  'hoja': ['resma', 'papel', 'cuaderno', 'papeleria', 'escribir'],
+  'papel': ['resma', 'hoja', 'impresora', 'papeleria', 'imprimir'],
+  'escolar': ['cuaderno', 'lapiz', 'mochila', 'papeleria', 'colegio'],
+  'oficina': ['carpeta', 'archivo', 'lapicera', 'resma', 'papeleria', 'trabajo'],
+  'sello': ['tinta', 'oficina', 'papeleria', 'marcar'],
+  'pegamento': ['cola', 'tijera', 'manualidades', 'papeleria', 'pegar'],
+  'cola': ['pegamento', 'manualidades', 'papeleria', 'adhesivo'],
+  'tijera': ['corte', 'papeleria', 'manualidades', 'cortar'],
+  'cinta': ['scotch', 'adhesivo', 'papeleria', 'pegar'],
+  'scotch': ['cinta', 'adhesivo', 'papeleria', 'pegar'],
+  'engrapadora': ['abrochadora', 'grampa', 'oficina', 'papeleria', 'unir'],
+  'abrochadora': ['engrapadora', 'grampa', 'oficina', 'papeleria', 'unir'],
+  'calculadora': ['matematica', 'oficina', 'escolar', 'papeleria', 'numeros'],
+  'regla': ['escolar', 'geometria', 'papeleria', 'medir'],
+  'compas': ['geometria', 'escolar', 'papeleria', 'circulo'],
+  'cartuchera': ['lapiz', 'escolar', 'estuche', 'papeleria', 'guardar'],
+  'mochila': ['escolar', 'cartuchera', 'papeleria', 'transporte'],
+  'globo': ['fiesta', 'decoracion', 'papeleria', 'inflar', 'set globos'],
+  'papel regalo': ['fiesta', 'envolver', 'papeleria', 'regalo'],
+  'vinilo': ['adhesivo', 'decoracion', 'papeleria', 'stickers']
 };
 
 // ─── ESTADO ─────────────────────────────────────────────────
-let allProducts      = [];
+let allProducts = [];
 let filteredProducts = [];
-let lenis            = null; // ✅ Variable global para control
-let cart             = [];
-let currentFilter    = 'all';
-let currentPage      = 1;
-let hasNextPage      = false;
-let connectionState  = 'idle';
-let isLoading        = false;  // ✅ PREVIENE BUCLE INFINITO
+let lenis = null; // ✅ Variable global para control
+let cart = [];
+let currentFilter = 'all';
+let currentPage = 1;
+let hasNextPage = false;
+let connectionState = 'idle';
+let isLoading = false;  // ✅ PREVIENE BUCLE INFINITO
 
 // ─── DOM ────────────────────────────────────────────────────
 const $ = id => document.getElementById(id);
-const productsGrid   = $('productsGrid');
-const loadingState   = $('loadingState');
-const emptyState     = $('emptyState');
-const loadMoreRow    = $('loadMoreRow');
-const loadMoreBtn    = $('loadMoreBtn');
-const cartBtn        = $('cartBtn');
-const cartBadge      = $('cartBadge');
-const cartDrawer     = $('cartDrawer');
-const cartCloseBtn   = $('cartCloseBtn');
-const cartBody       = $('cartBody');
-const cartEmpty      = $('cartEmpty');
-const cartFooter     = $('cartFooterPanel');
-const cartSubtotal   = $('cartSubtotal');
+const productsGrid = $('productsGrid');
+const loadingState = $('loadingState');
+const emptyState = $('emptyState');
+const loadMoreRow = $('loadMoreRow');
+const loadMoreBtn = $('loadMoreBtn');
+const cartBtn = $('cartBtn');
+const cartBadge = $('cartBadge');
+const cartDrawer = $('cartDrawer');
+const cartCloseBtn = $('cartCloseBtn');
+const cartBody = $('cartBody');
+const cartEmpty = $('cartEmpty');
+const cartFooter = $('cartFooterPanel');
+const cartSubtotal = $('cartSubtotal');
 const cartCountLabel = $('cartCountLabel');
-const checkoutBtn    = $('checkoutBtn');
-const checkoutTNBtn  = $('checkoutTNBtn');
-const overlay        = $('overlay');
-const toast          = $('toast');
-const searchInput    = $('searchInput');
-const searchBtn      = $('searchBtn');
-const searchToggle   = $('searchToggle');
-const searchExpand   = $('searchExpand');
-const chips          = document.querySelectorAll('.chip');
-const catBtns        = document.querySelectorAll('.btn-cat-link');
-const hamburger      = $('hamburger');
-const navLinks       = $('navLinks');
-const navbar         = $('navbar');
-const hfcCards       = document.querySelectorAll('.hfc');
+const checkoutBtn = $('checkoutBtn');
+const checkoutTNBtn = $('checkoutTNBtn');
+const overlay = $('overlay');
+const toast = $('toast');
+const searchInput = $('searchInput');
+const searchBtn = $('searchBtn');
+const searchToggle = $('searchToggle');
+const searchExpand = $('searchExpand');
+const chips = document.querySelectorAll('.chip');
+const catBtns = document.querySelectorAll('.btn-cat-link');
+const hamburger = $('hamburger');
+const navLinks = $('navLinks');
+const navbar = $('navbar');
+const hfcCards = document.querySelectorAll('.hfc');
 
 // ─── UTILIDADES ─────────────────────────────────────────────
-const fmt = (n) => new Intl.NumberFormat('es-AR', { style:'currency', currency:'ARS', minimumFractionDigits:0 }).format(n);
+const fmt = (n) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 }).format(n);
 
-function esc(s='') {
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+function esc(s = '') {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
-function stripHtml(html='') {
-  return String(html).replace(/<[^>]*>/g, ' ').replace(/\s+/g,' ').trim();
+function stripHtml(html = '') {
+  return String(html).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
 }
 
 let _toastTimer;
-function showToast(msg, duration=2800) {
+function showToast(msg, duration = 2800) {
   toast.textContent = msg;
   toast.classList.add('show');
   clearTimeout(_toastTimer);
@@ -187,7 +190,7 @@ function showToast(msg, duration=2800) {
 }
 
 // ─── NORMALIZAR TEXTO (quita acentos para comparar) ─────────
-function norm(s='') {
+function norm(s = '') {
   return String(s).toLowerCase()
     .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
     .replace(/[^a-z0-9\s]/g, ' ');
@@ -197,39 +200,39 @@ function detectCategory(p) {
   const tags = norm(p.tags || '');
 
   // Prioridad 1: tags explícitos en Tiendanube
-  if (tags.includes('papeleria') || tags.includes('papeleria')) return 'papeleria';
-  if (tags.includes('agro'))     return 'agro';
-  if (tags.includes('bazar'))    return 'bazar';
+  if (tags.includes('papeleria')) return 'papeleria';
+  if (tags.includes('agro')) return 'agro';
+  if (tags.includes('bazar')) return 'bazar';
 
   // Prioridad 2: categorías asignadas en Tiendanube
-  const catNames = (p.categories || []).map(c => norm(c.name?.es || c.name?.[Object.keys(c.name||{})[0]] || ''));
+  const catNames = (p.categories || []).map(c => norm(c.name?.es || c.name?.[Object.keys(c.name || {})[0]] || ''));
   const catJoined = catNames.join(' ');
   if (/papeleria|escolar|oficina|libreria/.test(catJoined)) return 'papeleria';
   if (/agro|campo|huerta|jardin|veterinaria|semilla|fertiliz/.test(catJoined)) return 'agro';
   if (/bazar|cocina|hogar|menaje|limpieza|decoracion|textil/.test(catJoined)) return 'bazar';
 
   // Prioridad 3: palabras clave en nombre y descripción
-  const name = norm(p.name?.es || p.name?.[Object.keys(p.name||{})[0]] || '');
+  const name = norm(p.name?.es || p.name?.[Object.keys(p.name || {})[0]] || '');
   const desc = norm(p.description?.es || '');
   const text = `${name} ${desc} ${catJoined}`;
 
   // AGRO — palabras clave expandidas
-  const agroRx = /\b(agro|campo|semilla|fertiliz|herbicida|fungicida|insecticida|plaguicida|fitosanitario|poda|jardin|huerta|siembra|cultivo|manguera|aspersor|riego|rastrillo|azada|pala|fumigadora|mochila fumig|alambrado|tranquera|gallinero|granja|bovino|porcino|aviar|ovino|caprino|veterinari|agroquimico|abono|compost|sustrato|tierra para maceta|maceta|plantín|trebol|maiz|soja|trigo|girasol|mani|tabaco|yerba mate|te de campo)\b/;
+  const agroRx = /\b(agro|campo|semilla|fertiliz|herbicida|fungicida|insecticida|plaguicida|fitosanitario|poda|jardin|huerta|siembra|cultivo|manguera|aspersor|riego|rastrillo|azada|pala|fumigadora|mochila fumig|alambrado|tranquera|gallinero|granja|bovino|porcino|aviar|ovino|caprino|veterinari|agroquimico|abono|compost|sustrato|tierra para maceta|maceta|plantin|trebol|maiz|soja|trigo|girasol|mani|tabaco|yerba mate|te de campo)\b/;
 
   // PAPELERÍA — palabras clave expandidas
   const papelRx = /\b(papeleria|escolar|cuaderno|libreta|anotador|agenda|lapiz|lapicera|birome|boligrafo|marcador|resaltador|fibra|carpeta|archivo|folio|resma|hoja|papel|sello|pegamento|cola vinilica|tijera de papel|cinta adhesiva|scotch|engrapadora|abrochadora|grampa|calculadora|regla|compas|cartuchera|mochila escolar|globo|papel regalo|vinilo|cartulina|afiche|bloc|block|portafolio|bibliorato|separador|index|post.?it|nota adhesiva|corrector|tipex|bicolor|multicolor)\b/;
 
   // BAZAR — palabras clave expandidas
-  const bazarRx = /\b(bazar|cocina|olla|cacerola|sarten|wok|paila|cubierto|vajilla|plato|taza|vaso|jarra|jarro|tazón|bol|fuente|escurridor|colador|tabla de picar|cuchillo|utensilio|menaje|mate|termo|botella|botellón|hidratacion|limpieza|escoba|trapeador|trapo|balde|cesto|canasto|organizador|percha|toalla|sabana|almohada|funda|mantel|repasador|lampara|velador|adorno|espejo|decoracion|hogar|cortina|ropa de cama|textil|baño|detergente|higiene)\b/;
+  const bazarRx = /\b(bazar|cocina|olla|cacerola|sarten|wok|paila|cubierto|vajilla|plato|taza|vaso|jarra|jarro|tazon|bol|fuente|escurridor|colador|tabla de picar|cuchillo|utensilio|menaje|mate|termo|botella|botellon|hidratacion|limpieza|escoba|trapeador|trapo|balde|cesto|canasto|organizador|percha|toalla|sabana|almohada|funda|mantel|repasador|lampara|velador|adorno|espejo|decoracion|hogar|cortina|ropa de cama|textil|baño|detergente|higiene)\b/;
 
-  if (agroRx.test(text))  return 'agro';
+  if (agroRx.test(text)) return 'agro';
   if (papelRx.test(text)) return 'papeleria';
   if (bazarRx.test(text)) return 'bazar';
 
   // Prioridad 4: scoring por densidad de términos
-  const agroScore   = (text.match(/\b(campo|cultivo|planta|tierra|jardin|herramienta|agro)\b/g) || []).length;
-  const papelScore  = (text.match(/\b(hoja|papel|escolar|oficina|escribir|anotar)\b/g) || []).length;
-  const bazarScore  = (text.match(/\b(cocina|hogar|casa|decorar|limpiar|mesa|cama)\b/g) || []).length;
+  const agroScore = (text.match(/\b(campo|cultivo|planta|tierra|jardin|herramienta|agro)\b/g) || []).length;
+  const papelScore = (text.match(/\b(hoja|papel|escolar|oficina|escribir|anotar)\b/g) || []).length;
+  const bazarScore = (text.match(/\b(cocina|hogar|casa|decorar|limpiar|mesa|cama)\b/g) || []).length;
 
   if (agroScore > papelScore && agroScore > bazarScore) return 'agro';
   if (papelScore > bazarScore) return 'papeleria';
@@ -239,17 +242,17 @@ function detectCategory(p) {
 }
 
 // ─── TIENDANUBE PROXY ───────────────────────────────────────
-async function tnFetch(params={}) {
+async function tnFetch(params = {}) {
   const url = new URL('/api/products', window.location.origin);
   url.searchParams.set('storeId', TN_STORE_ID);
-  Object.entries(params).forEach(([k,v]) => {
+  Object.entries(params).forEach(([k, v]) => {
     if (v !== undefined && v !== null && v !== '') url.searchParams.set(k, v);
   });
 
   console.log('[tnFetch] URL:', url.toString());
 
   const res = await fetch(url);
-  
+
   // ✅ VALIDAR RESPUESTA
   if (!res.ok) {
     const errorData = await res.json().catch(() => ({}));
@@ -258,7 +261,7 @@ async function tnFetch(params={}) {
   }
 
   const data = await res.json();
-  
+
   // ✅ VALIDAR QUE DATA SEA ARRAY
   if (!Array.isArray(data)) {
     console.error('[tnFetch] Data no es array:', data);
@@ -269,21 +272,21 @@ async function tnFetch(params={}) {
 }
 
 // ─── CARGAR PRODUCTOS ───────────────────────────────────────
-async function loadProducts(filter='all', page=1, append=false) {
+async function loadProducts(filter = 'all', page = 1, append = false) {
   // ✅ PREVENIR BUCLE INFINITO
   if (isLoading) {
     console.log('[loadProducts] Ya hay una carga en progreso, saltando...');
     return;
   }
-  
+
   isLoading = true;
   setLoading(true);
 
   try {
     const isSearch = searchInput.value.trim().length > 0;
-    const params = { 
-      page, 
-      per_page: isSearch ? 80 : PAGE_SIZE 
+    const params = {
+      page,
+      per_page: isSearch ? 80 : PAGE_SIZE
     };
     if (isSearch) params.q = searchInput.value.trim();
 
@@ -298,23 +301,23 @@ async function loadProducts(filter='all', page=1, append=false) {
 
     const products = Array.isArray(data) ? data.map(p => {
       const v = (p.variants && p.variants.length > 0) ? p.variants[0] : {};
-      
+
       return {
-        id:           String(p.id),
-        variantId:    v.id ? String(v.id) : '',
-        title:        p.name?.es || p.name?.[Object.keys(p.name||{})[0]] || 'Producto',
-        description:  stripHtml(p.description?.es || ''),
-        price:        parseFloat(v.promotional_price || v.price || 0),
+        id: String(p.id),
+        variantId: v.id ? String(v.id) : '',
+        title: p.name?.es || p.name?.[Object.keys(p.name || {})[0]] || 'Producto',
+        description: stripHtml(p.description?.es || ''),
+        price: parseFloat(v.promotional_price || v.price || 0),
         comparePrice: parseFloat(v.price || 0),
-        image:        p.images?.[0]?.src || null,
-        imageAlt:     p.name?.es || 'Imagen de producto',
-        available:    v.stock !== 0 && !!v.id, 
-        category:     detectCategory(p),
-        permalink:    p.canonical_url || (typeof p.permalink === 'object' ? p.permalink?.es : p.permalink) || null,
-        images:       p.images || [],
+        image: p.images?.[0]?.src || null,
+        imageAlt: p.name?.es || 'Imagen de producto',
+        available: v.stock !== 0 && !!v.id,
+        category: detectCategory(p),
+        permalink: p.canonical_url || (typeof p.permalink === 'object' ? p.permalink?.es : p.permalink) || null,
+        images: p.images || [],
         fullDescription: p.description?.es || '',
-        allVariants:  p.variants || [],
-        tags:         p.tags ? p.tags.split(',').map(t => t.trim()).filter(t => t !== '') : []
+        allVariants: p.variants || [],
+        tags: p.tags ? p.tags.split(',').map(t => t.trim()).filter(t => t !== '') : []
       };
     }) : [];
 
@@ -334,35 +337,36 @@ async function loadProducts(filter='all', page=1, append=false) {
 
     loadMoreRow.hidden = !hasNextPage || allProducts.length === 0;
 
-  } catch(err) {
+  } catch (err) {
     console.error('🔴 Error detallado de carga:', err.message);
     connectionState = 'error';
-    hasNextPage = false; 
+    hasNextPage = false;
     currentPage = 1;
     loadMoreRow.hidden = true;
     if (!append) renderProducts([], false, EMPTY_MESSAGES.error);
     else showToast('Error al cargar más productos.');
   } finally {
-    isLoading = false; 
+    isLoading = false;
     setLoading(false);
   }
 }
 
-function logicFilter(products, filter, search='') {
+function logicFilter(products, filter, search = '') {
   let r = Array.isArray(products) ? products : [];
   if (filter !== 'all') r = r.filter(p => p.category === filter);
 
-  if (!search.trim()) return r;
+  const query = search.toLowerCase().trim();
+  if (!query) return r;
 
-  const q = norm(search);
-  const words = q.split(/\s+/).filter(w => w.length > 1);
+  const qNorm = norm(query);
+  const words = qNorm.split(/\s+/).filter(w => w.length > 1);
   if (!words.length) return r;
 
-  // Armar términos relacionados desde SEARCH_ASSOCIATIONS
+  // Armar términos relacionados
   let relatedTerms = [];
   words.forEach(w => {
     for (const key in SEARCH_ASSOCIATIONS) {
-      if (key === w || key.startsWith(w) || w.startsWith(key)) {
+      if (key === w || key.includes(w)) {
         relatedTerms = [...relatedTerms, ...SEARCH_ASSOCIATIONS[key]];
       }
     }
@@ -371,59 +375,49 @@ function logicFilter(products, filter, search='') {
 
   return r.map(p => {
     const title = norm(p.title || '');
-    const desc  = norm(p.description || '');
-    const tags  = norm((p.tags || []).join(' '));
-    const cat   = p.category || '';
+    const desc = norm(p.description || '');
+    const tags = norm((p.tags || []).join(' '));
 
     let score = 0;
 
+    // Coincidencia de palabras clave originales
     words.forEach(w => {
-      // Coincidencia exacta de palabra completa en título → máximo peso
-      const titleWordMatch = new RegExp(`\\b${w}\\b`).test(title);
-      if (titleWordMatch)       score += 20;
-      else if (title.includes(w)) score += 10;  // parcial en título
+      if (new RegExp(`\\b${w}\\b`).test(title)) score += 20;
+      else if (title.includes(w)) score += 10;
 
-      // Coincidencia en descripción
-      const descWordMatch = new RegExp(`\\b${w}\\b`).test(desc);
-      if (descWordMatch)         score += 6;
+      if (new RegExp(`\\b${w}\\b`).test(desc)) score += 6;
       else if (desc.includes(w)) score += 3;
 
-      // Tags (alta confianza si hay tag explícito)
-      if (tags.includes(w))      score += 8;
-
-      // El título empieza con la búsqueda → bonus de relevancia
-      if (title.startsWith(w))   score += 5;
+      if (tags.includes(w)) score += 8;
+      if (title.startsWith(w)) score += 5;
     });
 
-    // Bonificación si la categoría coincide con el filtro activo
-    if (filter !== 'all' && p.category === filter) score += 3;
-
-    // Términos relacionados suman menos pero ayudan al recall
+    // Coincidencia de términos relacionados
     relatedTerms.forEach(rt => {
       if (title.includes(rt)) score += 3;
-      if (desc.includes(rt))  score += 1;
-      if (tags.includes(rt))  score += 2;
+      if (desc.includes(rt)) score += 1;
+      if (tags.includes(rt)) score += 2;
     });
 
     return { ...p, _score: score };
   })
-  .filter(p => p._score > 0)
-  .sort((a, b) => b._score - a._score);
+    .filter(p => p._score > 0)
+    .sort((a, b) => b._score - a._score);
 }
 
-window.applyFilter = function(filter) {
+window.applyFilter = function (filter) {
   if (isLoading || currentFilter === filter) return;
   currentFilter = filter;
   currentPage = 1;
   chips.forEach(c => c.classList.toggle('active', c.dataset.filter === filter));
-  allProducts = []; 
+  allProducts = [];
   loadProducts(filter, 1, false);
-  document.getElementById('productos')?.scrollIntoView({ behavior:'smooth', block:'start' });
+  document.getElementById('productos')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 };
 
-function renderProducts(products, append=false, emptyMsg=EMPTY_MESSAGES.noResults, showReset=false) {
+function renderProducts(products, append = false, emptyMsg = EMPTY_MESSAGES.noResults, showReset = false) {
   if (!append) {
-    productsGrid.querySelectorAll('.product-card, .skeleton-card').forEach(el=>el.remove());
+    productsGrid.querySelectorAll('.product-card, .skeleton-card').forEach(el => el.remove());
   }
 
   if (!products.length && !append) {
@@ -436,10 +430,10 @@ function renderProducts(products, append=false, emptyMsg=EMPTY_MESSAGES.noResult
   products.forEach((p, i) => productsGrid.appendChild(buildCard(p, i)));
 }
 
-function buildCard(p, i=0) {
+function buildCard(p, i = 0) {
   const el = document.createElement('article');
   el.className = 'product-card fade-up';
-  el.style.animationDelay = `${(i%8)*0.055}s`;
+  el.style.animationDelay = `${(i % 8) * 0.055}s`;
   el.dataset.productId = p.id;
 
   const emoji = CATEGORY_EMOJIS[p.category] || CATEGORY_EMOJIS.default;
@@ -496,7 +490,7 @@ function addToCart(productId) {
   }
 
   const ex = cart.find(x => x.id === productId);
-  ex ? ex.qty++ : cart.push({...p, qty:1});
+  ex ? ex.qty++ : cart.push({ ...p, qty: 1 });
 
   saveCart(); updateCartUI();
   showToast(`✓ ${p.title}`);
@@ -515,30 +509,30 @@ function changeQty(id, delta) {
 }
 
 function saveCart() {
-  try { localStorage.setItem('mk_cart', JSON.stringify(cart.map(i=>({id:i.id,qty:i.qty})))); } catch(e){}
+  try { localStorage.setItem('mk_cart', JSON.stringify(cart.map(i => ({ id: i.id, qty: i.qty })))); } catch (e) { }
 }
 
 function loadCart() {
-  try { cart = JSON.parse(localStorage.getItem('mk_cart')||'[]'); } catch(e){ cart=[]; }
+  try { cart = JSON.parse(localStorage.getItem('mk_cart') || '[]'); } catch (e) { cart = []; }
 }
 
 function reconcileCart() {
   cart = cart.reduce((acc, s) => {
-    const p = allProducts.find(x=>x.id===s.id);
-    if (p) acc.push({...p, qty:s.qty});
+    const p = allProducts.find(x => x.id === s.id);
+    if (p) acc.push({ ...p, qty: s.qty });
     return acc;
   }, []);
   updateCartUI();
 }
 
 function updateCartUI() {
-  const total   = cart.reduce((a,i)=>a+i.qty, 0);
-  const subtotal= cart.reduce((a,i)=>a+i.price*i.qty, 0);
+  const total = cart.reduce((a, i) => a + i.qty, 0);
+  const subtotal = cart.reduce((a, i) => a + i.price * i.qty, 0);
 
   cartBadge.textContent = total;
   cartBadge.hidden = total === 0;
   cartSubtotal.textContent = fmt(subtotal);
-  if (cartCountLabel) cartCountLabel.textContent = `${total} ${total===1?'item':'items'}`;
+  if (cartCountLabel) cartCountLabel.textContent = `${total} ${total === 1 ? 'item' : 'items'}`;
 
   if (!cart.length) {
     cartEmpty.hidden = false;
@@ -552,7 +546,7 @@ function updateCartUI() {
   cartFooter.hidden = false;
 
   cartBody.innerHTML = cart.map(item => {
-    const emoji = CATEGORY_EMOJIS[item.category]||'📦';
+    const emoji = CATEGORY_EMOJIS[item.category] || '📦';
     const imgHtml = item.image
       ? `<img class="ci-img" src="${esc(item.image)}" alt="${esc(item.title)}" loading="lazy">`
       : `<div class="ci-placeholder">${emoji}</div>`;
@@ -572,14 +566,14 @@ function updateCartUI() {
   }).join('');
 }
 
-function openCart()  { cartDrawer.classList.add('open'); overlay.classList.add('active'); document.body.style.overflow='hidden'; if (lenis) lenis.stop(); }
-function closeCart() { cartDrawer.classList.remove('open'); overlay.classList.remove('active'); document.body.style.overflow=''; if (lenis) lenis.start(); }
+function openCart() { cartDrawer.classList.add('open'); overlay.classList.add('active'); document.body.style.overflow = 'hidden'; if (lenis) lenis.stop(); }
+function closeCart() { cartDrawer.classList.remove('open'); overlay.classList.remove('active'); document.body.style.overflow = ''; if (lenis) lenis.start(); }
 
 function sendWhatsApp() {
   if (!cart.length) return;
   let msg = '¡Hola Makena! Quiero hacer un pedido:\n\n';
-  cart.forEach(i => msg += `• ${i.qty}x ${i.title} — ${fmt(i.price*i.qty)}\n`);
-  const total = cart.reduce((a,i)=>a+i.price*i.qty,0);
+  cart.forEach(i => msg += `• ${i.qty}x ${i.title} — ${fmt(i.price * i.qty)}\n`);
+  const total = cart.reduce((a, i) => a + i.price * i.qty, 0);
   msg += `\n*Total productos:* ${fmt(total)}`;
   msg += '\n\n¿Me podés confirmar disponibilidad y coordinar el envío?';
   window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank', 'noopener,noreferrer');
@@ -599,7 +593,7 @@ function sendToTiendaNube() {
 function doSearch() {
   const q = searchInput.value.trim();
   currentPage = 1;
-  allProducts = []; 
+  allProducts = [];
   loadProducts(currentFilter, 1, false);
   if (q) {
     const productsEl = document.getElementById('productos');
@@ -610,20 +604,20 @@ function doSearch() {
 // ─── NAVBAR & UI ────────────────────────────────────────────
 window.addEventListener('scroll', () => {
   navbar.classList.toggle('scrolled', window.scrollY > 50);
-  const sections = ['inicio','categorias','productos','nosotros','contacto'];
+  const sections = ['inicio', 'categorias', 'productos', 'nosotros', 'contacto'];
   let current = 'inicio';
   sections.forEach(id => {
     const el = document.getElementById(id);
     if (el && window.scrollY >= el.offsetTop - 120) current = id;
   });
   document.querySelectorAll('.nav-link').forEach(l => {
-    l.classList.toggle('active', l.getAttribute('href')==='#'+current);
+    l.classList.toggle('active', l.getAttribute('href') === '#' + current);
   });
-}, { passive:true });
+}, { passive: true });
 
 searchToggle.addEventListener('click', () => {
   const open = searchExpand.classList.toggle('open');
-  if (open) setTimeout(()=>searchInput.focus(), 50);
+  if (open) setTimeout(() => searchInput.focus(), 50);
 });
 document.addEventListener('click', e => {
   if (!e.target.closest('.search-wrapper')) searchExpand.classList.remove('open');
@@ -640,8 +634,8 @@ cartBody.addEventListener('click', e => {
   const btn = e.target.closest('[data-action]');
   if (!btn) return;
   const id = btn.dataset.id;
-  if (btn.dataset.action==='inc') changeQty(id, 1);
-  if (btn.dataset.action==='dec') changeQty(id,-1);
+  if (btn.dataset.action === 'inc') changeQty(id, 1);
+  if (btn.dataset.action === 'dec') changeQty(id, -1);
 });
 
 productsGrid.addEventListener('click', e => {
@@ -663,22 +657,22 @@ productsGrid.addEventListener('click', e => {
 });
 
 const productModal = $('productModal');
-const pmClose      = $('pmClose');
+const pmClose = $('pmClose');
 
 function openProductModal(id) {
   const p = allProducts.find(x => x.id === id);
   if (!p) return;
 
-  $('pmTag').textContent = ({ agro:'Agro', bazar:'Bazar', papeleria:'Papelería' }[p.category] || 'Bazar');
+  $('pmTag').textContent = ({ agro: 'Agro', bazar: 'Bazar', papeleria: 'Papelería' }[p.category] || 'Bazar');
   $('pmTitle').textContent = p.title;
   $('pmPrice').textContent = fmt(p.price);
   $('pmCompare').textContent = (p.comparePrice > p.price) ? fmt(p.comparePrice) : '';
   $('pmDescription').innerHTML = p.fullDescription || '<p>Sin descripción disponible.</p>';
-  
+
   const mainImg = $('pmMainImg');
-  const thumbs  = $('pmThumbs');
+  const thumbs = $('pmThumbs');
   mainImg.src = p.image || '';
-  
+
   thumbs.innerHTML = p.images.map((img, idx) => `
     <div class="pm-thumb ${idx === 0 ? 'active' : ''}" data-src="${esc(img.src)}">
       <img src="${esc(img.src)}" alt="Miniatura ${idx + 1}">
@@ -701,7 +695,7 @@ function openProductModal(id) {
   }
 
   $('pmAddToCart').onclick = () => { addToCart(p.id); closeProductModal(); };
-  
+
   const btnBuyNow = $('pmBuyNow');
   const buyUrl = p.permalink || TN_BASE_URL;
   btnBuyNow.hidden = false;
@@ -714,7 +708,7 @@ function openProductModal(id) {
 
   renderRelatedProducts(p);
 
-  productModal.classList.add('open'); 
+  productModal.classList.add('open');
   overlay.classList.add('active');
   document.body.style.overflow = 'hidden';
   if (lenis) lenis.stop();
@@ -755,13 +749,13 @@ catBtns.forEach(btn => {
 
 hfcCards.forEach(card => {
   const filter = card.classList.contains('hfc-agro') ? 'agro'
-               : card.classList.contains('hfc-bazar') ? 'bazar'
-               : card.classList.contains('hfc-papel') ? 'papeleria' : null;
+    : card.classList.contains('hfc-bazar') ? 'bazar'
+      : card.classList.contains('hfc-papel') ? 'papeleria' : null;
   if (filter) card.addEventListener('click', () => { if (filter !== currentFilter) window.applyFilter(filter); });
 });
 
 searchBtn.addEventListener('click', doSearch);
-searchInput.addEventListener('keydown', e => e.key==='Enter' && doSearch());
+searchInput.addEventListener('keydown', e => e.key === 'Enter' && doSearch());
 
 let searchTimeout;
 searchInput.addEventListener('input', () => {
@@ -789,12 +783,12 @@ searchInput.addEventListener('input', () => {
     } else {
       resContainer.classList.remove('open');
     }
-  }, 250); 
+  }, 250);
 });
 
 document.addEventListener('click', e => { if (!e.target.closest('.search-wrapper')) $('searchResults').classList.remove('open'); });
 
-loadMoreBtn.addEventListener('click', () => { if (!isLoading && hasNextPage) loadProducts(currentFilter, currentPage+1, true); });
+loadMoreBtn.addEventListener('click', () => { if (!isLoading && hasNextPage) loadProducts(currentFilter, currentPage + 1, true); });
 
 hamburger.addEventListener('click', () => {
   const open = navLinks.classList.toggle('open');
@@ -805,12 +799,12 @@ document.querySelectorAll('.nav-link').forEach(l => l.addEventListener('click', 
   hamburger.classList.remove('open');
 }));
 
-document.addEventListener('keydown', e => { if (e.key==='Escape') { closeCart(); closeProductModal(); searchExpand.classList.remove('open'); } });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeCart(); closeProductModal(); searchExpand.classList.remove('open'); } });
 
 function setupObserver() {
   const obs = new IntersectionObserver(entries => {
     entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('fade-up'); obs.unobserve(e.target); } });
-  }, { threshold:0.1 });
+  }, { threshold: 0.1 });
   document.querySelectorAll('.cat-card, .contact-card, .mosaic-cell, .about-checks li, .stat-pill').forEach(el => obs.observe(el));
 }
 
@@ -896,7 +890,7 @@ function showSkeletons(n) {
 
 init();
 
-(function() {
+(function () {
   const bar = document.getElementById('scrollProgress');
   if (!bar) return;
   window.addEventListener('scroll', () => {
@@ -945,7 +939,7 @@ function flyToCart(productId) {
     clone.style.opacity = '0';
   });
   clone.addEventListener('transitionend', () => clone.remove(), { once: true });
-  setTimeout(() => { if(clone.parentNode) clone.remove(); }, 1000);
+  setTimeout(() => { if (clone.parentNode) clone.remove(); }, 1000);
 }
 
 function renderRelatedProducts(currentProd) {
