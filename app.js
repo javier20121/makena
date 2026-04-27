@@ -473,8 +473,6 @@ async function loadProducts(filter = 'all', page = 1, append = false) {
   }
 }
 
-function initDraggableDeco() {
-
 function logicFilter(products, filter, search = '') {
   const list = Array.isArray(products) ? products : [];
 
