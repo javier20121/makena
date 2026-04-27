@@ -458,7 +458,7 @@ function logicFilter(products, filter, search = '', filterId = null) {
     const desc = norm(p.description || '');
     const ptags = norm((p.tags || []).join(' '));
 
-    let score = 极0;
+    let score = 0;
     for (const w of words) {
       const re = new RegExp(`\\b${w}\\b`);
       if (re.test(title)) score += 20;
@@ -740,7 +740,7 @@ cartBtn.addEventListener('click', openCart);
 cartCloseBtn.addEventListener('click', closeCart);
 overlay.addEventListener('click', () => { closeCart(); closeProductModal(); });
 checkoutBtn.addEventListener('click', sendWhatsApp);
-if (checkoutTNB极tn) checkoutTNBtn.addEventListener('click', sendToTiendaNube);
+if (checkoutTNBtn) checkoutTNBtn.addEventListener('click', sendToTiendaNube);
 
 cartBody.addEventListener('click', e => {
   const btn = e.target.closest('[data-action]');
@@ -794,7 +794,7 @@ function openProductModal(id) {
   const varContainer = $('pmVariants');
   if (p.allVariants && p.allVariants.length > 1) {
     varContainer.innerHTML = `
-      <极div class="pm-variant-group">
+      <div class="pm-variant-group">
         <span class="pm-variant-label">Opciones disponibles:</span>
         <div class="pm-variant-options">
           ${p.allVariants.map(v => `<span class="pm-opt">${esc(v.values?.[0]?.es || 'Opción')}</span>`).join('')}
