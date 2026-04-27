@@ -271,8 +271,10 @@ async function loadCategories() {
     const categoryCount = {};
     if (allProducts && allProducts.length > 0) {
       allProducts.forEach(p => {
-        const cat = p.category;
-        categoryCount[cat] = (categoryCount[cat] || 0) + 1;
+        // Contamos el producto en todas las categorías a las que pertenece
+        p.categoriesList.forEach(catName => {
+          categoryCount[catName] = (categoryCount[catName] || 0) + 1;
+        });
       });
     }
 
@@ -363,6 +365,7 @@ async function loadProducts(filter = 'all', page = 1, append = false) {
         imageAlt: p.name?.es || 'Imagen de producto',
         available: v.stock !== 0 && !!v.id,
         category: p.categories?.[0]?.name?.es || 'General',
+        categoriesList: (p.categories || []).map(c => c.name?.es || c.name?.en || 'General'),
         permalink: p.canonical_url || (typeof p.permalink === 'object' ? p.permalink?.es : p.permalink) || null,
         images: p.images || [],
         fullDescription: p.description?.es || '',
@@ -431,7 +434,8 @@ function logicFilter(products, filter, search = '') {
   const results = [];
   for (const p of list) {
     // Filtro de categoría
-    if (doFilter && p.category !== filter) continue;
+    // Ahora verificamos si el nombre de la categoría está en la lista de categorías del producto
+    if (doFilter && !p.categoriesList.includes(filter)) continue;
 
     // Sin búsqueda activa → incluir directamente
     if (!doSearch) { results.push(p); continue; }
