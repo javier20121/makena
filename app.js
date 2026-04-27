@@ -135,6 +135,7 @@ let filteredProducts = [];
 let lenis = null; // ✅ Variable global para control
 let cart = [];
 let currentFilter = 'all';
+let currentCategoryId = null;
 let currentPage = 1;
 let hasNextPage = false;
 let connectionState = 'idle';
@@ -292,16 +293,11 @@ async function loadCategories() {
         }
       }
 
-      // Contar productos (buscar por nombre similar)
-      let count = 0;
-      for (const [key, val] of Object.entries(categoryCount)) {
-        if (normName.includes(key) || key.includes(normName.split(' ')[0])) {
-          count += val;
-        }
-      }
+    // Contar productos exactos por nombre
+    const count = categoryCount[name] || 0;
 
       return `
-        <article class="category-pill fade-up" style="animation-delay: ${idx * 0.08}s;" tabindex="0">
+      <article class="category-pill fade-up" style="animation-delay: ${idx * 0.08}s;" tabindex="0" data-id="${cat.id}" data-name="${esc(name)}">
           <span class="category-pill-icon">${emoji}</span>
           <h3 class="category-pill-title">${esc(name)}</h3>
           ${count > 0 ? `<span class="category-pill-count">${count} productos</span>` : '<span class="category-pill-count">Ver más</span>'}
@@ -312,8 +308,7 @@ async function loadCategories() {
     // Agregar event listeners a las pastillas
     document.querySelectorAll('.category-pill').forEach(pill => {
       pill.addEventListener('click', () => {
-        const title = pill.querySelector('.category-pill-title').textContent.trim();
-        applyFilter(title);
+        applyFilter(pill.dataset.name, pill.dataset.id);
       });
     });
 
@@ -335,12 +330,12 @@ async function loadProducts(filter = 'all', page = 1, append = false) {
 
   try {
     const isSearch = searchInput.value.trim().length > 0;
-    const isFiltered = filter !== 'all';
     const params = {
       page,
-      per_page: (isSearch || isFiltered) ? 80 : PAGE_SIZE
+      per_page: PAGE_SIZE
     };
     if (isSearch) params.q = searchInput.value.trim();
+    if (currentCategoryId) params.category = currentCategoryId;
 
     console.log('[loadProducts] Cargando:', { filter, page, append, params });
 
@@ -434,8 +429,8 @@ function logicFilter(products, filter, search = '') {
   const results = [];
   for (const p of list) {
     // Filtro de categoría
-    // Ahora verificamos si el nombre de la categoría está en la lista de categorías del producto
-    if (doFilter && !p.categoriesList.includes(filter)) continue;
+    // Usamos normalización para evitar problemas con acentos (Perfumería vs Perfumeria)
+    if (doFilter && !p.categoriesList.some(c => norm(c) === norm(filter))) continue;
 
     // Sin búsqueda activa → incluir directamente
     if (!doSearch) { results.push(p); continue; }
@@ -467,13 +462,16 @@ function logicFilter(products, filter, search = '') {
   return results;
 }
 
-window.applyFilter = function (filter) {
-  if (isLoading || currentFilter === filter) return;
+window.applyFilter = function (filter, categoryId = null) {
+  if (filter === 'all') categoryId = null;
+  if (isLoading || (currentFilter === filter && currentCategoryId === categoryId)) return;
+  
   currentFilter = filter;
+  currentCategoryId = categoryId;
   currentPage = 1;
-  chips.forEach(c => c.classList.toggle('active', c.dataset.filter === filter));
+  if (chips) chips.forEach(c => c.classList.toggle('active', c.dataset.filter === filter));
   allProducts = [];
-  loadProducts(filter, 1, false);
+  loadProducts(currentFilter, 1, false);
   document.getElementById('productos')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 };
 
@@ -1048,7 +1046,7 @@ function renderRelatedProducts(currentProd) {
   const container = document.getElementById('pmRelatedGrid');
   if (!container) return;
   const related = fisherYates(
-    allProducts.filter(p => p.category === currentProd.category && p.id !== currentProd.id)
+    allProducts.filter(p => norm(p.category) === norm(currentProd.category) && p.id !== currentProd.id)
   ).slice(0, 3);
   if (related.length === 0) { document.getElementById('pmRelated').hidden = true; return; }
   document.getElementById('pmRelated').hidden = false;
