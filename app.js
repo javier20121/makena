@@ -135,7 +135,6 @@ let filteredProducts = [];
 let lenis = null; // ✅ Variable global para control
 let cart = [];
 let currentFilter = 'all';
-let currentCategoryId = null;
 let currentPage = 1;
 let hasNextPage = false;
 let connectionState = 'idle';
@@ -193,9 +192,14 @@ function showToast(msg, duration = 2800) {
 
 // ─── NORMALIZAR TEXTO (quita acentos para comparar) ─────────
 function norm(s = '') {
-  return String(s).toLowerCase()
-    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9\s]/g, ' ');
+  if (!s) return '';
+  return String(s)
+    .normalize('NFD') // Descompone caracteres (á -> a + ´)
+    .replace(/[\u0300-\u036f]/g, '') // Elimina los acentos
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s]/g, ' ') // Quita símbolos
+    .replace(/\s+/g, ' '); // Colapsa espacios múltiples
 }
 
 // ─── TIENDANUBE PROXY ───────────────────────────────────────
@@ -293,11 +297,16 @@ async function loadCategories() {
         }
       }
 
-    // Contar productos exactos por nombre
-    const count = categoryCount[name] || 0;
+      // Contar productos (buscar por nombre similar)
+      let count = 0;
+      for (const [key, val] of Object.entries(categoryCount)) {
+        if (normName.includes(key) || key.includes(normName.split(' ')[0])) {
+          count += val;
+        }
+      }
 
       return `
-      <article class="category-pill fade-up" style="animation-delay: ${idx * 0.08}s;" tabindex="0" data-id="${cat.id}" data-name="${esc(name)}">
+        <article class="category-pill fade-up" style="animation-delay: ${idx * 0.08}s;" tabindex="0">
           <span class="category-pill-icon">${emoji}</span>
           <h3 class="category-pill-title">${esc(name)}</h3>
           ${count > 0 ? `<span class="category-pill-count">${count} productos</span>` : '<span class="category-pill-count">Ver más</span>'}
@@ -308,7 +317,8 @@ async function loadCategories() {
     // Agregar event listeners a las pastillas
     document.querySelectorAll('.category-pill').forEach(pill => {
       pill.addEventListener('click', () => {
-        applyFilter(pill.dataset.name, pill.dataset.id);
+        const title = pill.querySelector('.category-pill-title').textContent.trim();
+        applyFilter(title);
       });
     });
 
@@ -330,12 +340,12 @@ async function loadProducts(filter = 'all', page = 1, append = false) {
 
   try {
     const isSearch = searchInput.value.trim().length > 0;
+    const isFiltered = filter !== 'all';
     const params = {
       page,
-      per_page: PAGE_SIZE
+      per_page: (isSearch || isFiltered) ? 80 : PAGE_SIZE
     };
     if (isSearch) params.q = searchInput.value.trim();
-    if (currentCategoryId) params.category = currentCategoryId;
 
     console.log('[loadProducts] Cargando:', { filter, page, append, params });
 
@@ -361,6 +371,7 @@ async function loadProducts(filter = 'all', page = 1, append = false) {
         available: v.stock !== 0 && !!v.id,
         category: p.categories?.[0]?.name?.es || 'General',
         categoriesList: (p.categories || []).map(c => c.name?.es || c.name?.en || 'General'),
+        categoryIdsList: (p.categories || []).map(c => String(c.id)),
         permalink: p.canonical_url || (typeof p.permalink === 'object' ? p.permalink?.es : p.permalink) || null,
         images: p.images || [],
         fullDescription: p.description?.es || '',
@@ -369,11 +380,14 @@ async function loadProducts(filter = 'all', page = 1, append = false) {
       };
     }) : [];
 
+    // 🟢 Depuración: Verificamos qué nombres e IDs llegan de la API
+    products.forEach(p => console.log(`[DEBUG] Producto: ${p.title} | IDs: ${p.categoryIdsList} | Nombres: ${p.categoriesList}`));
+
     allProducts = append ? [...allProducts, ...products] : products;
-    filteredProducts = logicFilter(allProducts, currentFilter, searchInput.value);
+    filteredProducts = logicFilter(allProducts, currentFilter, searchInput.value, currentCategoryId);
 
     const toRender = append
-      ? logicFilter(products, currentFilter, searchInput.value)
+      ? logicFilter(products, currentFilter, searchInput.value, currentCategoryId)
       : filteredProducts;
 
     if (!append && filter === 'all' && !searchInput.value.trim() && allProducts.length === 0) {
@@ -399,7 +413,7 @@ async function loadProducts(filter = 'all', page = 1, append = false) {
   }
 }
 
-function logicFilter(products, filter, search = '') {
+function logicFilter(products, filter, search = '', filterId = null) {
   const list = Array.isArray(products) ? products : [];
 
   const query  = norm(search.trim());
@@ -429,8 +443,14 @@ function logicFilter(products, filter, search = '') {
   const results = [];
   for (const p of list) {
     // Filtro de categoría
-    // Usamos normalización para evitar problemas con acentos (Perfumería vs Perfumeria)
-    if (doFilter && !p.categoriesList.some(c => norm(c) === norm(filter))) continue;
+    if (doFilter) {
+      // Prioridad 1: Si tenemos ID de categoría, comparamos por ID
+      // Prioridad 2: Si no hay ID o falla, comparamos por nombre normalizado
+      const matchById = filterId && p.categoryIdsList.includes(String(filterId));
+      const matchByName = p.categoriesList.some(c => norm(c) === norm(filter));
+      
+      if (!matchById && !matchByName) continue;
+    }
 
     // Sin búsqueda activa → incluir directamente
     if (!doSearch) { results.push(p); continue; }
@@ -462,16 +482,13 @@ function logicFilter(products, filter, search = '') {
   return results;
 }
 
-window.applyFilter = function (filter, categoryId = null) {
-  if (filter === 'all') categoryId = null;
-  if (isLoading || (currentFilter === filter && currentCategoryId === categoryId)) return;
-  
+window.applyFilter = function (filter) {
+  if (isLoading || currentFilter === filter) return;
   currentFilter = filter;
-  currentCategoryId = categoryId;
   currentPage = 1;
-  if (chips) chips.forEach(c => c.classList.toggle('active', c.dataset.filter === filter));
+  chips.forEach(c => c.classList.toggle('active', c.dataset.filter === filter));
   allProducts = [];
-  loadProducts(currentFilter, 1, false);
+  loadProducts(filter, 1, false);
   document.getElementById('productos')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 };
 
@@ -847,7 +864,7 @@ searchInput.addEventListener('input', () => {
     return;
   }
   searchTimeout = setTimeout(() => {
-    const results = logicFilter(allProducts, currentFilter !== 'all' ? currentFilter : 'all', q).slice(0, 6);
+    const results = logicFilter(allProducts, currentFilter !== 'all' ? currentFilter : 'all', q, currentCategoryId).slice(0, 6);
     if (results.length > 0) {
       resContainer.innerHTML = results.map(p => `
         <div class="search-res-item" onclick="openProductModal('${p.id}'); $('searchResults').classList.remove('open');">
@@ -1046,7 +1063,7 @@ function renderRelatedProducts(currentProd) {
   const container = document.getElementById('pmRelatedGrid');
   if (!container) return;
   const related = fisherYates(
-    allProducts.filter(p => norm(p.category) === norm(currentProd.category) && p.id !== currentProd.id)
+    allProducts.filter(p => p.category === currentProd.category && p.id !== currentProd.id)
   ).slice(0, 3);
   if (related.length === 0) { document.getElementById('pmRelated').hidden = true; return; }
   document.getElementById('pmRelated').hidden = false;
