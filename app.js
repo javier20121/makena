@@ -197,70 +197,6 @@ function norm(s = '') {
     .replace(/[^a-z0-9\s]/g, ' ');
 }
 
-// ─── REGLAS DE CATEGORÍA — fáciles de ampliar ───────────────
-// Cada regla tiene: el nombre de categoría, palabras clave en nombre del cat (TN),
-// y palabras clave a buscar en el texto completo del producto.
-// El orden importa: la primera que matchea gana (agro > papeleria > bazar).
-const CATEGORY_RULES = [
-  {
-    cat: 'agro',
-    catKw: /agro|campo|huerta|jardin|veterinaria|semilla|fertiliz|fitosanitario/,
-    textRx: /\b(agro|campo|semilla|fertiliz|herbicida|fungicida|insecticida|plaguicida|fitosanitario|poda|huerta|siembra|cultivo|manguera|aspersor|riego|rastrillo|azada|pala|fumigadora|alambrado|tranquera|gallinero|granja|bovino|porcino|aviar|ovino|caprino|veterinari|agroquimico|abono|compost|sustrato|tierra para maceta|plantin|trebol|maiz|soja|trigo|girasol|mani|tabaco|yerba mate)\b/,
-    scoreRx: /\b(campo|cultivo|planta|tierra|jardin|herramienta)\b/,
-  },
-  {
-    cat: 'papeleria',
-    catKw: /papeleria|escolar|oficina|libreria|librería|cotillon|cotillón/,
-    textRx: /\b(papeleria|escolar|cuaderno|libreta|anotador|agenda|lapiz|lapicera|birome|boligrafo|marcador|resaltador|fibra|carpeta|archivo|folio|resma|sello|pegamento|cola vinilica|scotch|engrapadora|abrochadora|grampa|calculadora|regla|compas|cartuchera|mochila escolar|globos?|cotillon|cumpleanos|papel regalo|vinilo|cartulina|afiche|bloc|block|portafolio|bibliorato|separador|corrector|tipex)\b/,
-    scoreRx: /\b(hoja|papel|escolar|oficina|escribir|anotar|fiesta|regalo|globo)\b/,
-  },
-  {
-    cat: 'bazar',
-    catKw: /bazar|cocina|hogar|menaje|limpieza|decoracion|textil|vajilla/,
-    textRx: /\b(bazar|cocina|olla|cacerola|sarten|wok|paila|cubierto|vajilla|plato|taza|vaso|jarra|jarro|tazon|bol|fuente|escurridor|colador|utensilio|menaje|mate|termo|botella|botellon|hidratacion|limpieza|escoba|trapeador|trapo|balde|cesto|canasto|organizador|percha|toalla|sabana|almohada|funda|mantel|repasador|lampara|velador|adorno|espejo|decoracion|hogar|cortina|textil|bano|detergente|higiene|cuchillo de cocina|tabla de picar)\b/,
-    scoreRx: /\b(cocina|hogar|casa|decorar|limpiar|mesa|cama)\b/,
-  },
-];
-
-function detectCategory(p) {
-  // — Prioridad 1: tags explícitos cargados en Tiendanube —
-  const tags = norm(p.tags || '');
-  if (tags.includes('papeleria')) return 'papeleria';
-  if (tags.includes('agro'))      return 'agro';
-  if (tags.includes('bazar'))     return 'bazar';
-
-  // — Prioridad 2: nombre de categorías de Tiendanube —
-  const catNames = (p.categories || [])
-    .map(c => norm(c.name?.es || c.name?.[Object.keys(c.name || {})[0]] || ''))
-    .join(' ');
-
-  for (const rule of CATEGORY_RULES) {
-    if (rule.catKw.test(catNames)) return rule.cat;
-  }
-
-  // — Prioridad 3: keywords en nombre + descripción + categorías —
-  const name = norm(p.name?.es || p.name?.[Object.keys(p.name || {})[0]] || '');
-  const desc = norm(p.description?.es || '');
-  const text  = `${name} ${desc} ${catNames}`;
-
-  for (const rule of CATEGORY_RULES) {
-    if (rule.textRx.test(text)) return rule.cat;
-  }
-
-  // — Prioridad 4: scoring por densidad (desempate) —
-  const scores = CATEGORY_RULES.map(rule => ({
-    cat:   rule.cat,
-    score: (text.match(rule.scoreRx) || []).length,
-  }));
-  scores.sort((a, b) => b.score - a.score);
-
-  // Si el ganador tiene al menos 1 punto, lo usamos
-  if (scores[0].score > 0) return scores[0].cat;
-
-  // Fallback: bazar (categoría más amplia)
-  return 'bazar';
-}
-
 // ─── TIENDANUBE PROXY ───────────────────────────────────────
 async function tnFetch(params = {}) {
   const url = new URL('/api/products', window.location.origin);
@@ -335,7 +271,7 @@ async function loadCategories() {
     const categoryCount = {};
     if (allProducts && allProducts.length > 0) {
       allProducts.forEach(p => {
-        const cat = p.category || 'bazar';
+        const cat = p.category;
         categoryCount[cat] = (categoryCount[cat] || 0) + 1;
       });
     }
@@ -375,15 +311,7 @@ async function loadCategories() {
     document.querySelectorAll('.category-pill').forEach(pill => {
       pill.addEventListener('click', () => {
         const title = pill.querySelector('.category-pill-title').textContent.trim();
-        const normalized = norm(title);
-        
-        // Mapear a filtro
-        let filter = 'bazar';
-        if (normalized.includes('agro')) filter = 'agro';
-        else if (normalized.includes('papel') || normalized.includes('escolar') || normalized.includes('oficina')) filter = 'papeleria';
-        else if (normalized.includes('bazar') || normalized.includes('hogar')) filter = 'bazar';
-
-        applyFilter(filter);
+        applyFilter(title);
       });
     });
 
@@ -434,7 +362,7 @@ async function loadProducts(filter = 'all', page = 1, append = false) {
         image: p.images?.[0]?.src || null,
         imageAlt: p.name?.es || 'Imagen de producto',
         available: v.stock !== 0 && !!v.id,
-        category: detectCategory(p),
+        category: p.categories?.[0]?.name?.es || 'General',
         permalink: p.canonical_url || (typeof p.permalink === 'object' ? p.permalink?.es : p.permalink) || null,
         images: p.images || [],
         fullDescription: p.description?.es || '',
@@ -566,8 +494,12 @@ function buildCard(p, i = 0) {
   el.style.animationDelay = `${(i % 8) * 0.055}s`;
   el.dataset.productId = p.id;
 
-  const emoji = CATEGORY_EMOJIS[p.category] || CATEGORY_EMOJIS.default;
-  const tagLabel = ({ agro: 'Agro', bazar: 'Bazar', papeleria: 'Papelería' }[p.category] || 'Bazar');
+  // Buscar emoji por palabra clave en el nombre de la categoría
+  let emoji = '📦';
+  const catNorm = norm(p.category);
+  if (catNorm.includes('agro')) emoji = '🌾';
+  else if (catNorm.includes('bazar') || catNorm.includes('hogar')) emoji = '🏠';
+  else if (catNorm.includes('papel') || catNorm.includes('libreria') || catNorm.includes('oficina')) emoji = '📎';
 
   const hasSale = p.comparePrice > p.price && p.price > 0;
   const discount = hasSale ? Math.round(((p.comparePrice - p.price) / p.comparePrice) * 100) : 0;
@@ -583,7 +515,7 @@ function buildCard(p, i = 0) {
   el.innerHTML = `
     <div class="product-img-wrap">
       ${imgHtml}
-      <span class="product-tag ${esc(p.category)}">${tagLabel}</span>
+      <span class="product-tag">${esc(p.category)}</span>
       ${hasSale ? `<span class="badge-sale">${discount}% OFF</span>` : ''}
       <button class="wishlist-btn" aria-label="Favorito">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l8.72-8.72 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>

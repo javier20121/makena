@@ -1554,6 +1554,10 @@ em {
   backdrop-filter: blur(8px);
   border: 1px solid rgba(255, 255, 255, 0.3);
   z-index: 5;
+  /* Estilo predeterminado para cualquier categoría */
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--celeste-2);
+  border: 1.5px solid var(--celeste-bg);
 }
 
 .product-tag.agro {
