@@ -17,6 +17,18 @@ const EMPTY_MESSAGES = {
   noResults: 'No encontramos productos con ese criterio.',
 };
 
+// ─── MAPEO DE CATEGORÍAS POR ID ────────────────────────────
+const CATEGORY_MAPPING = {
+  '38337422': 'Perfumería',      // Maquillaje & Accesorios -> Perfumería
+  '38357189': 'Perfumería',      // Cuidado Personal -> Perfumería
+  '38356862': 'Perfumería',      // Peluqueria y accesorios -> Perfumería
+  '38337358': 'Bazar',           // Bazar & Cocina -> Bazar
+  '38337614': 'Bazar',           // Articulos varios -> Bazar
+  '38337299': 'Hogar',           // Blanqueria -> Hogar
+  '38337374': 'Cotillón',        // Cotillón -> Cotillón
+  '38348340': 'Térmicos',        // Linea Stanley -> Térmicos
+};
+
 // ─── ASOCIACIONES SEMÁNTICAS — cargadas bajo demanda ────────
 // Se inicializa vacío y se llena la primera vez que el usuario escribe.
 // Así no bloquea el hilo principal en la carga inicial de la página.
@@ -253,59 +265,40 @@ async function loadCategories() {
       throw new Error(`HTTP ${res.status}`);
     }
 
-    const categories = await res.json();
-
-    if (!Array.isArray(categories) || categories.length === 0) {
-      console.warn('[loadCategories] No hay categorías o respuesta inválida');
-      categoriesGrid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: var(--ink-3);">Sin categorías disponibles</p>';
-      return;
-    }
-
-    // Mapear iconos a categorías
-    const categoryEmojis = {
-      'agro': '🌾',
-      'bazar': '🏠',
-      'papeleria': '📎',
-      'papelería': '📎',
-      'hogar': '🏠',
-      'jardin': '🌿',
-      'oficina': '📎',
-      'escolar': '📎'
-    };
-
-    // Contar productos por categoría (usar allProducts si está disponible)
-    const categoryCount = {};
-    if (allProducts && allProducts.length > 0) {
-      allProducts.forEach(p => {
-        // Contamos el producto en todas las categorías a las que pertenece
-        p.categoriesList.forEach(catName => {
-          categoryCount[catName] = (categoryCount[catName] || 0) + 1;
-        });
-      });
-    }
-
-    // Renderizar categorías
-    categoriesGrid.innerHTML = categories.map((cat, idx) => {
-      const name = cat.name?.es || cat.name || 'Categoría';
-      const normName = norm(name);
-      
-      // Buscar emoji
-      let emoji = '📦';
-      for (const [key, icon] of Object.entries(categoryEmojis)) {
-        if (normName.includes(key)) {
-          emoji = icon;
-          break;
-        }
+    const rawCategories = await res.json();
+    
+    // Agrupar categorías según el mapeo
+    const groups = {};
+    rawCategories.forEach(cat => {
+      const name = cat.name?.es || 'General';
+      const mappedName = CATEGORY_MAPPING[cat.id] || name;
+      if (!groups[mappedName]) {
+        groups[mappedName] = { name: mappedName, ids: [], count: 0 };
       }
+      groups[mappedName].ids.push(String(cat.id));
+    });
 
-    // Contar productos usando el ID oficial de Tiendanube
-    const count = categoryCount[String(cat.id)] || 0;
+    // Contar productos para cada grupo
+    allProducts.forEach(p => {
+      Object.values(groups).forEach(g => {
+        if (p.categoryIdsList.some(id => g.ids.includes(id))) g.count++;
+      });
+    });
+
+    categoriesGrid.innerHTML = Object.values(groups).map((g, idx) => {
+      const normName = norm(g.name);
+      let emoji = '📦';
+      if (normName.includes('agro')) emoji = '🌾';
+      else if (normName.includes('bazar') || normName.includes('hogar')) emoji = '🏠';
+      else if (normName.includes('perfume') || normName.includes('maquillaje')) emoji = '✨';
+      else if (normName.includes('papel') || normName.includes('escolar')) emoji = '📎';
 
       return `
-      <article class="category-pill fade-up" style="animation-delay: ${idx * 0.08}s;" tabindex="0" data-id="${cat.id}" data-name="${esc(name)}">
+        <article class="category-pill fade-up" style="animation-delay: ${idx * 0.08}s;" 
+                 tabindex="0" data-id="${g.ids[0]}" data-name="${esc(g.name)}">
           <span class="category-pill-icon">${emoji}</span>
-          <h3 class="category-pill-title">${esc(name)}</h3>
-          ${count > 0 ? `<span class="category-pill-count">${count} productos</span>` : '<span class="category-pill-count">Ver más</span>'}
+          <h3 class="category-pill-title">${esc(g.name)}</h3>
+          <span class="category-pill-count">${g.count} productos</span>
         </article>
       `;
     }).join('');
@@ -533,7 +526,7 @@ function buildCard(p, i = 0) {
   el.innerHTML = `
     <div class="product-img-wrap">
       ${imgHtml}
-      <span class="product-tag">${esc(p.category)}</span>
+      <span class="product-tag">${esc(CATEGORY_MAPPING[p.categoryIdsList[0]] || p.category)}</span>
       ${hasSale ? `<span class="badge-sale">${discount}% OFF</span>` : ''}
       <button class="wishlist-btn" aria-label="Favorito">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l8.72-8.72 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
