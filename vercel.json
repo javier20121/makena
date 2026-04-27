@@ -6,6 +6,10 @@
       "dest": "/api/products.js"
     },
     {
+      "src": "/api/categories",
+      "dest": "/api/categories.js"
+    },
+    {
       "src": "/(.*)",
       "dest": "/$1"
     }

@@ -32,7 +32,12 @@ export default async function handler(req, res) {
   const tnUrl = new URL(`https://api.tiendanube.com/v1/${finalStoreId}/products`);
   Object.keys(params).forEach(key => {
     if (params[key] !== undefined && params[key] !== '') {
-      tnUrl.searchParams.append(key, params[key]);
+      // La API de Tiendanube usa 'categories' para filtrar por IDs
+      if (key === 'category') {
+        tnUrl.searchParams.append('categories', params[key]);
+      } else {
+        tnUrl.searchParams.append(key, params[key]);
+      }
     }
   });
 

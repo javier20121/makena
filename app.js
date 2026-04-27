@@ -266,17 +266,20 @@ async function loadCategories() {
     }
 
     const rawCategories = await res.json();
-    
+
     // Agrupar categorías según el mapeo
     const groups = {};
     rawCategories.forEach(cat => {
-      const name = cat.name?.es || 'General';
-      const mappedName = CATEGORY_MAPPING[cat.id] || name;
+      const name = cat.name?.es || cat.name?.en || 'General';
+      const mappedName = CATEGORY_MAPPING[String(cat.id)] || name;
       if (!groups[mappedName]) {
         groups[mappedName] = { name: mappedName, ids: [], count: 0 };
       }
       groups[mappedName].ids.push(String(cat.id));
     });
+
+    // Guardar categorías globalmente para usar al filtrar
+    window.makenaCategories = groups;
 
     // Contar productos para cada grupo
     allProducts.forEach(p => {
@@ -294,8 +297,8 @@ async function loadCategories() {
       else if (normName.includes('papel') || normName.includes('escolar')) emoji = '📎';
 
       return `
-        <article class="category-pill fade-up" style="animation-delay: ${idx * 0.08}s;" 
-                 tabindex="0" data-id="${g.ids[0]}" data-name="${esc(g.name)}">
+        <article class="category-pill fade-up" style="animation-delay: ${idx * 0.08}s;"
+                 tabindex="0" data-name="${esc(g.name)}" data-ids="${esc(g.ids.join(','))}">
           <span class="category-pill-icon">${emoji}</span>
           <h3 class="category-pill-title">${esc(g.name)}</h3>
           <span class="category-pill-count">${g.count} productos</span>
@@ -306,7 +309,9 @@ async function loadCategories() {
     // Agregar event listeners a las pastillas
     document.querySelectorAll('.category-pill').forEach(pill => {
       pill.addEventListener('click', () => {
-        applyFilter(pill.dataset.name, pill.dataset.id);
+        const name = pill.dataset.name;
+        const ids = pill.dataset.ids.split(',');
+        applyFilter(name, ids);
       });
     });
 
@@ -328,13 +333,16 @@ async function loadProducts(filter = 'all', page = 1, append = false) {
 
   try {
     const isSearch = searchInput.value.trim().length > 0;
-    const isFiltered = filter !== 'all' || currentCategoryId;
+    const isFiltered = filter !== 'all' || (currentCategoryId && currentCategoryId.length > 0);
     const params = {
       page,
       per_page: (isSearch || isFiltered) ? 80 : PAGE_SIZE
     };
     if (isSearch) params.q = searchInput.value.trim();
-    if (currentCategoryId) params.category = currentCategoryId;
+    // Usar el primer ID de categoría para filtrar en la API
+    if (currentCategoryId && currentCategoryId.length > 0) {
+      params.category = currentCategoryId[0];
+    }
 
     console.log('[loadProducts] Cargando:', { filter, page, append, params });
 
@@ -402,12 +410,12 @@ async function loadProducts(filter = 'all', page = 1, append = false) {
   }
 }
 
-function logicFilter(products, filter, search = '', filterId = null) {
+function logicFilter(products, filter, search = '', categoryIds = null) {
   const list = Array.isArray(products) ? products : [];
 
   const query  = norm(search.trim());
   const words  = query ? query.split(/\s+/).filter(w => w.length > 1) : [];
-  const doFilter = filter !== 'all';
+  const doFilter = filter !== 'all' || (categoryIds && categoryIds.length > 0);
   const doSearch = words.length > 0;
 
   // Sin filtros → devuelve todo directo
@@ -431,14 +439,14 @@ function logicFilter(products, filter, search = '', filterId = null) {
   // Un único recorrido: filtra por categoría Y calcula score al mismo tiempo
   const results = [];
   for (const p of list) {
-    // Filtro de categoría
-    if (doFilter) {
-      // Prioridad 1: Si tenemos ID de categoría, comparamos por ID
-      // Prioridad 2: Si no hay ID o falla, comparamos por nombre normalizado
-      const matchById = filterId && p.categoryIdsList.includes(String(filterId));
+    // Filtro de categoría - primero por IDs
+    if (doFilter && categoryIds && categoryIds.length > 0) {
+      const matchById = categoryIds.some(id => p.categoryIdsList.includes(String(id)));
+      if (!matchById) continue;
+    } else if (doFilter && filter !== 'all') {
+      // Fallback por nombre
       const matchByName = p.categoriesList.some(c => norm(c) === norm(filter));
-      
-      if (!matchById && !matchByName) continue;
+      if (!matchByName) continue;
     }
 
     // Sin búsqueda activa → incluir directamente
@@ -471,12 +479,12 @@ function logicFilter(products, filter, search = '', filterId = null) {
   return results;
 }
 
-window.applyFilter = function (filter, categoryId = null) {
-  if (filter === 'all') categoryId = null;
-  if (isLoading || (currentFilter === filter && currentCategoryId === categoryId)) return;
+window.applyFilter = function (filter, categoryIds = null) {
+  if (filter === 'all') categoryIds = null;
+  if (isLoading || (currentFilter === filter && JSON.stringify(currentCategoryId) === JSON.stringify(categoryIds))) return;
 
   currentFilter = filter;
-  currentCategoryId = categoryId;
+  currentCategoryId = Array.isArray(categoryIds) ? categoryIds : (categoryIds ? [categoryIds] : null);
   currentPage = 1;
   if (chips) chips.forEach(c => c.classList.toggle('active', c.dataset.filter === filter));
   allProducts = [];
