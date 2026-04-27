@@ -273,12 +273,13 @@ async function loadCategories() {
       'escolar': '📎'
     };
 
-    // Contar productos por ID de categoría (más preciso)
+    // Contar productos por categoría (usar allProducts si está disponible)
     const categoryCount = {};
     if (allProducts && allProducts.length > 0) {
       allProducts.forEach(p => {
-        p.categoryIdsList.forEach(id => {
-          categoryCount[id] = (categoryCount[id] || 0) + 1;
+        // Contamos el producto en todas las categorías a las que pertenece
+        p.categoriesList.forEach(catName => {
+          categoryCount[catName] = (categoryCount[catName] || 0) + 1;
         });
       });
     }
@@ -297,11 +298,11 @@ async function loadCategories() {
         }
       }
 
-      // Contar productos usando el ID oficial de Tiendanube
-      const count = categoryCount[String(cat.id)] || 0;
+    // Contar productos usando el ID oficial de Tiendanube
+    const count = categoryCount[String(cat.id)] || 0;
 
       return `
-        <article class="category-pill fade-up" style="animation-delay: ${idx * 0.08}s;" tabindex="0" data-id="${cat.id}" data-name="${esc(name)}">
+      <article class="category-pill fade-up" style="animation-delay: ${idx * 0.08}s;" tabindex="0" data-id="${cat.id}" data-name="${esc(name)}">
           <span class="category-pill-icon">${emoji}</span>
           <h3 class="category-pill-title">${esc(name)}</h3>
           ${count > 0 ? `<span class="category-pill-count">${count} productos</span>` : '<span class="category-pill-count">Ver más</span>'}
@@ -334,12 +335,13 @@ async function loadProducts(filter = 'all', page = 1, append = false) {
 
   try {
     const isSearch = searchInput.value.trim().length > 0;
-    const isFiltered = filter !== 'all';
+    const isFiltered = filter !== 'all' || currentCategoryId;
     const params = {
       page,
       per_page: (isSearch || isFiltered) ? 80 : PAGE_SIZE
     };
     if (isSearch) params.q = searchInput.value.trim();
+    if (currentCategoryId) params.category = currentCategoryId;
 
     console.log('[loadProducts] Cargando:', { filter, page, append, params });
 
