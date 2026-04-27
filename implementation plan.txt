@@ -1,78 +1,36 @@
-🚀 Plan de Mejoras — Makena Shop
-La página ya tiene una base sólida. Estas mejoras la van a llevar a un nivel premium.
+# Optimización Responsiva para Móviles (Makena Shop)
 
-🎨 Mejoras Visuales (Alto Impacto)
-1. Hero con imagen real de fondo
-Reemplazar el fondo plano del hero con una imagen lifestyle (productos del negocio o paisaje de Misiones) con overlay de gradiente. Esto da un impacto visual inmediato.
+Este plan detalla las mejoras para asegurar que la página se vea excelente en teléfonos móviles, con un enfoque especial en las tarjetas de productos y las secciones de categorías, según lo solicitado.
 
-2. Marquee animado en la barra de beneficios
-En lugar de los 4 items estáticos, un marquee infinito que se desplaza suavemente con los beneficios. Se ve muy moderno y profesional.
+## User Review Required
 
-3. Contadores animados
-Los números en la hero bar (ej: "+500 productos vendidos") que cuentan de 0 al valor cuando entran en vista. Genera confianza.
+> [!IMPORTANT]
+> Por favor, revisá los siguientes cambios propuestos. El objetivo es que la navegación en celulares sea más fluida, con tamaños de tarjeta más proporcionados y un diseño que aproveche mejor el espacio de la pantalla.
 
-4. Efecto parallax suave
-Las secciones con un ligero efecto parallax al hacer scroll — da profundidad y sensación premium.
+## Cambios Propuestos
 
-5. Transiciones entre secciones
-Agregar formas SVG curvas o diagonales entre las secciones para romper la monotonía de bloques rectangulares.
+### 1. Grilla de Productos (`.products-grid`)
+Actualmente, en pantallas menores a 420px y 320px, los productos se muestran en 1 sola columna (`1fr`), lo que hace que las tarjetas sean muy grandes y requieran mucho desplazamiento vertical (scroll).
+- **Mejora:** Cambiar a un diseño de **2 columnas y 4 filas** (`repeat(2, 1fr)`) hasta resoluciones de 360px para aprovechar el ancho del celular, muy típico en e-commerce. Como cargamos 8 productos por página, esto formará una grilla perfecta de 2x4. Para resoluciones ultra pequeñas (320px), mantendremos las 2 columnas ajustando severamente el tamaño del texto.
+- **Ajustes internos:** Reducir ligeramente el padding de `.product-body`, el tamaño de la fuente del título, descripción y precios para que encajen perfectamente en 2 columnas en móviles. Ajustar los botones ("Comprar", "Agregar") para que se alineen bien en este formato más compacto.
 
-🛍️ Funcionalidad (Mejora la experiencia de compra)
-6. Modal de vista rápida de producto
-Al hacer click en un producto se abre un modal con imagen grande, descripción completa y botones de acción. Actualmente solo se ve un resumen.
+### 2. Tarjetas de Categorías (`.cat-card`)
+Las tarjetas de categorías actualmente ocupan mucho alto (`min-height: 220px` y `180px` en móviles).
+- **Mejora:** Ajustar la altura mínima a un tamaño más armónico (ej. `160px` o `140px`) y reducir el padding interno.
+- **Tipografía:** Escalar los iconos (`.cat-icon`) y los títulos (`h3`) para que se vean proporcionados sin abrumar la pantalla.
 
-7. Galería de imágenes por producto
-Si el producto tiene varias fotos en Tiendanube, mostrar un mini carrusel en la tarjeta.
+### 3. Modal de Producto (`.product-modal`)
+- **Mejora:** Asegurar que la imagen del producto no ocupe toda la altura de la pantalla en móviles, permitiendo que la información (precio, título, botones de compra) sea visible inmediatamente sin tener que scrollear demasiado. 
+- Ajustaremos el padding de `.pm-info` y el tamaño de la imagen principal.
 
-8. Buscador mejorado con sugerencias
-Que al escribir muestre resultados en tiempo real debajo del input, tipo dropdown.
+### 4. Ajustes Generales de Espaciado (Hero y Secciones)
+- **Mejora:** Reducir el `padding` de `.section` en móviles para ganar espacio útil.
+- **Hero:** Asegurarnos de que el texto del hero ("El lugar donde encontrás todo...") tenga un `line-height` y `font-size` perfecto para que no se corte ni ocupe todo el *viewport*.
 
-9. Filtro por precio
-Agregar un slider de rango de precio además de los filtros por categoría.
+## Verification Plan
 
-10. Ordenar productos
-Botón para ordenar por: precio menor/mayor, más nuevos, nombre A-Z.
-
-📱 Secciones Nuevas
-11. Banner promocional / Carousel de ofertas
-Una sección entre el hero y las categorías con banners de ofertas o destacados que rotan automáticamente.
-
-12. Sección de "Productos Destacados"
-Una fila horizontal scrolleable con los productos más populares o elegidos a mano.
-
-13. Testimonios / Opiniones de clientes
-Carrusel con reseñas de clientes reales. Genera mucha confianza para comprar.
-
-14. Sección FAQ (Preguntas frecuentes)
-Acordeón con preguntas comunes: envíos, pagos, devoluciones, etc.
-
-15. Sección "Cómo comprar" (paso a paso)
-3-4 pasos ilustrados: elegí → agregá al carrito → consultá por WhatsApp → recibí en tu casa.
-
-✨ Detalles Premium
-16. Dark mode toggle
-Botón para cambiar entre modo claro y oscuro. Muy moderno.
-
-17. Barra de progreso de scroll
-Una línea fina en la parte superior que muestra cuánto scrolleaste de la página.
-s.
-
-19. Cursor personalizado
-Un cursor custom sutil en desktop que cambie al pasar por elementos interactivos.
-
-20. Loader de página inicial
-Una animación con el logo de Makena Shop al cargar la página por primera vez.
-
-User Review Required
-IMPORTANT
-
-¿Cuáles querés que implemente? Podés decirme:
-
-"Todas" — las voy haciendo una por una
-Los números que más te gusten — ej: "la 2, 6, 11, 13 y 15"
-"Las visuales" — solo las de la sección 🎨
-O cualquier combinación
-NOTE
-
-Algunas mejoras como testimonios (#13) y FAQ (#14) necesitan que me pases el contenido (opiniones reales, preguntas frecuentes, etc.)
-
+### Manual Verification
+1. Abriré la página usando la herramienta del navegador (`browser_subagent`) simulando un dispositivo móvil (ej. iPhone 13 / Pixel 5).
+2. Verificaré que la grilla de productos se vea en 2 columnas proporcionadas.
+3. Chequearé que las categorías tengan un alto correcto y los textos no se desborden.
+4. Revisaré el modal de producto para asegurar que el diseño encaje bien en la pantalla.

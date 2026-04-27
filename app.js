@@ -9,7 +9,7 @@ const TN_BASE_URL = 'https://makenashop1.mitiendanube.com/';
 const WHATSAPP_NUMBER = '5493757000000'; // No olvides verificar si este número sigue siendo el mismo
 
 // ─── CONFIG ─────────────────────────────────────────────────
-const PAGE_SIZE = 12;
+const PAGE_SIZE = 8;
 const CATEGORY_EMOJIS = { agro: '🌾', bazar: '🏠', papeleria: '📎', default: '📦' };
 const EMPTY_MESSAGES = {
   error: 'No pudimos cargar los productos. Intentá de nuevo más tarde.',
