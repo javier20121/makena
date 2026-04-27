@@ -135,6 +135,7 @@ let filteredProducts = [];
 let lenis = null; // ✅ Variable global para control
 let cart = [];
 let currentFilter = 'all';
+let currentCategoryId = null; // ✅ Declaramos la variable que faltaba
 let currentPage = 1;
 let hasNextPage = false;
 let connectionState = 'idle';
@@ -272,13 +273,12 @@ async function loadCategories() {
       'escolar': '📎'
     };
 
-    // Contar productos por categoría (usar allProducts si está disponible)
+    // Contar productos por ID de categoría (más preciso)
     const categoryCount = {};
     if (allProducts && allProducts.length > 0) {
       allProducts.forEach(p => {
-        // Contamos el producto en todas las categorías a las que pertenece
-        p.categoriesList.forEach(catName => {
-          categoryCount[catName] = (categoryCount[catName] || 0) + 1;
+        p.categoryIdsList.forEach(id => {
+          categoryCount[id] = (categoryCount[id] || 0) + 1;
         });
       });
     }
@@ -297,16 +297,11 @@ async function loadCategories() {
         }
       }
 
-      // Contar productos (buscar por nombre similar)
-      let count = 0;
-      for (const [key, val] of Object.entries(categoryCount)) {
-        if (normName.includes(key) || key.includes(normName.split(' ')[0])) {
-          count += val;
-        }
-      }
+      // Contar productos usando el ID oficial de Tiendanube
+      const count = categoryCount[String(cat.id)] || 0;
 
       return `
-        <article class="category-pill fade-up" style="animation-delay: ${idx * 0.08}s;" tabindex="0">
+        <article class="category-pill fade-up" style="animation-delay: ${idx * 0.08}s;" tabindex="0" data-id="${cat.id}" data-name="${esc(name)}">
           <span class="category-pill-icon">${emoji}</span>
           <h3 class="category-pill-title">${esc(name)}</h3>
           ${count > 0 ? `<span class="category-pill-count">${count} productos</span>` : '<span class="category-pill-count">Ver más</span>'}
@@ -317,8 +312,7 @@ async function loadCategories() {
     // Agregar event listeners a las pastillas
     document.querySelectorAll('.category-pill').forEach(pill => {
       pill.addEventListener('click', () => {
-        const title = pill.querySelector('.category-pill-title').textContent.trim();
-        applyFilter(title);
+        applyFilter(pill.dataset.name, pill.dataset.id);
       });
     });
 
@@ -482,13 +476,16 @@ function logicFilter(products, filter, search = '', filterId = null) {
   return results;
 }
 
-window.applyFilter = function (filter) {
-  if (isLoading || currentFilter === filter) return;
+window.applyFilter = function (filter, categoryId = null) {
+  if (filter === 'all') categoryId = null;
+  if (isLoading || (currentFilter === filter && currentCategoryId === categoryId)) return;
+
   currentFilter = filter;
+  currentCategoryId = categoryId;
   currentPage = 1;
-  chips.forEach(c => c.classList.toggle('active', c.dataset.filter === filter));
+  if (chips) chips.forEach(c => c.classList.toggle('active', c.dataset.filter === filter));
   allProducts = [];
-  loadProducts(filter, 1, false);
+  loadProducts(currentFilter, 1, false);
   document.getElementById('productos')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 };
 
