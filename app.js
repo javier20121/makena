@@ -292,6 +292,107 @@ async function tnFetch(params = {}) {
 }
 
 // ─── CARGAR PRODUCTOS ───────────────────────────────────────
+// ─── CARGAR CATEGORÍAS (API) ────────────────────────────
+async function loadCategories() {
+  const categoriesGrid = $('categoriesGrid');
+  if (!categoriesGrid) return;
+
+  try {
+    const url = new URL('/api/categories', window.location.origin);
+    url.searchParams.set('storeId', TN_STORE_ID);
+
+    console.log('[loadCategories] Cargando desde:', url.toString());
+
+    const res = await fetch(url);
+
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
+      console.error('[loadCategories] Error HTTP:', res.status, errorData);
+      throw new Error(`HTTP ${res.status}`);
+    }
+
+    const categories = await res.json();
+
+    if (!Array.isArray(categories) || categories.length === 0) {
+      console.warn('[loadCategories] No hay categorías o respuesta inválida');
+      categoriesGrid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: var(--ink-3);">Sin categorías disponibles</p>';
+      return;
+    }
+
+    // Mapear iconos a categorías
+    const categoryEmojis = {
+      'agro': '🌾',
+      'bazar': '🏠',
+      'papeleria': '📎',
+      'papelería': '📎',
+      'hogar': '🏠',
+      'jardin': '🌿',
+      'oficina': '📎',
+      'escolar': '📎'
+    };
+
+    // Contar productos por categoría (usar allProducts si está disponible)
+    const categoryCount = {};
+    if (allProducts && allProducts.length > 0) {
+      allProducts.forEach(p => {
+        const cat = p.category || 'bazar';
+        categoryCount[cat] = (categoryCount[cat] || 0) + 1;
+      });
+    }
+
+    // Renderizar categorías
+    categoriesGrid.innerHTML = categories.map((cat, idx) => {
+      const name = cat.name?.es || cat.name || 'Categoría';
+      const normName = norm(name);
+      
+      // Buscar emoji
+      let emoji = '📦';
+      for (const [key, icon] of Object.entries(categoryEmojis)) {
+        if (normName.includes(key)) {
+          emoji = icon;
+          break;
+        }
+      }
+
+      // Contar productos (buscar por nombre similar)
+      let count = 0;
+      for (const [key, val] of Object.entries(categoryCount)) {
+        if (normName.includes(key) || key.includes(normName.split(' ')[0])) {
+          count += val;
+        }
+      }
+
+      return `
+        <article class="category-pill fade-up" style="animation-delay: ${idx * 0.08}s;" tabindex="0">
+          <span class="category-pill-icon">${emoji}</span>
+          <h3 class="category-pill-title">${esc(name)}</h3>
+          ${count > 0 ? `<span class="category-pill-count">${count} productos</span>` : '<span class="category-pill-count">Ver más</span>'}
+        </article>
+      `;
+    }).join('');
+
+    // Agregar event listeners a las pastillas
+    document.querySelectorAll('.category-pill').forEach(pill => {
+      pill.addEventListener('click', () => {
+        const title = pill.querySelector('.category-pill-title').textContent.trim();
+        const normalized = norm(title);
+        
+        // Mapear a filtro
+        let filter = 'bazar';
+        if (normalized.includes('agro')) filter = 'agro';
+        else if (normalized.includes('papel') || normalized.includes('escolar') || normalized.includes('oficina')) filter = 'papeleria';
+        else if (normalized.includes('bazar') || normalized.includes('hogar')) filter = 'bazar';
+
+        applyFilter(filter);
+      });
+    });
+
+  } catch (err) {
+    console.error('[loadCategories] Error:', err.message);
+    categoriesGrid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: var(--ink-3);">Error al cargar categorías</p>';
+  }
+}
+
 async function loadProducts(filter = 'all', page = 1, append = false) {
   // ✅ PREVENIR BUCLE INFINITO
   if (isLoading) {
@@ -371,6 +472,8 @@ async function loadProducts(filter = 'all', page = 1, append = false) {
     setLoading(false);
   }
 }
+
+function initDraggableDeco() {
 
 function logicFilter(products, filter, search = '') {
   const list = Array.isArray(products) ? products : [];
@@ -929,6 +1032,7 @@ async function init() {
     showSkeletons(6);
     connectionState = 'connecting';
     await loadProducts('all', 1, false);
+    await loadCategories(); // ✅ Cargar categorías después de productos
     if (connectionState === 'connected') reconcileCart();
   } catch (e) { console.error("Falla crítica en init:", e); }
 }

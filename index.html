@@ -37,7 +37,6 @@
 
       <nav class="nav-links" id="navLinks">
         <a href="#inicio" class="nav-link">inicio</a>
-        <a href="#categorias" class="nav-link">Categorías</a>
         <a href="#productos" class="nav-link">Productos</a>
         <a href="#nosotros" class="nav-link">Nosotros</a>
         <a href="#contacto" class="nav-link">Contacto</a>
@@ -79,10 +78,10 @@
       <div class="hero-glow hero-glow-3"></div>
 
       <!-- Elementos Decorativos (Máximo 10 en toda la página) -->
-      <span class="deco-el" style="top: 25%; left: 8%; font-size: 3.8rem; animation-delay: 0s; animation-name: decoPulse; animation-duration: 4s;">🍂</span>
-      <span class="deco-el" style="top: 22%; right: 25%; font-size: 3.2rem; animation-delay: 1s;">🍁</span>
-      <span class="deco-el" style="top: 55%; left: 4%; font-size: 2.8rem; animation-delay: 2s; animation-name: decoSpin; animation-duration: 12s;">🌿</span>
-      <span class="deco-el" style="top: 35%; right: 15%; font-size: 4.5rem; animation-name: decoPulse; animation-duration: 5s;">🌾</span>
+      <span class="deco-el" style="top: 25%; left: 8%; font-size: 3.8rem; animation-delay: 0s; animation-name: decoPulse; animation-duration: 4s;">🎈</span>
+      <span class="deco-el" style="top: 22%; right: 25%; font-size: 3.2rem; animation-delay: 1s;">📌</span>
+      <span class="deco-el" style="top: 55%; left: 4%; font-size: 2.8rem; animation-delay: 2s; animation-name: decoSpin; animation-duration: 12s;">🛍️</span>
+      <span class="deco-el" style="top: 35%; right: 15%; font-size: 4.5rem; animation-name: decoPulse; animation-duration: 5s;">📎</span>
       <span class="deco-el" style="top: 45%; right: 40%; font-size: 4.2rem; animation-delay: 1.2s; animation-name: swayDeco;">✏️</span>
       <span class="deco-el" style="top: 60%; right: 5%; font-size: 4.5rem; animation-delay: 1.5s; animation-name: decoSpin; animation-duration: 15s;">☕</span>
 
@@ -105,38 +104,10 @@
               Ver catálogo
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
             </a>
-            <a href="#categorias" class="btn btn-hero-ghost">Explorar categorías</a>
           </div>
         </div>
 
         <div class="hero-right">
-          <div class="hero-float-cards">
-            <div class="hfc hfc-agro">
-              <span class="hfc-icon">🌾</span>
-              <div class="hfc-info">
-                <strong>Agro</strong>
-                <span>Campo & jardín</span>
-              </div>
-              <div class="hfc-arrow">→</div>
-            </div>
-            <div class="hfc hfc-bazar">
-              <span class="hfc-icon">🏠</span>
-              <div class="hfc-info">
-                <strong>Bazar</strong>
-                <span>Hogar & cocina</span>
-              </div>
-              <div class="hfc-arrow">→</div>
-            </div>
-            <div class="hfc hfc-papel">
-              <span class="hfc-icon">📎</span>
-              <div class="hfc-info">
-                <strong>Papelería</strong>
-                <span>Oficina & estudio</span>
-              </div>
-              <div class="hfc-arrow">→</div>
-            </div>
-          </div>
-
           <div class="hero-ring-wrap">
             <svg viewBox="0 0 200 200" class="hero-ring-svg" xmlns="http://www.w3.org/2000/svg">
               <defs>
@@ -164,48 +135,16 @@
       </div>
     </section>
 
-    <!-- CATEGORÍAS -->
-    <section class="section" id="categorias">
+    <!-- CATEGORÍAS DINÁMICAS (API) -->
+    <section class="section categories-dynamic-section" id="categoriasAPI">
       <div class="section-head reveal">
-        <p class="eyebrow">Explorá por rubro</p>
-        <h2>¿Qué estás buscando?</h2>
+        <p class="eyebrow">Todas nuestras categorías</p>
+        <h2>Explora por rubro</h2>
       </div>
-      <span class="deco-el" style="bottom: 20%; right: 15%; font-size: 4.2rem; opacity: 0.2;">🌽</span>
-      <span class="deco-el" style="top: 60%; left: 5%; font-size: 3.5rem; opacity: 0.6;">🌻</span>
-      <span class="deco-el" style="top: 75%; right: 10%; font-size: 4.5rem; opacity: 0.5;">🧺</span>
-      <span class="deco-el" style="bottom: 20%; left: 35%; font-size: 3.8rem; opacity: 0.45;">🏺</span>
-
-      <div class="cats-grid reveal-group">
-        <article class="cat-card cat-agro reveal" tabindex="0">
-          <div class="cat-bg"></div>
-          <div class="cat-body">
-            <span class="cat-num">01</span>
-            <span class="cat-icon">🌾</span>
-            <h3>Agro</h3>
-            <p>Herramientas, semillas e insumos para el campo y el jardín.</p>
-            <button class="btn-cat-link" data-filter="agro">Ver productos <span>→</span></button>
-          </div>
-        </article>
-        <article class="cat-card cat-bazar reveal" tabindex="0">
-          <div class="cat-bg"></div>
-          <div class="cat-body">
-            <span class="cat-num">02</span>
-            <span class="cat-icon">🏠</span>
-            <h3>Bazar</h3>
-            <p>Todo para el hogar, la cocina y la vida cotidiana.</p>
-            <button class="btn-cat-link" data-filter="bazar">Ver productos <span>→</span></button>
-          </div>
-        </article>
-        <article class="cat-card cat-papel reveal" tabindex="0">
-          <div class="cat-bg"></div>
-          <div class="cat-body">
-            <span class="cat-num">03</span>
-            <span class="cat-icon">📎</span>
-            <h3>Papelería</h3>
-            <p>Útiles de oficina, estudio y organización personal.</p>
-            <button class="btn-cat-link" data-filter="papeleria">Ver productos <span>→</span></button>
-          </div>
-        </article>
+      <div class="categories-grid reveal-group" id="categoriesGrid">
+        <div class="loading-dots" style="grid-column: 1/-1; justify-self: center; margin: 2rem 0;">
+          <span></span><span></span><span></span>
+        </div>
       </div>
     </section>
 
@@ -249,12 +188,6 @@
         <div class="products-head-left">
           <p class="eyebrow">Catálogo</p>
           <h2>Nuestros productos</h2>
-        </div>
-        <div class="filter-chips" id="filterChips">
-          <button class="chip active" data-filter="all">Todos</button>
-          <button class="chip" data-filter="agro">🌾 Agro</button>
-          <button class="chip" data-filter="bazar">🏠 Bazar</button>
-          <button class="chip" data-filter="papeleria">📎 Papelería</button>
         </div>
       </div>
 
@@ -378,7 +311,6 @@
         <div class="fl-col">
           <strong>Tienda</strong>
           <a href="#productos">Todos los productos</a>
-          <a href="#categorias">Categorías</a>
           <a href="#nosotros">Nosotros</a>
         </div>
         <div class="fl-col">
@@ -411,7 +343,6 @@
         </div>
         <div class="pm-info">
           <div class="pm-head">
-            <span class="pm-tag" id="pmTag">Categoría</span>
             <h2 id="pmTitle">Cargando...</h2>
             <div class="pm-price-row">
               <span class="pm-price" id="pmPrice">$0</span>

@@ -172,19 +172,15 @@ em {
 }
 
 .btn-hero-ghost {
-  background: rgba(255, 255, 255, 0.65);
-  backdrop-filter: blur(12px) saturate(1.2);
-  color: var(--ink);
-  border: 1.5px solid rgba(255, 255, 255, 0.9);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  background: linear-gradient(135deg, var(--rosa), var(--celeste));
+  color: white;
+  box-shadow: 0 4px 20px rgba(107, 173, 174, 0.30);
 }
 
 .btn-hero-ghost:hover {
-  background: rgba(255, 255, 255, 0.9);
-  border-color: #ffffff;
-  color: var(--celeste-2);
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 8px 28px rgba(107, 173, 174, 0.40);
+  filter: brightness(1.08);
 }
 
 .btn-wa {
@@ -1075,6 +1071,87 @@ em {
 
 .cat-papel .btn-cat-link:hover {
   color: var(--papel);
+}
+
+/* ── CATEGORÍAS DINÁMICAS (API) ───────────────────────────── */
+.categories-dynamic-section {
+  padding: 4rem 1.5rem;
+}
+
+.categories-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.5rem;
+}
+
+.category-pill {
+  padding: 2rem 1.5rem;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(16px) saturate(1.3);
+  border: 1.5px solid rgba(255, 255, 255, 0.25);
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  cursor: pointer;
+  transition: all var(--transition);
+  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.category-pill::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(107, 173, 174, 0.1), rgba(245, 204, 214, 0.1));
+  opacity: 0;
+  transition: opacity var(--transition);
+  pointer-events: none;
+}
+
+.category-pill:hover {
+  background: rgba(255, 255, 255, 0.22);
+  border-color: rgba(255, 255, 255, 0.35);
+  transform: translateY(-6px);
+  box-shadow: 0 20px 48px rgba(31, 38, 135, 0.2);
+}
+
+.category-pill:hover::before {
+  opacity: 1;
+}
+
+.category-pill-icon {
+  font-size: 3rem;
+  margin-bottom: 0.85rem;
+  display: block;
+  transition: transform var(--transition);
+}
+
+.category-pill:hover .category-pill-icon {
+  transform: scale(1.15) rotate(-5deg);
+}
+
+.category-pill-title {
+  font-family: 'Fraunces', serif;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 0.4rem;
+  position: relative;
+  z-index: 1;
+}
+
+.category-pill-count {
+  font-size: 0.75rem;
+  color: var(--ink-3);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  position: relative;
+  z-index: 1;
 }
 
 /* ── MARQUEE BENEFICIOS ───────────────────────────────────── */
@@ -2410,6 +2487,24 @@ em {
   .hero-sub {
     font-size: 1.1rem;
   }
+
+  .categories-grid {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+  }
+
+  .category-pill {
+    padding: 1.5rem 1rem;
+  }
+
+  .category-pill-icon {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .category-pill-title {
+    font-size: 1.1rem;
+  }
 }
 
 @media (max-width: 480px) {
@@ -2531,6 +2626,28 @@ em {
 
   .footer {
     padding: 3rem 1rem 1.5rem;
+  }
+
+  .categories-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.8rem;
+  }
+
+  .category-pill {
+    padding: 1.2rem 0.8rem;
+  }
+
+  .category-pill-icon {
+    font-size: 2rem;
+    margin-bottom: 0.4rem;
+  }
+
+  .category-pill-title {
+    font-size: 1rem;
+  }
+
+  .category-pill-count {
+    font-size: 0.65rem;
   }
 }
 
