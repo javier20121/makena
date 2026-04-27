@@ -6,7 +6,7 @@
 // ─── CREDENCIALES ───────────────────────────────────────────
 const TN_STORE_ID = '7599760';
 const TN_BASE_URL = 'https://makenashop1.mitiendanube.com/';
-const WHATSAPP_NUMBER = '5493757000000';
+const WHATSAPP_NUMBER = '5493757000000'; // No olvides verificar si este número sigue siendo el mismo
 
 // ─── CONFIG ─────────────────────────────────────────────────
 const PAGE_SIZE = 8;
@@ -17,19 +17,9 @@ const EMPTY_MESSAGES = {
   noResults: 'No encontramos productos con ese criterio.',
 };
 
-// ─── MAPEO DE CATEGORÍAS POR ID ────────────────────────────
-const CATEGORY_MAPPING = {
-  '38337422': 'Perfumería',      // Maquillaje & Accesorios -> Perfumería
-  '38357189': 'Perfumería',      // Cuidado Personal -> Perfumería
-  '38356862': 'Perfumería',      // Peluqueria y accesorios -> Perfumería
-  '38337358': 'Bazar',           // Bazar & Cocina -> Bazar
-  '38337614': 'Bazar',           // Articulos varios -> Bazar
-  '38337299': 'Hogar',           // Blanqueria -> Hogar
-  '38337374': 'Cotillón',        // Cotillón -> Cotillón
-  '38348340': 'Térmicos',        // Linea Stanley -> Térmicos
-};
-
 // ─── ASOCIACIONES SEMÁNTICAS — cargadas bajo demanda ────────
+// Se inicializa vacío y se llena la primera vez que el usuario escribe.
+// Así no bloquea el hilo principal en la carga inicial de la página.
 let _searchAssoc = null;
 
 function getSearchAssociations() {
@@ -142,14 +132,14 @@ function getSearchAssociations() {
 // ─── ESTADO ─────────────────────────────────────────────────
 let allProducts = [];
 let filteredProducts = [];
-let lenis = null;
+let lenis = null; // ✅ Variable global para control
 let cart = [];
 let currentFilter = 'all';
-let currentCategoryId = null;
+let currentCategoryId = null; // ✅ Declaramos la variable que faltaba
 let currentPage = 1;
 let hasNextPage = false;
 let connectionState = 'idle';
-let isLoading = false;
+let isLoading = false;  // ✅ PREVIENE BUCLE INFINITO
 
 // ─── DOM ────────────────────────────────────────────────────
 const $ = id => document.getElementById(id);
@@ -201,15 +191,16 @@ function showToast(msg, duration = 2800) {
   _toastTimer = setTimeout(() => toast.classList.remove('show'), duration);
 }
 
+// ─── NORMALIZAR TEXTO (quita acentos para comparar) ─────────
 function norm(s = '') {
   if (!s) return '';
   return String(s)
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
+    .normalize('NFD') // Descompone caracteres (á -> a + ´)
+    .replace(/[\u0300-\u036f]/g, '') // Elimina los acentos
     .toLowerCase()
     .trim()
-    .replace(/[^a-z0-9\s]/g, ' ')
-    .replace(/\s+/g, ' ');
+    .replace(/[^a-z0-9\s]/g, ' ') // Quita símbolos
+    .replace(/\s+/g, ' '); // Colapsa espacios múltiples
 }
 
 // ─── TIENDANUBE PROXY ───────────────────────────────────────
@@ -223,6 +214,8 @@ async function tnFetch(params = {}) {
   console.log('[tnFetch] URL:', url.toString());
 
   const res = await fetch(url);
+
+  // ✅ VALIDAR RESPUESTA
   if (!res.ok) {
     const errorData = await res.json().catch(() => ({}));
     console.error('[tnFetch] Error HTTP:', res.status, errorData);
@@ -230,6 +223,8 @@ async function tnFetch(params = {}) {
   }
 
   const data = await res.json();
+
+  // ✅ VALIDAR QUE DATA SEA ARRAY
   if (!Array.isArray(data)) {
     console.error('[tnFetch] Data no es array:', data);
     throw new Error('La respuesta de la API no es un array válido');
@@ -238,6 +233,7 @@ async function tnFetch(params = {}) {
   return { data, total: res.headers.get('X-Total-Count') };
 }
 
+// ─── CARGAR PRODUCTOS ───────────────────────────────────────
 // ─── CARGAR CATEGORÍAS (API) ────────────────────────────
 async function loadCategories() {
   const categoriesGrid = $('categoriesGrid');
@@ -250,55 +246,71 @@ async function loadCategories() {
     console.log('[loadCategories] Cargando desde:', url.toString());
 
     const res = await fetch(url);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    
+
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
+      console.error('[loadCategories] Error HTTP:', res.status, errorData);
+      throw new Error(`HTTP ${res.status}`);
+    }
+
     const categories = await res.json();
+
     if (!Array.isArray(categories) || categories.length === 0) {
+      console.warn('[loadCategories] No hay categorías o respuesta inválida');
       categoriesGrid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: var(--ink-3);">Sin categorías disponibles</p>';
       return;
     }
 
+    // Mapear iconos a categorías
+    const categoryEmojis = {
+      'agro': '🌾',
+      'bazar': '🏠',
+      'papeleria': '📎',
+      'papelería': '📎',
+      'hogar': '🏠',
+      'jardin': '🌿',
+      'oficina': '📎',
+      'escolar': '📎'
+    };
+
+    // Contar productos por categoría (usar allProducts si está disponible)
     const categoryCount = {};
     if (allProducts && allProducts.length > 0) {
       allProducts.forEach(p => {
-        p.categoryIdsList.forEach(id => {
-          categoryCount[id] = (categoryCount[id] || 0) + 1;
+        // Contamos el producto en todas las categorías a las que pertenece
+        p.categoriesList.forEach(catName => {
+          categoryCount[catName] = (categoryCount[catName] || 0) + 1;
         });
       });
     }
 
-    const displayedCategories = categories.filter(cat => {
-      const id = String(cat.id);
-      return categoryCount[id] > 0 || CATEGORY_MAPPING[id];
-    });
-
-    categoriesGrid.innerHTML = displayedCategories.map((cat, idx) => {
-      const id = String(cat.id);
-      const originalName = cat.name?.es || cat.name || 'Categoría';
-      const displayName = CATEGORY_MAPPING[id] || originalName;
-      const normName = norm(displayName);
+    // Renderizar categorías
+    categoriesGrid.innerHTML = categories.map((cat, idx) => {
+      const name = cat.name?.es || cat.name || 'Categoría';
+      const normName = norm(name);
       
+      // Buscar emoji
       let emoji = '📦';
-      for (const [key, icon] of Object.entries(CATEGORY_EMOJIS)) {
+      for (const [key, icon] of Object.entries(categoryEmojis)) {
         if (normName.includes(key)) {
           emoji = icon;
           break;
         }
       }
 
-      const count = categoryCount[id] || 0;
+    // Contar productos usando el ID oficial de Tiendanube
+    const count = categoryCount[String(cat.id)] || 0;
 
       return `
-        <article class="category-pill fade-up" style="animation-delay: ${idx * 0.08}s;" 
-                 tabindex="0" data-id="${id}" data-name="${esc(displayName)}">
+      <article class="category-pill fade-up" style="animation-delay: ${idx * 0.08}s;" tabindex="0" data-id="${cat.id}" data-name="${esc(name)}">
           <span class="category-pill-icon">${emoji}</span>
-          <h3 class="category-pill-title">${esc(displayName)}</h3>
-          ${count > 0 ? `<span class="category-pill-count">${count} productos</span>` : 
-                        '<span class="category-pill-count">Ver más</span>'}
+          <h3 class="category-pill-title">${esc(name)}</h3>
+          ${count > 0 ? `<span class="category-pill-count">${count} productos</span>` : '<span class="category-pill-count">Ver más</span>'}
         </article>
       `;
     }).join('');
 
+    // Agregar event listeners a las pastillas
     document.querySelectorAll('.category-pill').forEach(pill => {
       pill.addEventListener('click', () => {
         applyFilter(pill.dataset.name, pill.dataset.id);
@@ -306,13 +318,13 @@ async function loadCategories() {
     });
 
   } catch (err) {
-    console.error('[loadCategories] Error:', err);
+    console.error('[loadCategories] Error:', err.message);
     categoriesGrid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: var(--ink-3);">Error al cargar categorías</p>';
   }
 }
 
-// ─── CARGAR PRODUCTOS ───────────────────────────────────────
 async function loadProducts(filter = 'all', page = 1, append = false) {
+  // ✅ PREVENIR BUCLE INFINITO
   if (isLoading) {
     console.log('[loadProducts] Ya hay una carga en progreso, saltando...');
     return;
@@ -323,12 +335,13 @@ async function loadProducts(filter = 'all', page = 1, append = false) {
 
   try {
     const isSearch = searchInput.value.trim().length > 0;
-    const isFiltered = filter !== 'all';
+    const isFiltered = filter !== 'all' || currentCategoryId;
     const params = {
       page,
       per_page: (isSearch || isFiltered) ? 80 : PAGE_SIZE
     };
     if (isSearch) params.q = searchInput.value.trim();
+    if (currentCategoryId) params.category = currentCategoryId;
 
     console.log('[loadProducts] Cargando:', { filter, page, append, params });
 
@@ -363,6 +376,7 @@ async function loadProducts(filter = 'all', page = 1, append = false) {
       };
     }) : [];
 
+    // 🟢 Depuración: Verificamos qué nombres e IDs llegan de la API
     products.forEach(p => console.log(`[DEBUG] Producto: ${p.title} | IDs: ${p.categoryIdsList} | Nombres: ${p.categoriesList}`));
 
     allProducts = append ? [...allProducts, ...products] : products;
@@ -396,114 +410,85 @@ async function loadProducts(filter = 'all', page = 1, append = false) {
 }
 
 function logicFilter(products, filter, search = '', filterId = null) {
-  console.log('🔍 FILTRO ACTIVO:', { filter, filterId, search });
-  
   const list = Array.isArray(products) ? products : [];
-  const query = norm(search.trim());
-  const words = query ? query.split(/\s+/).filter(w => w.length > 1) : [];
+
+  const query  = norm(search.trim());
+  const words  = query ? query.split(/\s+/).filter(w => w.length > 1) : [];
   const doFilter = filter !== 'all';
   const doSearch = words.length > 0;
 
+  // Sin filtros → devuelve todo directo
   if (!doFilter && !doSearch) return list;
 
+  // Armar términos relacionados SOLO si hay búsqueda (carga lazy el diccionario)
+  let relatedTerms = [];
+  if (doSearch) {
+    const assoc = getSearchAssociations();
+    const termSet = new Set();
+    words.forEach(w => {
+      for (const key in assoc) {
+        if (key === w || key.startsWith(w) || w.startsWith(key)) {
+          assoc[key].forEach(t => termSet.add(t));
+        }
+      }
+    });
+    relatedTerms = Array.from(termSet);
+  }
+
+  // Un único recorrido: filtra por categoría Y calcula score al mismo tiempo
   const results = [];
-  
   for (const p of list) {
-    if (doFilter && filterId) {
-      const categoryMatch = p.categoryIdsList.some(categoryId => {
-        if (categoryId === String(filterId)) {
-          console.log(`✅ Match directo por ID: ${p.title} -> ${categoryId}`);
-          return true;
-        }
-        
-        const mappedCategory = CATEGORY_MAPPING[categoryId];
-        if (mappedCategory && norm(mappedCategory) === norm(filter)) {
-          console.log(`✅ Match por mapeo: ${p.title} -> ${categoryId} (${mappedCategory})`);
-          return true;
-        }
-        
-        return false;
-      });
+    // Filtro de categoría
+    if (doFilter) {
+      // Prioridad 1: Si tenemos ID de categoría, comparamos por ID
+      // Prioridad 2: Si no hay ID o falla, comparamos por nombre normalizado
+      const matchById = filterId && p.categoryIdsList.includes(String(filterId));
+      const matchByName = p.categoriesList.some(c => norm(c) === norm(filter));
       
-      if (!categoryMatch) continue;
-    }
-    
-    if (doFilter && !filterId) {
-      const categoryMatch = p.categoriesList.some(categoryName => {
-        const catNorm = norm(categoryName);
-        const filterNorm = norm(filter);
-        
-        if (catNorm === filterNorm) {
-          console.log(`✅ Match por nombre: ${p.title} -> ${categoryName}`);
-          return true;
-        }
-        
-        if (catNorm.includes(filterNorm) || filterNorm.includes(catNorm)) {
-          console.log(`✅ Match parcial: ${p.title} -> ${categoryName}`);
-          return true;
-        }
-        
-        return false;
-      });
-      
-      if (!categoryMatch) continue;
+      if (!matchById && !matchByName) continue;
     }
 
-    if (!doSearch) { 
-      results.push(p); 
-      continue; 
-    }
+    // Sin búsqueda activa → incluir directamente
+    if (!doSearch) { results.push(p); continue; }
 
     const title = norm(p.title || '');
-    const desc = norm(p.description || '');
+    const desc  = norm(p.description || '');
     const ptags = norm((p.tags || []).join(' '));
 
     let score = 0;
     for (const w of words) {
       const re = new RegExp(`\\b${w}\\b`);
-      if (re.test(title)) score += 20;
+      if (re.test(title))       score += 20;
       else if (title.includes(w)) score += 10;
-      if (title.startsWith(w)) score += 5;
-      if (re.test(desc)) score += 6;
+      if (title.startsWith(w))  score += 5;   // bonus inicio
+      if (re.test(desc))        score += 6;
       else if (desc.includes(w)) score += 3;
-      if (ptags.includes(w)) score += 8;
+      if (ptags.includes(w))    score += 8;
     }
-    
+    for (const rt of relatedTerms) {
+      if (title.includes(rt)) score += 3;
+      if (desc.includes(rt))  score += 1;
+      if (ptags.includes(rt)) score += 2;
+    }
+
     if (score > 0) results.push({ ...p, _score: score });
   }
 
   if (doSearch) results.sort((a, b) => b._score - a._score);
-  console.log(`✅ Resultados del filtro: ${results.length} productos`);
   return results;
 }
 
 window.applyFilter = function (filter, categoryId = null) {
-  console.log('🎯 APPLY FILTER:', { filter, categoryId, currentFilter, currentCategoryId });
-  
   if (filter === 'all') categoryId = null;
-  if (isLoading || (currentFilter === filter && currentCategoryId === categoryId)) {
-    console.log('⏩ Saltando filtro (mismo o loading)');
-    return;
-  }
+  if (isLoading || (currentFilter === filter && currentCategoryId === categoryId)) return;
 
   currentFilter = filter;
   currentCategoryId = categoryId;
   currentPage = 1;
-  
-  if (chips && chips.length > 0) {
-    chips.forEach(c => {
-      console.log(`   Chip: ${c.dataset.filter} -> active: ${c.dataset.filter === filter}`);
-      c.classList.toggle('active', c.dataset.filter === filter);
-    });
-  }
-  
+  if (chips) chips.forEach(c => c.classList.toggle('active', c.dataset.filter === filter));
   allProducts = [];
   loadProducts(currentFilter, 1, false);
-  
-  const productosSection = document.getElementById('productos');
-  if (productosSection) {
-    productosSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
+  document.getElementById('productos')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 };
 
 function renderProducts(products, append = false, emptyMsg = EMPTY_MESSAGES.noResults, showReset = false) {
@@ -527,6 +512,7 @@ function buildCard(p, i = 0) {
   el.style.animationDelay = `${(i % 8) * 0.055}s`;
   el.dataset.productId = p.id;
 
+  // Buscar emoji por palabra clave en el nombre de la categoría
   let emoji = '📦';
   const catNorm = norm(p.category);
   if (catNorm.includes('agro')) emoji = '🌾';
@@ -569,12 +555,9 @@ function buildCard(p, i = 0) {
 }
 
 function setLoading(on) {
-  if (on) {
-    loadingState.hidden = false;
-    emptyState.hidden = true;
-  } else {
-    loadingState.hidden = true;
-  }
+  loadingState.hidden = true;
+  loadingState.style.display = 'none';
+  if (on) emptyState.hidden = true;
 }
 
 // ─── CARRITO ────────────────────────────────────────────────
@@ -727,7 +710,7 @@ searchToggle.addEventListener('click', () => {
   const open = searchExpand.classList.toggle('open');
   if (open) setTimeout(() => searchInput.focus(), 50);
 });
-
+// Cierre único para search-expand y search-results al hacer click fuera
 document.addEventListener('click', e => {
   if (!e.target.closest('.search-wrapper')) {
     searchExpand.classList.remove('open');
@@ -922,6 +905,7 @@ function initDraggableDeco() {
   const elements = document.querySelectorAll('.deco-el');
   if (!elements.length) return;
 
+  // Un único estado compartido en lugar de listeners por elemento
   let activeEl   = null;
   let startX     = 0, startY = 0;
   let initialLeft = 0, initialTop = 0;
@@ -963,6 +947,7 @@ function initDraggableDeco() {
     el.addEventListener('touchstart', e => startDrag(e, el), { passive: false });
   });
 
+  // Un único par de listeners en window para mover y soltar
   window.addEventListener('mousemove', doDrag);
   window.addEventListener('mouseup',   endDrag);
   window.addEventListener('touchmove', doDrag, { passive: false });
@@ -995,7 +980,7 @@ async function init() {
     showSkeletons(6);
     connectionState = 'connecting';
     await loadProducts('all', 1, false);
-    await loadCategories();
+    await loadCategories(); // ✅ Cargar categorías después de productos
     if (connectionState === 'connected') reconcileCart();
   } catch (e) { console.error("Falla crítica en init:", e); }
 }
