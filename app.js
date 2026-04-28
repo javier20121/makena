@@ -367,6 +367,11 @@ async function loadProducts(filter = 'all', page = 1, append = false) {
     const products = Array.isArray(data) ? data.map(p => {
       const v = (p.variants && p.variants.length > 0) ? p.variants[0] : {};
 
+      // Determinar categoría principal y mapeada
+      const rawCatName = p.categories?.[0]?.name?.es || 'General';
+      const firstCatId = p.categories?.[0]?.id ? String(p.categories[0].id) : '0';
+      const mappedCategory = CATEGORY_MAPPING[firstCatId] || rawCatName;
+
       return {
         id: String(p.id),
         variantId: v.id ? String(v.id) : '',
@@ -377,8 +382,10 @@ async function loadProducts(filter = 'all', page = 1, append = false) {
         image: p.images?.[0]?.src || null,
         imageAlt: p.name?.es || 'Imagen de producto',
         available: v.stock !== 0 && !!v.id,
-        category: p.categories?.[0]?.name?.es || 'General',
-        categoriesList: (p.categories && p.categories.length > 0) ? p.categories.map(c => c.name?.es || c.name?.en || 'General') : ['General'],
+        category: mappedCategory, // ✅ Ahora el objeto tiene el nombre "Perfumería"
+        categoriesList: (p.categories && p.categories.length > 0) 
+          ? p.categories.map(c => CATEGORY_MAPPING[String(c.id)] || c.name?.es || 'General') 
+          : ['General'],
         categoryIdsList: (p.categories && p.categories.length > 0) ? p.categories.map(c => String(c.id)) : ['0'],
         permalink: p.canonical_url || (typeof p.permalink === 'object' ? p.permalink?.es : p.permalink) || null,
         images: p.images || [],
@@ -469,7 +476,9 @@ function logicFilter(products, filter, search = '', categoryId = null) {
         match = p.categoryIdsList.some(id => targetIds.includes(id));
       } else {
         // Si no hay ID, filtramos por el nombre de la categoría (útil para chips y Hero)
-        match = norm(p.category).includes(norm(filter));
+        // ✅ Comparamos contra el nombre mapeado y los nombres en la lista
+        match = norm(p.category).includes(norm(filter)) || 
+                p.categoriesList.some(c => norm(c).includes(norm(filter)));
       }
 
       if (!match) continue;
