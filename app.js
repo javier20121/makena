@@ -349,7 +349,9 @@ async function loadProducts(filter = 'all', page = 1, append = false) {
     };
     if (isSearch) params.q = searchInput.value.trim();
     // Usar ID de categoría para filtrar en la API
-    if (currentCategoryId) {
+    // No enviamos el ID '0' (General) a la API porque Tiendanube no lo reconoce.
+    // Si es '0', pedimos los productos normales y filtramos localmente.
+    if (currentCategoryId && currentCategoryId !== '0') {
       params.category = currentCategoryId;
     }
 
@@ -458,15 +460,19 @@ function logicFilter(products, filter, search = '', categoryId = null) {
   // Un único recorrido: filtra por categoría Y calcula score al mismo tiempo
   const results = [];
   for (const p of list) {
-    // Filtro de categoría por ID
-    if (doFilter && categoryId) {
-      const catIdStr = String(categoryId);
-      const matchById = p.categoryIdsList.includes(catIdStr);
-      if (!matchById) {
-        console.log('[logicFilter] Producto NO coincide:', p.title, '| IDs del producto:', p.categoryIdsList, '| ID buscado:', catIdStr);
-        continue;
+    // 1. Filtrado por Categoría (ID o Nombre)
+    if (doFilter) {
+      let match = false;
+      if (categoryId) {
+        // Soporte para un ID único o un array de IDs (crucial para Perfumería)
+        const targetIds = Array.isArray(categoryId) ? categoryId.map(String) : [String(categoryId)];
+        match = p.categoryIdsList.some(id => targetIds.includes(id));
+      } else {
+        // Si no hay ID, filtramos por el nombre de la categoría (útil para chips y Hero)
+        match = norm(p.category).includes(norm(filter));
       }
-      console.log('[logicFilter] Producto COINCIDE:', p.title, '| IDs:', p.categoryIdsList);
+
+      if (!match) continue;
     }
 
     // Sin búsqueda activa → incluir directamente
@@ -504,8 +510,8 @@ window.applyFilter = function (filter, categoryId = null) {
   if (isLoading || (currentFilter === filter && currentCategoryId === categoryId)) return;
 
   currentFilter = filter;
-  // ✅ Asegurar que categoryId sea string único, no array
-  currentCategoryId = Array.isArray(categoryId) ? categoryId[0] : categoryId;
+  // ✅ Mantenemos el array si viene como tal para soportar múltiples categorías
+  currentCategoryId = categoryId;
   console.log('[applyFilter] Filtro aplicado:', { filter, categoryId: currentCategoryId, type: typeof currentCategoryId });
   currentPage = 1;
   if (chips) chips.forEach(c => c.classList.toggle('active', c.dataset.filter === filter));
