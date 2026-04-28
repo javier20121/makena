@@ -148,6 +148,7 @@ let lenis = null; // ✅ Variable global para control
 let cart = [];
 let currentFilter = 'all';
 let currentCategoryId = null; // ✅ Declaramos la variable que faltaba
+let visibleCount = PAGE_SIZE; // ✅ Control de cuántos productos mostrar en pantalla
 let currentPage = 1;
 let hasNextPage = false;
 let connectionState = 'idle';
@@ -342,10 +343,9 @@ async function loadProducts(filter = 'all', page = 1, append = false) {
 
   try {
     const isSearch = searchInput.value.trim().length > 0;
-    const isFiltered = filter !== 'all' || currentCategoryId;
     const params = {
       page,
-      per_page: (isSearch || isFiltered) ? 80 : PAGE_SIZE
+      per_page: 100 // ✅ Cargamos una cantidad mayor para tener el catálogo localmente
     };
     if (isSearch) params.q = searchInput.value.trim();
     // Usar ID de categoría para filtrar en la API
@@ -409,19 +409,8 @@ async function loadProducts(filter = 'all', page = 1, append = false) {
 
     allProducts = append ? [...allProducts, ...products] : products;
     filteredProducts = logicFilter(allProducts, currentFilter, searchInput.value, currentCategoryId);
-
-    const toRender = append
-      ? logicFilter(products, currentFilter, searchInput.value, currentCategoryId)
-      : filteredProducts;
-
-    if (!append && filter === 'all' && !searchInput.value.trim() && allProducts.length === 0) {
-      renderProducts([], false, EMPTY_MESSAGES.comingSoon);
-    } else {
-      const hasQuery = searchInput.value.trim() || currentFilter !== 'all';
-      renderProducts(toRender, append, EMPTY_MESSAGES.noResults, hasQuery);
-    }
-
-    loadMoreRow.hidden = !hasNextPage || allProducts.length === 0;
+    
+    refreshView();
 
   } catch (err) {
     console.error('🔴 Error detallado de carga:', err.message);
@@ -435,6 +424,22 @@ async function loadProducts(filter = 'all', page = 1, append = false) {
     isLoading = false;
     setLoading(false);
   }
+}
+
+// ✅ Nueva función para refrescar la vista basada en el conteo visible local
+function refreshView() {
+  const toRender = filteredProducts.slice(0, visibleCount);
+  const hasQuery = searchInput.value.trim() || currentFilter !== 'all';
+  const isInitial = currentFilter === 'all' && !searchInput.value.trim();
+
+  if (isInitial && allProducts.length === 0 && !isLoading) {
+    renderProducts([], false, EMPTY_MESSAGES.comingSoon);
+  } else {
+    renderProducts(toRender, false, EMPTY_MESSAGES.noResults, hasQuery);
+  }
+
+  // Mostrar botón si hay más en memoria O si hay más páginas en la API
+  loadMoreRow.hidden = (visibleCount >= filteredProducts.length) && !hasNextPage;
 }
 
 function logicFilter(products, filter, search = '', categoryId = null) {
@@ -523,6 +528,7 @@ window.applyFilter = function (filter, categoryId = null) {
   currentCategoryId = categoryId;
   console.log('[applyFilter] Filtro aplicado:', { filter, categoryId: currentCategoryId, type: typeof currentCategoryId });
   currentPage = 1;
+  visibleCount = PAGE_SIZE; // ✅ Reiniciar contador al filtrar
   if (chips) chips.forEach(c => c.classList.toggle('active', c.dataset.filter === filter));
   allProducts = [];
   loadProducts(currentFilter, 1, false);
@@ -716,6 +722,7 @@ function sendToTiendaNube() {
 function doSearch() {
   const q = searchInput.value.trim();
   currentPage = 1;
+  visibleCount = PAGE_SIZE; // ✅ Reiniciar contador al buscar
   allProducts = [];
   loadProducts(currentFilter, 1, false);
   if (q) {
@@ -919,7 +926,21 @@ searchInput.addEventListener('input', () => {
   }, 250);
 });
 
-loadMoreBtn.addEventListener('click', () => { if (!isLoading && hasNextPage) loadProducts(currentFilter, currentPage + 1, true); });
+loadMoreBtn.addEventListener('click', () => {
+  visibleCount += PAGE_SIZE;
+  
+  // Si tenemos suficientes productos cargados localmente, solo refrescamos la vista
+  if (visibleCount <= filteredProducts.length) {
+    refreshView();
+  } else if (!isLoading && hasNextPage) {
+    // Si nos quedamos sin productos locales, pedimos la siguiente tanda a la API
+    loadProducts(currentFilter, currentPage + 1, true);
+  } else if (visibleCount > filteredProducts.length) {
+    // Ajuste final por si el resto es menor a PAGE_SIZE
+    visibleCount = filteredProducts.length;
+    refreshView();
+  }
+});
 
 hamburger.addEventListener('click', () => {
   const open = navLinks.classList.toggle('open');
