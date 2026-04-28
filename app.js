@@ -267,41 +267,45 @@ async function loadCategories() {
 
     const rawCategories = await res.json();
 
-    // Agrupar categorías según el mapeo
-    const groups = {};
-    rawCategories.forEach(cat => {
-      const name = cat.name?.es || cat.name?.en || 'General';
-      const mappedName = CATEGORY_MAPPING[String(cat.id)] || name;
-      if (!groups[mappedName]) {
-        groups[mappedName] = { name: mappedName, ids: [], count: 0 };
-      }
-      groups[mappedName].ids.push(String(cat.id));
-    });
+    console.log('[loadCategories] Categorías recibidas:', rawCategories);
 
-    // Guardar categorías globalmente para usar al filtrar
-    window.makenaCategories = groups;
+    // Guardar todas las categorías individuales
+    const categoriesList = rawCategories.map(cat => ({
+      id: String(cat.id),
+      name: cat.name?.es || cat.name?.en || 'General',
+      count: 0
+    }));
 
-    // Contar productos para cada grupo
+    console.log('[loadCategories] Categorías procesadas:', categoriesList);
+
+    // Guardar categorías globalmente
+    window.makenaCategories = categoriesList;
+
+    // Contar productos para cada categoría individual
     allProducts.forEach(p => {
-      Object.values(groups).forEach(g => {
-        if (p.categoryIdsList.some(id => g.ids.includes(id))) g.count++;
+      categoriesList.forEach(cat => {
+        if (p.categoryIdsList.includes(cat.id)) {
+          cat.count++;
+        }
       });
     });
 
-    categoriesGrid.innerHTML = Object.values(groups).map((g, idx) => {
-      const normName = norm(g.name);
+    categoriesGrid.innerHTML = categoriesList.map((cat, idx) => {
+      const normName = norm(cat.name);
       let emoji = '📦';
-      if (normName.includes('agro')) emoji = '🌾';
-      else if (normName.includes('bazar') || normName.includes('hogar')) emoji = '🏠';
-      else if (normName.includes('perfume') || normName.includes('maquillaje')) emoji = '✨';
-      else if (normName.includes('papel') || normName.includes('escolar')) emoji = '📎';
+      if (normName.includes('agro') || normName.includes('campo') || normName.includes('jardin') || normName.includes('huerta')) emoji = '🌾';
+      else if (normName.includes('bazar') || normName.includes('hogar') || normName.includes('cocina') || normName.includes('limpieza')) emoji = '🏠';
+      else if (normName.includes('papel') || normName.includes('escolar') || normName.includes('oficina') || normName.includes('libreria')) emoji = '📎';
+      else if (normName.includes('perfume') || normName.includes('maquillaje') || normName.includes('belleza') || normName.includes('cuidado')) emoji = '✨';
+      else if (normName.includes('cotillon') || normName.includes('fiesta')) emoji = '🎉';
+      else if (normName.includes('termo') || normName.includes('mate')) emoji = '☕';
 
       return `
         <article class="category-pill fade-up" style="animation-delay: ${idx * 0.08}s;"
-                 tabindex="0" data-name="${esc(g.name)}" data-ids="${esc(g.ids.join(','))}">
+                 tabindex="0" data-id="${esc(cat.id)}" data-name="${esc(cat.name)}">
           <span class="category-pill-icon">${emoji}</span>
-          <h3 class="category-pill-title">${esc(g.name)}</h3>
-          <span class="category-pill-count">${g.count} productos</span>
+          <h3 class="category-pill-title">${esc(cat.name)}</h3>
+          <span class="category-pill-count">${cat.count} productos</span>
         </article>
       `;
     }).join('');
@@ -309,9 +313,9 @@ async function loadCategories() {
     // Agregar event listeners a las pastillas
     document.querySelectorAll('.category-pill').forEach(pill => {
       pill.addEventListener('click', () => {
+        const id = pill.dataset.id;
         const name = pill.dataset.name;
-        const ids = pill.dataset.ids.split(',');
-        applyFilter(name, ids);
+        applyFilter(name, [id]);
       });
     });
 
@@ -333,15 +337,15 @@ async function loadProducts(filter = 'all', page = 1, append = false) {
 
   try {
     const isSearch = searchInput.value.trim().length > 0;
-    const isFiltered = filter !== 'all' || (currentCategoryId && currentCategoryId.length > 0);
+    const isFiltered = filter !== 'all' || currentCategoryId;
     const params = {
       page,
       per_page: (isSearch || isFiltered) ? 80 : PAGE_SIZE
     };
     if (isSearch) params.q = searchInput.value.trim();
-    // Usar el primer ID de categoría para filtrar en la API
-    if (currentCategoryId && currentCategoryId.length > 0) {
-      params.category = currentCategoryId[0];
+    // Usar ID de categoría para filtrar en la API
+    if (currentCategoryId) {
+      params.category = currentCategoryId;
     }
 
     console.log('[loadProducts] Cargando:', { filter, page, append, params });
@@ -439,14 +443,10 @@ function logicFilter(products, filter, search = '', categoryIds = null) {
   // Un único recorrido: filtra por categoría Y calcula score al mismo tiempo
   const results = [];
   for (const p of list) {
-    // Filtro de categoría - primero por IDs
-    if (doFilter && categoryIds && categoryIds.length > 0) {
-      const matchById = categoryIds.some(id => p.categoryIdsList.includes(String(id)));
+    // Filtro de categoría por ID
+    if (doFilter && categoryIds) {
+      const matchById = p.categoryIdsList.includes(String(categoryIds));
       if (!matchById) continue;
-    } else if (doFilter && filter !== 'all') {
-      // Fallback por nombre
-      const matchByName = p.categoriesList.some(c => norm(c) === norm(filter));
-      if (!matchByName) continue;
     }
 
     // Sin búsqueda activa → incluir directamente
@@ -479,12 +479,12 @@ function logicFilter(products, filter, search = '', categoryIds = null) {
   return results;
 }
 
-window.applyFilter = function (filter, categoryIds = null) {
-  if (filter === 'all') categoryIds = null;
-  if (isLoading || (currentFilter === filter && JSON.stringify(currentCategoryId) === JSON.stringify(categoryIds))) return;
+window.applyFilter = function (filter, categoryId = null) {
+  if (filter === 'all') categoryId = null;
+  if (isLoading || (currentFilter === filter && currentCategoryId === categoryId)) return;
 
   currentFilter = filter;
-  currentCategoryId = Array.isArray(categoryIds) ? categoryIds : (categoryIds ? [categoryIds] : null);
+  currentCategoryId = categoryId;
   currentPage = 1;
   if (chips) chips.forEach(c => c.classList.toggle('active', c.dataset.filter === filter));
   allProducts = [];
