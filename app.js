@@ -301,12 +301,11 @@ async function loadCategories() {
       else if (normName.includes('termo') || normName.includes('mate')) emoji = '☕';
 
       return `
-        <article class="category-pill fade-up" style="animation-delay: ${idx * 0.08}s;"
-                 tabindex="0" data-id="${esc(cat.id)}" data-name="${esc(cat.name)}">
+        <button class="category-pill fade-up" style="animation-delay: ${idx * 0.08}s;"
+                 data-id="${esc(cat.id)}" data-name="${esc(cat.name)}">
           <span class="category-pill-icon">${emoji}</span>
-          <h3 class="category-pill-title">${esc(cat.name)}</h3>
-          <span class="category-pill-count">${cat.count} productos</span>
-        </article>
+          <span class="category-pill-title">${esc(cat.name)}</span>
+        </button>
       `;
     }).join('');
 

@@ -1085,15 +1085,15 @@ em {
 }
 
 .category-pill {
-  padding: 2rem 1.5rem;
+  padding: 0.9rem 1.9rem;
   background: linear-gradient(135deg, var(--celeste), var(--rosa));
   color: white;
   border: none;
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-full);
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 0.6rem;
   text-align: center;
   cursor: pointer;
   transition: all var(--transition);
@@ -1113,34 +1113,25 @@ em {
 }
 
 .category-pill-icon {
-  font-size: 3rem;
-  margin-bottom: 0.85rem;
+  font-size: 1.2rem;
   display: block;
   transition: transform var(--transition);
 }
 
 .category-pill:hover .category-pill-icon {
-  transform: scale(1.15) rotate(-5deg);
+  transform: scale(1.1);
 }
 
 .category-pill-title {
-  font-family: 'Fraunces', serif;
-  font-size: 1.3rem;
+  font-family: inherit;
+  font-size: 0.92rem;
   font-weight: 700;
   color: white;
-  margin-bottom: 0.4rem;
-  position: relative;
-  z-index: 1;
+  margin: 0;
 }
 
 .category-pill-count {
-  font-size: 0.75rem;
-  color: rgba(255, 255, 255, 0.9);
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  position: relative;
-  z-index: 1;
+  display: none;
 }
 
 /* ── MARQUEE BENEFICIOS ───────────────────────────────────── */
@@ -2487,16 +2478,7 @@ em {
   }
 
   .category-pill {
-    padding: 1.5rem 1rem;
-  }
-
-  .category-pill-icon {
-    font-size: 2.5rem;
-    margin-bottom: 0.5rem;
-  }
-
-  .category-pill-title {
-    font-size: 1.1rem;
+    padding: 0.85rem 1.2rem;
   }
 }
 
@@ -2627,16 +2609,7 @@ em {
   }
 
   .category-pill {
-    padding: 1.2rem 0.8rem;
-  }
-
-  .category-pill-icon {
-    font-size: 2rem;
-    margin-bottom: 0.4rem;
-  }
-
-  .category-pill-title {
-    font-size: 1rem;
+    padding: 0.8rem 1rem;
   }
 
   .category-pill-count {
