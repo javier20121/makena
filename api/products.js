@@ -65,10 +65,22 @@ module.exports = async function handler(req, res) {
     }
 
     const data = await response.json();
-    
+
+    console.log('[Products API] Respuesta cruda de Tiendanube - total items:', Array.isArray(data) ? data.length : (data.products?.length || 0));
+
     // 5. Validar que la respuesta sea un Array (Tiendanube suele devolver array directo)
     // Si devuelve un objeto { products: [...] }, ajustamos aquí.
     const productsArray = Array.isArray(data) ? data : (data.products || []);
+
+    // 🟢 Logging para depurar IDs de categoría
+    if (productsArray.length > 0) {
+      console.log('[Products API] Primer producto - categories:', JSON.stringify(productsArray[0].categories));
+      const perfumeriaIds = ['38337422', '38357189', '38356862'];
+      const perfumeriaCount = productsArray.filter(p =>
+        (p.categories || []).some(c => perfumeriaIds.includes(String(c.id)))
+      ).length;
+      console.log('[Products API] Productos de Perfumería en esta respuesta:', perfumeriaCount);
+    }
 
     res.setHeader('X-Total-Count', response.headers.get('X-Total-Count') || productsArray.length);
     return res.status(200).json(productsArray);

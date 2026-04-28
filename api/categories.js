@@ -56,8 +56,12 @@ module.exports = async function handler(req, res) {
 
     const data = await response.json();
 
+    console.log('[Categories API] Respuesta cruda de Tiendanube:', JSON.stringify(data, null, 2));
+
     // 5. Validar respuesta
     const categoriesArray = Array.isArray(data) ? data : (data.categories || []);
+
+    console.log('[Categories API] Categorías procesadas:', categoriesArray.map(c => ({ id: c.id, name: c.name })));
 
     res.setHeader('X-Total-Count', categoriesArray.length);
     return res.status(200).json(categoriesArray);

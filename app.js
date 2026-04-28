@@ -277,6 +277,7 @@ async function loadCategories() {
     }));
 
     console.log('[loadCategories] Categorías procesadas:', categoriesList);
+    console.log('[loadCategories] IDs de categorías disponibles:', categoriesList.map(c => c.id).join(', '));
 
     // Guardar categorías globalmente
     window.makenaCategories = categoriesList;
@@ -381,7 +382,16 @@ async function loadProducts(filter = 'all', page = 1, append = false) {
     }) : [];
 
     // 🟢 Depuración: Verificamos qué nombres e IDs llegan de la API
-    products.forEach(p => console.log(`[DEBUG] Producto: ${p.title} | IDs: ${p.categoryIdsList} | Nombres: ${p.categoriesList}`));
+    console.log('[loadProducts] Total de productos cargados:', products.length);
+    products.forEach(p => {
+      console.log(`[DEBUG] Producto: "${p.title}" | IDs: [${p.categoryIdsList.join(', ')}] | Categorías: [${p.categoriesList.join(', ')}]`);
+    });
+
+    // 🟢 Verificar específicamente productos de Perfumería
+    const perfumeriaIds = ['38337422', '38357189', '38356862'];
+    const perfumeriaProducts = products.filter(p => p.categoryIdsList.some(id => perfumeriaIds.includes(id)));
+    console.log('🧴 [DEBUG] Productos de Perfumería encontrados:', perfumeriaProducts.length);
+    perfumeriaProducts.forEach(p => console.log('  -', p.title, '| IDs:', p.categoryIdsList));
 
     allProducts = append ? [...allProducts, ...products] : products;
     filteredProducts = logicFilter(allProducts, currentFilter, searchInput.value, currentCategoryId);
@@ -413,12 +423,13 @@ async function loadProducts(filter = 'all', page = 1, append = false) {
   }
 }
 
-function logicFilter(products, filter, search = '', categoryIds = null) {
+function logicFilter(products, filter, search = '', categoryId = null) {
   const list = Array.isArray(products) ? products : [];
 
   const query  = norm(search.trim());
   const words  = query ? query.split(/\s+/).filter(w => w.length > 1) : [];
-  const doFilter = filter !== 'all' || (categoryIds && categoryIds.length > 0);
+  // ✅ categoryId ahora es string único, no array
+  const doFilter = filter !== 'all' || categoryId;
   const doSearch = words.length > 0;
 
   // Sin filtros → devuelve todo directo
@@ -443,9 +454,14 @@ function logicFilter(products, filter, search = '', categoryIds = null) {
   const results = [];
   for (const p of list) {
     // Filtro de categoría por ID
-    if (doFilter && categoryIds) {
-      const matchById = p.categoryIdsList.includes(String(categoryIds));
-      if (!matchById) continue;
+    if (doFilter && categoryId) {
+      const catIdStr = String(categoryId);
+      const matchById = p.categoryIdsList.includes(catIdStr);
+      if (!matchById) {
+        console.log('[logicFilter] Producto NO coincide:', p.title, '| IDs del producto:', p.categoryIdsList, '| ID buscado:', catIdStr);
+        continue;
+      }
+      console.log('[logicFilter] Producto COINCIDE:', p.title, '| IDs:', p.categoryIdsList);
     }
 
     // Sin búsqueda activa → incluir directamente
@@ -483,7 +499,9 @@ window.applyFilter = function (filter, categoryId = null) {
   if (isLoading || (currentFilter === filter && currentCategoryId === categoryId)) return;
 
   currentFilter = filter;
-  currentCategoryId = categoryId;
+  // ✅ Asegurar que categoryId sea string único, no array
+  currentCategoryId = Array.isArray(categoryId) ? categoryId[0] : categoryId;
+  console.log('[applyFilter] Filtro aplicado:', { filter, categoryId: currentCategoryId, type: typeof currentCategoryId });
   currentPage = 1;
   if (chips) chips.forEach(c => c.classList.toggle('active', c.dataset.filter === filter));
   allProducts = [];
