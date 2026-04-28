@@ -279,6 +279,11 @@ async function loadCategories() {
     console.log('[loadCategories] Categorías procesadas:', categoriesList);
     console.log('[loadCategories] IDs de categorías disponibles:', categoriesList.map(c => c.id).join(', '));
 
+    // Problema 3: Inyectar categoría 'General' si hay productos sin categoría (ID virtual '0')
+    if (allProducts.some(p => p.categoryIdsList.includes('0'))) {
+      categoriesList.push({ id: '0', name: 'General', count: 0 });
+    }
+
     // Guardar categorías globalmente
     window.makenaCategories = categoriesList;
 
@@ -371,8 +376,8 @@ async function loadProducts(filter = 'all', page = 1, append = false) {
         imageAlt: p.name?.es || 'Imagen de producto',
         available: v.stock !== 0 && !!v.id,
         category: p.categories?.[0]?.name?.es || 'General',
-        categoriesList: (p.categories || []).map(c => c.name?.es || c.name?.en || 'General'),
-        categoryIdsList: (p.categories || []).map(c => String(c.id)),
+        categoriesList: (p.categories && p.categories.length > 0) ? p.categories.map(c => c.name?.es || c.name?.en || 'General') : ['General'],
+        categoryIdsList: (p.categories && p.categories.length > 0) ? p.categories.map(c => String(c.id)) : ['0'],
         permalink: p.canonical_url || (typeof p.permalink === 'object' ? p.permalink?.es : p.permalink) || null,
         images: p.images || [],
         fullDescription: p.description?.es || '',
