@@ -800,10 +800,13 @@ const productModal = $('productModal');
 const pmClose = $('pmClose');
 
 function openProductModal(id) {
-  const p = allProducts.find(x => x.id === id);
+  const p = allProducts.find(x => String(x.id) === String(id));
   if (!p) return;
 
-  $('pmTag').textContent = ({ agro: 'Agro', bazar: 'Bazar', papeleria: 'Papelería' }[p.category] || 'Bazar');
+  const pmTag = $('pmTag');
+  if (pmTag) {
+    pmTag.textContent = ({ agro: 'Agro', bazar: 'Bazar', papeleria: 'Papelería' }[p.category] || 'Bazar');
+  }
   $('pmTitle').textContent = p.title;
   $('pmPrice').textContent = fmt(p.price);
   $('pmCompare').textContent = (p.comparePrice > p.price) ? fmt(p.comparePrice) : '';
