@@ -94,22 +94,6 @@
       <div class="hero-glow hero-glow-2"></div>
       <div class="hero-glow hero-glow-3"></div>
 
-      <span class="deco-el deco-pill deco-pill-bazar" style="top: 24%; left: 7%; animation-delay: 0s;">
-        <span class="deco-pill-kicker">Selección</span>
-        <strong>Bazar</strong>
-      </span>
-      <span class="deco-el deco-pill deco-pill-papel" style="top: 20%; right: 17%; animation-delay: 0.8s;">
-        <span class="deco-pill-kicker">Esenciales</span>
-        <strong>Papelería</strong>
-      </span>
-      <span class="deco-el deco-pill deco-pill-agro" style="top: 59%; right: 8%; animation-delay: 1.5s;">
-        <span class="deco-pill-kicker">Origen</span>
-        <strong>Agro</strong>
-      </span>
-
-      <!-- CONTENEDOR DE HOJAS CAYENDO -->
-      <div class="leaf-container" id="leafContainer"></div>
-
       <div class="hero-inner">
         <div class="hero-left">
           <div class="hero-pill">
@@ -117,32 +101,61 @@
             Despachamos desde Andresito, Misiones
           </div>
           <h1 class="hero-title">
-          El lugar donde encontrás<br>
-          <em>todo lo que necesitás</em>
+          Una tienda clara, cercana y práctica<br>
+          <em>para comprar mejor</em>
           </h1>
-          <p class="hero-sub">Bazar, papelería y agro con selección cuidada, atención cercana y envíos coordinados personalmente desde Andresito, Misiones.</p>
+          <p class="hero-sub">Bazar, papelería y agro con selección cuidada, compra asistida por WhatsApp y envíos coordinados personalmente desde Andresito, Misiones.</p>
           <div class="hero-actions">
             <a href="#productos" class="btn btn-hero-primary">
               Ver catálogo
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
             </a>
+            <a href="#contacto" class="btn btn-email">
+              Hacer una consulta
+            </a>
+          </div>
+          <div class="hero-points">
+            <div class="hero-point">
+              <strong>Atención real</strong>
+              <span>Respondemos nosotros, sin bots ni pasos de más.</span>
+            </div>
+            <div class="hero-point">
+              <strong>Compra simple</strong>
+              <span>Podés seguir por la web o cerrar tu pedido por WhatsApp.</span>
+            </div>
           </div>
         </div>
 
         <div class="hero-right">
-          <div class="hero-ring-wrap">
-            <svg viewBox="0 0 200 200" class="hero-ring-svg" xmlns="http://www.w3.org/2000/svg">
-              <defs>
-                <path id="rp" d="M100,100 m-76,0 a76,76 0 1,1 152,0 a76,76 0 1,1 -152,0"/>
-              </defs>
-              <circle cx="100" cy="100" r="76" fill="none" stroke="currentColor" stroke-width="0.8" opacity="0.15"/>
-              <circle cx="100" cy="100" r="70" fill="none" stroke="currentColor" stroke-width="0.4" stroke-dasharray="3 6" opacity="0.2"/>
-              <text letter-spacing="3.5" font-size="10.5" font-weight="600">
-                <textPath href="#rp" startOffset="0%">MAKENA · BAZAR · PAPELERÍA · AGRO · </textPath>
-              </text>
-            </svg>
-            <div class="hero-ring-center">MK</div>
-          </div>
+          <article class="hero-panel reveal">
+            <span class="hero-panel-kicker">Compra acompañada</span>
+            <h3>Una tienda familiar pensada para resolver compras cotidianas con atención humana.</h3>
+            <p class="hero-panel-copy">Reunimos hogar, oficina y campo en un catálogo simple, con seguimiento cercano y alternativas de compra claras.</p>
+            <div class="hero-panel-list">
+              <div class="hero-panel-item">
+                <strong>Respuesta rápida</strong>
+                <span>Coordinamos stock, envío y dudas por WhatsApp.</span>
+              </div>
+              <div class="hero-panel-item">
+                <strong>Selección cuidada</strong>
+                <span>Trabajamos con productos elegidos por utilidad y calidad.</span>
+              </div>
+              <div class="hero-panel-item">
+                <strong>Pago simple</strong>
+                <span>Transferencia, efectivo o compra desde la tienda web.</span>
+              </div>
+            </div>
+            <div class="hero-panel-footer">
+              <div>
+                <span>Atención</span>
+                <strong>Lunes a sábado</strong>
+              </div>
+              <div>
+                <span>Origen</span>
+                <strong>Andresito, Misiones</strong>
+              </div>
+            </div>
+          </article>
         </div>
       </div>
 
@@ -163,46 +176,43 @@
         <p class="eyebrow">Todas nuestras categorías</p>
         <h2>Explora por rubro</h2>
       </div>
-      <div class="categories-grid reveal-group" id="categoriesGrid">
-        <div class="loading-dots" style="grid-column: 1/-1; justify-self: center; margin: 2rem 0;">
-          <span></span><span></span><span></span>
+      <div class="categories-shell reveal">
+        <div class="categories-shell-head">
+          <p>Elegí una categoría para filtrar el catálogo y encontrar más rápido lo que necesitás.</p>
+          <span>Catálogo conectado a la tienda web</span>
+        </div>
+        <div class="categories-grid reveal-group" id="categoriesGrid">
+          <div class="loading-dots" style="grid-column: 1/-1; justify-self: center; margin: 2rem 0;">
+            <span></span><span></span><span></span>
+          </div>
         </div>
       </div>
     </section>
 
-    <!-- BENEFICIOS BRIDGE -->
-    <div class="marquee-strip">
-      <div class="marquee-track">
-        <div class="marquee-content">
-          <span class="marquee-item"><span class="marquee-icon">🚚</span> Envío a todo el país — coordinado personalmente</span>
-          <span class="marquee-sep">◆</span>
-          <span class="marquee-item"><span class="marquee-icon">💬</span> Atención directa — sin bots, sin esperas</span>
-          <span class="marquee-sep">◆</span>
-          <span class="marquee-item"><span class="marquee-icon">✅</span> Calidad garantizada — productos seleccionados</span>
-          <span class="marquee-sep">◆</span>
-          <span class="marquee-item"><span class="marquee-icon">🌿</span> Origen Andresito, Misiones — tienda familiar</span>
-          <span class="marquee-sep">◆</span>
-          <span class="marquee-item"><span class="marquee-icon">💳</span> Transferencia y efectivo — pagá como quieras</span>
-          <span class="marquee-sep">◆</span>
-          <span class="marquee-item"><span class="marquee-icon">📦</span> Bazar · Papelería · Agro — todo en un solo lugar</span>
-          <span class="marquee-sep">◆</span>
-        </div>
-        <div class="marquee-content" aria-hidden="true">
-          <span class="marquee-item"><span class="marquee-icon">🚚</span> Envío a todo el país — coordinado personalmente</span>
-          <span class="marquee-sep">◆</span>
-          <span class="marquee-item"><span class="marquee-icon">💬</span> Atención directa — sin bots, sin esperas</span>
-          <span class="marquee-sep">◆</span>
-          <span class="marquee-item"><span class="marquee-icon">✅</span> Calidad garantizada — productos seleccionados</span>
-          <span class="marquee-sep">◆</span>
-          <span class="marquee-item"><span class="marquee-icon">🌿</span> Origen Andresito, Misiones — tienda familiar</span>
-          <span class="marquee-sep">◆</span>
-          <span class="marquee-item"><span class="marquee-icon">💳</span> Transferencia y efectivo — pagá como quieras</span>
-          <span class="marquee-sep">◆</span>
-          <span class="marquee-item"><span class="marquee-icon">📦</span> Bazar · Papelería · Agro — todo en un solo lugar</span>
-          <span class="marquee-sep">◆</span>
-        </div>
+    <section class="trust-band">
+      <div class="trust-band-inner reveal-group">
+        <article class="trust-card reveal">
+          <span class="trust-card-icon">🚚</span>
+          <strong>Envíos coordinados</strong>
+          <p>Despachamos a todo el país con seguimiento personal del pedido.</p>
+        </article>
+        <article class="trust-card reveal">
+          <span class="trust-card-icon">💬</span>
+          <strong>Atención humana</strong>
+          <p>Respondemos consultas, stock y formas de compra de manera directa.</p>
+        </article>
+        <article class="trust-card reveal">
+          <span class="trust-card-icon">💳</span>
+          <strong>Pago simple</strong>
+          <p>Podés comprar desde la web o cerrar tu pedido por WhatsApp.</p>
+        </article>
+        <article class="trust-card reveal">
+          <span class="trust-card-icon">🌿</span>
+          <strong>Negocio familiar</strong>
+          <p>Vendemos desde Andresito, Misiones, con foco en cercanía y confianza.</p>
+        </article>
       </div>
-    </div>
+    </section>
 
     <!-- PRODUCTOS -->
     <section class="products-section" id="productos">
@@ -210,6 +220,11 @@
         <div class="products-head-left">
           <p class="eyebrow">Catálogo</p>
           <h2>Nuestros productos</h2>
+          <p class="products-lead">Explorá el catálogo, abrí cada ficha y, si necesitás ayuda, te acompañamos personalmente para cerrar la compra.</p>
+        </div>
+        <div class="products-head-note">
+          <strong>Compra asistida</strong>
+          <span>Si no encontrás algo o querés coordinar envío, te respondemos por WhatsApp.</span>
         </div>
       </div>
 
@@ -239,24 +254,39 @@
     <section class="section about-section" id="nosotros">
       <div class="about-grid">
         <div class="about-left reveal">
-          <div class="about-mosaic">
-            <div class="mosaic-cell mc-big">🌾</div>
-            <div class="mosaic-cell">📦</div>
-            <div class="mosaic-cell">🏠</div>
-            <div class="mosaic-cell">📎</div>
-            <div class="mosaic-cell mc-big">🌿</div>
-            <div class="mosaic-cell">✂️</div>
-          </div>
-          <div class="about-stat-pills">
-            <div class="stat-pill"><strong>Misiones</strong><span>Argentina</span></div>
-            <div class="stat-pill"><strong>Familiar</strong><span>Tienda</span></div>
+          <div class="about-panel">
+            <p class="eyebrow about-panel-eyebrow">Tienda de cercanía</p>
+            <h3>Una marca familiar, práctica y confiable.</h3>
+            <p>Combinamos hogar, oficina y campo para ayudarte a resolver compras reales en un solo lugar, con una experiencia simple y acompañada.</p>
+            <div class="about-stat-pills">
+              <div class="stat-pill"><strong>Misiones</strong><span>Argentina</span></div>
+              <div class="stat-pill"><strong>Atención</strong><span>Personalizada</span></div>
+            </div>
+            <div class="about-mini-grid">
+              <div class="about-mini-card">
+                <strong>Atención humana</strong>
+                <span>Respondemos nosotros, sin automatismos.</span>
+              </div>
+              <div class="about-mini-card">
+                <strong>Selección útil</strong>
+                <span>Productos pensados para el día a día.</span>
+              </div>
+              <div class="about-mini-card">
+                <strong>Compra flexible</strong>
+                <span>Web o WhatsApp, según te resulte más cómodo.</span>
+              </div>
+              <div class="about-mini-card">
+                <strong>Seguimiento real</strong>
+                <span>Te acompañamos hasta la entrega.</span>
+              </div>
+            </div>
           </div>
         </div>
         <div class="about-right reveal">
           <p class="eyebrow">Quiénes somos</p>
-          <h2>Makena Shop nació<br><em>del campo.</em></h2>
-          <p>Somos una tienda familiar con raíces en Andresito, Misiones. Empezamos vendiendo insumos agro y hoy sumamos bazar y papelería para acompañarte en cada momento del día.</p>
-          <p>Trabajamos con proveedores de calidad y nos ocupamos personalmente de cada envío — nada se terceriza.</p>
+          <h2>Makena Shop nació en Andresito<br><em>y creció con una idea simple.</em></h2>
+          <p>Queríamos reunir productos útiles, buena atención y una forma de comprar sin complicaciones. Por eso hoy combinamos bazar, papelería y agro en un mismo espacio.</p>
+          <p>Trabajamos con proveedores seleccionados y nos ocupamos personalmente de cada pedido para que la experiencia se sienta cercana, clara y confiable.</p>
           <ul class="about-checks">
             <li>
               <div class="check-icon">✓</div>
@@ -282,6 +312,10 @@
           <p class="eyebrow">Hablemos</p>
           <h2>¿Tenés alguna<br>consulta?</h2>
           <p>Escribinos por WhatsApp o Instagram y te respondemos a la brevedad. Seguinos en redes para ver novedades.</p>
+          <div class="contact-note">
+            <strong>Respuesta clara y rápida</strong>
+            <p>Si no ves un producto en el catálogo, también podés consultarlo directo y te ayudamos a resolverlo.</p>
+          </div>
           <div class="contact-btns">
             <a href="https://wa.me/5493757000000" class="btn btn-wa" target="_blank" rel="noreferrer">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
@@ -365,6 +399,7 @@
         </div>
         <div class="pm-info">
           <div class="pm-head">
+            <span class="pm-tag" id="pmTag">Categoría</span>
             <h2 id="pmTitle">Cargando...</h2>
             <div class="pm-price-row">
               <span class="pm-price" id="pmPrice">$0</span>

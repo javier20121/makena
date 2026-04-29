@@ -311,7 +311,10 @@ async function loadCategories() {
         <button class="category-pill fade-up" style="animation-delay: ${idx * 0.08}s;"
                  data-id="${esc(cat.id)}" data-name="${esc(cat.name)}">
           <span class="category-pill-icon">${emoji}</span>
-          <span class="category-pill-title">${esc(cat.name)}</span>
+          <span class="category-pill-copy">
+            <span class="category-pill-title">${esc(cat.name)}</span>
+            <span class="category-pill-count">${cat.count} ${cat.count === 1 ? 'producto' : 'productos'}</span>
+          </span>
         </button>
       `;
     }).join('');
@@ -321,7 +324,7 @@ async function loadCategories() {
       pill.addEventListener('click', () => {
         const id = pill.dataset.id;
         const name = pill.dataset.name;
-        applyFilter(name, [id]);
+        applyFilter(name, id);
       });
     });
 
@@ -530,6 +533,13 @@ window.applyFilter = function (filter, categoryId = null) {
   currentPage = 1;
   visibleCount = PAGE_SIZE; // ✅ Reiniciar contador al filtrar
   if (chips) chips.forEach(c => c.classList.toggle('active', c.dataset.filter === filter));
+  document.querySelectorAll('.category-pill').forEach(pill => {
+    const pillId = pill.dataset.id;
+    const active = Array.isArray(categoryId)
+      ? categoryId.map(String).includes(pillId)
+      : String(categoryId || '') === pillId;
+    pill.classList.toggle('active', Boolean(categoryId) && active);
+  });
   allProducts = [];
   loadProducts(currentFilter, 1, false);
   document.getElementById('productos')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -570,27 +580,35 @@ function buildCard(p, i = 0) {
     ? `<img class="product-img" src="${esc(p.image)}" alt="${esc(p.imageAlt)}" loading="lazy" decoding="async">`
     : `<div class="product-img-placeholder">${emoji}</div>`;
 
+  const categoryLabel = CATEGORY_MAPPING[p.categoryIdsList[0]] || p.category;
+  const isAvailable = Boolean(p.available && p.variantId);
+  const statusLabel = isAvailable ? 'Disponible' : 'Consultar';
+
   const priceHtml = hasSale
-    ? `<div><span class="product-compare">${fmt(p.comparePrice)}</span> <span class="product-price">${fmt(p.price)}</span></div>`
+    ? `<div class="product-price-row"><span class="product-compare">${fmt(p.comparePrice)}</span><span class="product-price">${fmt(p.price)}</span></div>`
     : `<span class="product-price">${p.price > 0 ? fmt(p.price) : 'Consultar'}</span>`;
   const addBtnDisabled = !p.available || !p.variantId ? 'disabled title="Sin stock o sin variante para agregar"' : '';
   el.innerHTML = `
     <div class="product-img-wrap">
       ${imgHtml}
-      <span class="product-tag">${esc(CATEGORY_MAPPING[p.categoryIdsList[0]] || p.category)}</span>
-      ${hasSale ? `<span class="badge-sale">${discount}% OFF</span>` : ''}
-      <button class="wishlist-btn" aria-label="Favorito">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l8.72-8.72 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-      </button>
+      <div class="product-badges">
+        <span class="product-tag">${esc(categoryLabel)}</span>
+        ${hasSale ? `<span class="badge-sale">${discount}% OFF</span>` : `<span class="product-status ${isAvailable ? 'available' : 'unavailable'}">${statusLabel}</span>`}
+      </div>
     </div>
     <div class="product-body">
-      <p class="product-name">${esc(p.title)}</p>
-      <p class="product-desc">${esc(p.description || '')}</p>
+      <div class="product-copy">
+        <p class="product-name">${esc(p.title)}</p>
+        <p class="product-desc">${esc(p.description || '')}</p>
+      </div>
       <div class="product-foot">
-        ${priceHtml}
+        <div class="product-price-block">
+          ${priceHtml}
+          <span class="product-price-note">${isAvailable ? 'Compra online o por WhatsApp' : 'Consultá disponibilidad'}</span>
+        </div>
         <div class="product-actions">
-          ${p.permalink ? `<a class="buy-btn" href="${esc(p.permalink)}" target="_blank" rel="noopener noreferrer" aria-label="Ver ${esc(p.title)}">Ver</a>` : ''}
-          <button class="add-btn" data-product-id="${esc(p.id)}" aria-label="Agregar ${esc(p.title)}" ${addBtnDisabled}>+ Carrito</button>
+          ${p.permalink ? `<a class="buy-btn" href="${esc(p.permalink)}" target="_blank" rel="noopener noreferrer" aria-label="Ver ${esc(p.title)}">Ver ficha</a>` : ''}
+          <button class="add-btn" data-product-id="${esc(p.id)}" aria-label="Agregar ${esc(p.title)}" ${addBtnDisabled}>Agregar</button>
         </div>
       </div>
     </div>`;
@@ -785,12 +803,6 @@ productsGrid.addEventListener('click', e => {
     addToCart(btn.dataset.productId);
     return;
   }
-  const wishBtn = e.target.closest('.wishlist-btn');
-  if (wishBtn) {
-    wishBtn.classList.toggle('active');
-    e.stopPropagation();
-    return;
-  }
   if (e.target.closest('.buy-btn')) return;
   const card = e.target.closest('.product-card');
   if (card) openProductModal(card.dataset.productId);
@@ -803,7 +815,7 @@ function openProductModal(id) {
   const p = allProducts.find(x => x.id === id);
   if (!p) return;
 
-  $('pmTag').textContent = ({ agro: 'Agro', bazar: 'Bazar', papeleria: 'Papelería' }[p.category] || 'Bazar');
+  $('pmTag').textContent = CATEGORY_MAPPING[p.categoryIdsList?.[0]] || p.category || 'General';
   $('pmTitle').textContent = p.title;
   $('pmPrice').textContent = fmt(p.price);
   $('pmCompare').textContent = (p.comparePrice > p.price) ? fmt(p.comparePrice) : '';
