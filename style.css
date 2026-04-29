@@ -991,30 +991,6 @@ em {
   border-top: 1px solid rgba(255, 255, 255, 0.5);
   z-index: 5;
   padding: 0.4rem 1.5rem 0.2rem;
-  overflow: visible;
-}
-
-#categoriasAPI > * {
-  position: relative;
-  z-index: 1;
-}
-
-#categoriasAPI::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: -1px;
-  height: 132px;
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0) 0%,
-    rgba(249, 245, 240, 0.3) 44%,
-    rgba(249, 245, 240, 0.88) 78%,
-    #f9f5f0 100%
-  );
-  pointer-events: none;
-  z-index: 0;
 }
 
 .cats-grid {
@@ -1212,14 +1188,14 @@ em {
 /* ── MARQUEE BENEFICIOS ───────────────────────────────────── */
 .marquee-strip {
   background: linear-gradient(135deg, #241a14 0%, var(--ink) 55%, #1a2418 100%);
-  padding: 1.15rem 0;
+  padding: 1.3rem 0;
   overflow: hidden;
   position: relative;
-  z-index: 12;
-  border-radius: 22px;
-  margin: -0.35rem auto -2.8rem;
-  max-width: min(1180px, calc(100% - 3rem));
-  box-shadow: 0 24px 58px rgba(0,0,0,0.18), 0 6px 18px rgba(0,0,0,0.08);
+  z-index: 10;
+  border-radius: 16px;
+  margin: 2.5rem auto 0;
+  max-width: 92%;
+  box-shadow: 0 20px 56px rgba(0,0,0,0.20), 0 4px 12px rgba(0,0,0,0.08);
   border: 1px solid rgba(255,255,255,0.06);
 }
 
@@ -1424,34 +1400,15 @@ em {
 
 /* ── PRODUCTOS ──────────────────────────────────────────────── */
 .products-section {
-  background: linear-gradient(180deg, #f9f5f0 0%, #ffffff 180px);
+  background: linear-gradient(180deg, #f9f5f0 0%, #ffffff 120px);
   z-index: 11;
-  padding-top: 8.1rem;
+  padding-top: 6rem;
   padding-bottom: 8rem;
   border-top-left-radius: 60px;
   border-top-right-radius: 60px;
   margin-top: -60px;
   border-top: 1px solid rgba(255,255,255,0.7);
   box-shadow: 0 -20px 50px rgba(0,0,0,0.04);
-  position: relative;
-  overflow: visible;
-}
-
-.products-section::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 150px;
-  background: linear-gradient(180deg, rgba(249, 245, 240, 0.96) 0%, rgba(255, 255, 255, 0) 100%);
-  pointer-events: none;
-  z-index: 0;
-}
-
-.products-section > * {
-  position: relative;
-  z-index: 1;
 }
 
 .products-head {
@@ -1581,23 +1538,28 @@ em {
 
 /* Tarjeta de producto Premium */
 .product-card {
-  background: var(--surface);
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   border-radius: 24px;
   overflow: hidden;
-  border: 1px solid var(--border);
+  border: 1px solid rgba(255, 255, 255, 0.5);
   display: flex;
   flex-direction: column;
   transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1), box-shadow 0.4s ease, border-color 0.3s ease;
   cursor: pointer;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+  box-shadow: 
+    0 4px 24px rgba(107, 173, 174, 0.08),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.3);
   position: relative;
   height: 100%;
 }
 
 .product-card:hover {
   transform: translateY(-10px);
-  box-shadow: 0 30px 60px rgba(0,0,0,0.08);
-  border-color: var(--rosa-2);
+  box-shadow: 0 30px 60px rgba(107, 173, 174, 0.15);
+  border-color: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.8);
 }
 
 .product-img-wrap {
@@ -1729,7 +1691,7 @@ em {
   flex: 1;
   display: flex;
   flex-direction: column;
-  background: var(--surface);
+  background: transparent;
 }
 
 .product-name {
@@ -2939,13 +2901,8 @@ em {
   }
 
   .marquee-strip {
-    max-width: calc(100% - 1.2rem);
-    margin: -0.1rem auto -2rem;
+    max-width: 100%;
     padding: 1rem 0.75rem;
-  }
-
-  .products-section {
-    padding-top: 7rem;
   }
 
   .navbar-inner {
