@@ -940,8 +940,18 @@ em {
 }
 
 /* ── CATEGORÍAS ─────────────────────────────────────────────── */
-#categorias {
-  background: var(--bg-2);
+#categoriasAPI {
+  background: linear-gradient(
+      rgba(255, 255, 255, 0.6), 
+      rgba(255, 255, 255, 0.4)
+    ), 
+    url('img/fondo.png');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-top: 1px solid rgba(255, 255, 255, 0.5);
   z-index: 5;
   padding-top: 7rem;
 }
