@@ -990,7 +990,7 @@ em {
   -webkit-backdrop-filter: blur(12px);
   border-top: 1px solid rgba(255, 255, 255, 0.5);
   z-index: 5;
-  padding-top: 7rem;
+  padding: 3.4rem 1.5rem 2.2rem;
 }
 
 .cats-grid {
@@ -1122,7 +1122,11 @@ em {
 
 /* ── CATEGORÍAS DINÁMICAS (API) ───────────────────────────── */
 .categories-dynamic-section {
-  padding: 4rem 1.5rem;
+  padding: 3.4rem 1.5rem 2.2rem;
+}
+
+.categories-dynamic-section .section-head {
+  margin-bottom: 2rem;
 }
 
 .categories-grid {
