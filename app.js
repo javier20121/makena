@@ -148,6 +148,7 @@ let lenis = null; // ✅ Variable global para control
 let cart = [];
 let currentFilter = 'all';
 let currentCategoryId = null; // ✅ Declaramos la variable que faltaba
+let visibleCount = PAGE_SIZE; // ✅ Control de cuántos productos mostrar en pantalla
 let currentPage = 1;
 let hasNextPage = false;
 let connectionState = 'idle';
@@ -277,6 +278,12 @@ async function loadCategories() {
     }));
 
     console.log('[loadCategories] Categorías procesadas:', categoriesList);
+    console.log('[loadCategories] IDs de categorías disponibles:', categoriesList.map(c => c.id).join(', '));
+
+    // Problema 3: Inyectar categoría 'General' si hay productos sin categoría (ID virtual '0')
+    if (allProducts.some(p => p.categoryIdsList.includes('0'))) {
+      categoriesList.push({ id: '0', name: 'General', count: 0 });
+    }
 
     // Guardar categorías globalmente
     window.makenaCategories = categoriesList;
@@ -336,14 +343,15 @@ async function loadProducts(filter = 'all', page = 1, append = false) {
 
   try {
     const isSearch = searchInput.value.trim().length > 0;
-    const isFiltered = filter !== 'all' || currentCategoryId;
     const params = {
       page,
-      per_page: (isSearch || isFiltered) ? 80 : PAGE_SIZE
+      per_page: 100 // ✅ Cargamos una cantidad mayor para tener el catálogo localmente
     };
     if (isSearch) params.q = searchInput.value.trim();
     // Usar ID de categoría para filtrar en la API
-    if (currentCategoryId) {
+    // No enviamos el ID '0' (General) a la API porque Tiendanube no lo reconoce.
+    // Si es '0', pedimos los productos normales y filtramos localmente.
+    if (currentCategoryId && currentCategoryId !== '0') {
       params.category = currentCategoryId;
     }
 
@@ -359,6 +367,11 @@ async function loadProducts(filter = 'all', page = 1, append = false) {
     const products = Array.isArray(data) ? data.map(p => {
       const v = (p.variants && p.variants.length > 0) ? p.variants[0] : {};
 
+      // Determinar categoría principal y mapeada
+      const rawCatName = p.categories?.[0]?.name?.es || 'General';
+      const firstCatId = p.categories?.[0]?.id ? String(p.categories[0].id) : '0';
+      const mappedCategory = CATEGORY_MAPPING[firstCatId] || rawCatName;
+
       return {
         id: String(p.id),
         variantId: v.id ? String(v.id) : '',
@@ -369,9 +382,11 @@ async function loadProducts(filter = 'all', page = 1, append = false) {
         image: p.images?.[0]?.src || null,
         imageAlt: p.name?.es || 'Imagen de producto',
         available: v.stock !== 0 && !!v.id,
-        category: p.categories?.[0]?.name?.es || 'General',
-        categoriesList: (p.categories || []).map(c => c.name?.es || c.name?.en || 'General'),
-        categoryIdsList: (p.categories || []).map(c => String(c.id)),
+        category: mappedCategory, // ✅ Ahora el objeto tiene el nombre "Perfumería"
+        categoriesList: (p.categories && p.categories.length > 0) 
+          ? p.categories.map(c => CATEGORY_MAPPING[String(c.id)] || c.name?.es || 'General') 
+          : ['General'],
+        categoryIdsList: (p.categories && p.categories.length > 0) ? p.categories.map(c => String(c.id)) : ['0'],
         permalink: p.canonical_url || (typeof p.permalink === 'object' ? p.permalink?.es : p.permalink) || null,
         images: p.images || [],
         fullDescription: p.description?.es || '',
@@ -381,23 +396,21 @@ async function loadProducts(filter = 'all', page = 1, append = false) {
     }) : [];
 
     // 🟢 Depuración: Verificamos qué nombres e IDs llegan de la API
-    products.forEach(p => console.log(`[DEBUG] Producto: ${p.title} | IDs: ${p.categoryIdsList} | Nombres: ${p.categoriesList}`));
+    console.log('[loadProducts] Total de productos cargados:', products.length);
+    products.forEach(p => {
+      console.log(`[DEBUG] Producto: "${p.title}" | IDs: [${p.categoryIdsList.join(', ')}] | Categorías: [${p.categoriesList.join(', ')}]`);
+    });
+
+    // 🟢 Verificar específicamente productos de Perfumería
+    const perfumeriaIds = ['38337422', '38357189', '38356862'];
+    const perfumeriaProducts = products.filter(p => p.categoryIdsList.some(id => perfumeriaIds.includes(id)));
+    console.log('🧴 [DEBUG] Productos de Perfumería encontrados:', perfumeriaProducts.length);
+    perfumeriaProducts.forEach(p => console.log('  -', p.title, '| IDs:', p.categoryIdsList));
 
     allProducts = append ? [...allProducts, ...products] : products;
     filteredProducts = logicFilter(allProducts, currentFilter, searchInput.value, currentCategoryId);
-
-    const toRender = append
-      ? logicFilter(products, currentFilter, searchInput.value, currentCategoryId)
-      : filteredProducts;
-
-    if (!append && filter === 'all' && !searchInput.value.trim() && allProducts.length === 0) {
-      renderProducts([], false, EMPTY_MESSAGES.comingSoon);
-    } else {
-      const hasQuery = searchInput.value.trim() || currentFilter !== 'all';
-      renderProducts(toRender, append, EMPTY_MESSAGES.noResults, hasQuery);
-    }
-
-    loadMoreRow.hidden = !hasNextPage || allProducts.length === 0;
+    
+    refreshView();
 
   } catch (err) {
     console.error('🔴 Error detallado de carga:', err.message);
@@ -413,12 +426,29 @@ async function loadProducts(filter = 'all', page = 1, append = false) {
   }
 }
 
-function logicFilter(products, filter, search = '', categoryIds = null) {
+// ✅ Nueva función para refrescar la vista basada en el conteo visible local
+function refreshView() {
+  const toRender = filteredProducts.slice(0, visibleCount);
+  const hasQuery = searchInput.value.trim() || currentFilter !== 'all';
+  const isInitial = currentFilter === 'all' && !searchInput.value.trim();
+
+  if (isInitial && allProducts.length === 0 && !isLoading) {
+    renderProducts([], false, EMPTY_MESSAGES.comingSoon);
+  } else {
+    renderProducts(toRender, false, EMPTY_MESSAGES.noResults, hasQuery);
+  }
+
+  // Mostrar botón si hay más en memoria O si hay más páginas en la API
+  loadMoreRow.hidden = (visibleCount >= filteredProducts.length) && !hasNextPage;
+}
+
+function logicFilter(products, filter, search = '', categoryId = null) {
   const list = Array.isArray(products) ? products : [];
 
   const query  = norm(search.trim());
   const words  = query ? query.split(/\s+/).filter(w => w.length > 1) : [];
-  const doFilter = filter !== 'all' || (categoryIds && categoryIds.length > 0);
+  // ✅ categoryId ahora es string único, no array
+  const doFilter = filter !== 'all' || categoryId;
   const doSearch = words.length > 0;
 
   // Sin filtros → devuelve todo directo
@@ -442,10 +472,21 @@ function logicFilter(products, filter, search = '', categoryIds = null) {
   // Un único recorrido: filtra por categoría Y calcula score al mismo tiempo
   const results = [];
   for (const p of list) {
-    // Filtro de categoría por ID
-    if (doFilter && categoryIds) {
-      const matchById = p.categoryIdsList.includes(String(categoryIds));
-      if (!matchById) continue;
+    // 1. Filtrado por Categoría (ID o Nombre)
+    if (doFilter) {
+      let match = false;
+      if (categoryId) {
+        // Soporte para un ID único o un array de IDs (crucial para Perfumería)
+        const targetIds = Array.isArray(categoryId) ? categoryId.map(String) : [String(categoryId)];
+        match = p.categoryIdsList.some(id => targetIds.includes(id));
+      } else {
+        // Si no hay ID, filtramos por el nombre de la categoría (útil para chips y Hero)
+        // ✅ Comparamos contra el nombre mapeado y los nombres en la lista
+        match = norm(p.category).includes(norm(filter)) || 
+                p.categoriesList.some(c => norm(c).includes(norm(filter)));
+      }
+
+      if (!match) continue;
     }
 
     // Sin búsqueda activa → incluir directamente
@@ -483,8 +524,11 @@ window.applyFilter = function (filter, categoryId = null) {
   if (isLoading || (currentFilter === filter && currentCategoryId === categoryId)) return;
 
   currentFilter = filter;
+  // ✅ Mantenemos el array si viene como tal para soportar múltiples categorías
   currentCategoryId = categoryId;
+  console.log('[applyFilter] Filtro aplicado:', { filter, categoryId: currentCategoryId, type: typeof currentCategoryId });
   currentPage = 1;
+  visibleCount = PAGE_SIZE; // ✅ Reiniciar contador al filtrar
   if (chips) chips.forEach(c => c.classList.toggle('active', c.dataset.filter === filter));
   allProducts = [];
   loadProducts(currentFilter, 1, false);
@@ -678,6 +722,7 @@ function sendToTiendaNube() {
 function doSearch() {
   const q = searchInput.value.trim();
   currentPage = 1;
+  visibleCount = PAGE_SIZE; // ✅ Reiniciar contador al buscar
   allProducts = [];
   loadProducts(currentFilter, 1, false);
   if (q) {
@@ -881,7 +926,21 @@ searchInput.addEventListener('input', () => {
   }, 250);
 });
 
-loadMoreBtn.addEventListener('click', () => { if (!isLoading && hasNextPage) loadProducts(currentFilter, currentPage + 1, true); });
+loadMoreBtn.addEventListener('click', () => {
+  visibleCount += PAGE_SIZE;
+  
+  // Si tenemos suficientes productos cargados localmente, solo refrescamos la vista
+  if (visibleCount <= filteredProducts.length) {
+    refreshView();
+  } else if (!isLoading && hasNextPage) {
+    // Si nos quedamos sin productos locales, pedimos la siguiente tanda a la API
+    loadProducts(currentFilter, currentPage + 1, true);
+  } else if (visibleCount > filteredProducts.length) {
+    // Ajuste final por si el resto es menor a PAGE_SIZE
+    visibleCount = filteredProducts.length;
+    refreshView();
+  }
+});
 
 hamburger.addEventListener('click', () => {
   const open = navLinks.classList.toggle('open');
