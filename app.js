@@ -661,7 +661,7 @@ function updateCartUI() {
   cartBadge.textContent = total;
   cartBadge.hidden = total === 0;
   cartSubtotal.textContent = fmt(subtotal);
-  if (cartCountLabel) cartCountLabel.textContent = `${total} ${total === 1 ? 'item' : 'items'}`;
+  if (cartCountLabel) cartCountLabel.textContent = `${total} ${total === 1 ? 'producto' : 'productos'}`;
 
   if (!cart.length) {
     cartEmpty.hidden = false;

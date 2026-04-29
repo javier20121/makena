@@ -36,7 +36,7 @@
       </a>
 
       <nav class="nav-links" id="navLinks">
-        <a href="#inicio" class="nav-link">inicio</a>
+        <a href="#inicio" class="nav-link">Inicio</a>
         <a href="#productos" class="nav-link">Productos</a>
         <a href="#nosotros" class="nav-link">Nosotros</a>
         <a href="#contacto" class="nav-link">Contacto</a>
@@ -77,13 +77,18 @@
       <div class="hero-glow hero-glow-2"></div>
       <div class="hero-glow hero-glow-3"></div>
 
-      <!-- Elementos Decorativos (Máximo 10 en toda la página) -->
-      <span class="deco-el" style="top: 25%; left: 8%; font-size: 3.8rem; animation-delay: 0s; animation-name: decoPulse; animation-duration: 4s;">🎈</span>
-      <span class="deco-el" style="top: 22%; right: 25%; font-size: 3.2rem; animation-delay: 1s;">📌</span>
-      <span class="deco-el" style="top: 55%; left: 4%; font-size: 2.8rem; animation-delay: 2s; animation-name: decoSpin; animation-duration: 12s;">🛍️</span>
-      <span class="deco-el" style="top: 35%; right: 15%; font-size: 4.5rem; animation-name: decoPulse; animation-duration: 5s;">📎</span>
-      <span class="deco-el" style="top: 45%; right: 40%; font-size: 4.2rem; animation-delay: 1.2s; animation-name: swayDeco;">✏️</span>
-      <span class="deco-el" style="top: 60%; right: 5%; font-size: 4.5rem; animation-delay: 1.5s; animation-name: decoSpin; animation-duration: 15s;">☕</span>
+      <span class="deco-el deco-pill deco-pill-bazar" style="top: 24%; left: 7%; animation-delay: 0s;">
+        <span class="deco-pill-kicker">Selección</span>
+        <strong>Bazar</strong>
+      </span>
+      <span class="deco-el deco-pill deco-pill-papel" style="top: 20%; right: 17%; animation-delay: 0.8s;">
+        <span class="deco-pill-kicker">Esenciales</span>
+        <strong>Papelería</strong>
+      </span>
+      <span class="deco-el deco-pill deco-pill-agro" style="top: 59%; right: 8%; animation-delay: 1.5s;">
+        <span class="deco-pill-kicker">Origen</span>
+        <strong>Agro</strong>
+      </span>
 
       <!-- CONTENEDOR DE HOJAS CAYENDO -->
       <div class="leaf-container" id="leafContainer"></div>
@@ -92,13 +97,13 @@
         <div class="hero-left">
           <div class="hero-pill">
             <span class="hero-pill-dot"></span>
-            Envíos a todo el país desde Andresito
+            Despachamos desde Andresito, Misiones
           </div>
           <h1 class="hero-title">
           El lugar donde encontrás<br>
           <em>todo lo que necesitás</em>
           </h1>
-          <p class="hero-sub">Bazar, papelería y agro — productos de calidad directo a tu puerta desde Andresito, Misiones.</p>
+          <p class="hero-sub">Bazar, papelería y agro con selección cuidada, atención cercana y envíos coordinados personalmente desde Andresito, Misiones.</p>
           <div class="hero-actions">
             <a href="#productos" class="btn btn-hero-primary">
               Ver catálogo
@@ -119,19 +124,19 @@
                 <textPath href="#rp" startOffset="0%">MAKENA · BAZAR · PAPELERÍA · AGRO · </textPath>
               </text>
             </svg>
-            <div class="hero-ring-center">🌿</div>
+            <div class="hero-ring-center">MK</div>
           </div>
         </div>
       </div>
 
       <div class="hero-bar">
-        <div class="hero-bar-item"><strong>Andresito</strong><span>Misiones</span></div>
+        <div class="hero-bar-item"><strong>Origen local</strong><span>Andresito, Misiones</span></div>
         <div class="hero-bar-sep"></div>
-        <div class="hero-bar-item"><strong>Todo el país</strong><span>Envíos</span></div>
+        <div class="hero-bar-item"><strong>Envíos a medida</strong><span>A todo el país</span></div>
         <div class="hero-bar-sep"></div>
-        <div class="hero-bar-item"><strong>Transferencia · Efectivo</strong><span>Medios de pago</span></div>
+        <div class="hero-bar-item"><strong>Pagá simple</strong><span>Transferencia · Efectivo</span></div>
         <div class="hero-bar-sep"></div>
-        <div class="hero-bar-item"><strong>Lun–Sáb</strong><span>Atención</span></div>
+        <div class="hero-bar-item"><strong>Lunes a sábado</strong><span>Atención cercana</span></div>
       </div>
     </section>
 
@@ -377,7 +382,7 @@
     <div class="cart-top">
       <div class="cart-top-left">
         <h3>Tu carrito</h3>
-        <span class="cart-count-label" id="cartCountLabel">0 items</span>
+        <span class="cart-count-label" id="cartCountLabel">0 productos</span>
       </div>
       <button class="close-btn" id="cartCloseBtn" aria-label="Cerrar carrito">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
