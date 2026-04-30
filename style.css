@@ -1536,6 +1536,14 @@ em {
   margin-right: auto;
 }
 
+.load-more-note {
+  text-align: center;
+  margin: 1rem auto 0;
+  max-width: 1280px;
+  color: var(--ink-3);
+  font-size: 0.98rem;
+}
+
 /* Tarjeta de producto Premium */
 .product-card {
   background: rgba(255, 255, 255, 0.65);

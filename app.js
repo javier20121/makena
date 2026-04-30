@@ -10,6 +10,8 @@ const WHATSAPP_NUMBER = '5493757000000'; // No olvides verificar si este número
 
 // ─── CONFIG ─────────────────────────────────────────────────
 const PAGE_SIZE = 8;
+const API_PAGE_SIZE = 100;
+const LOAD_MORE_END_MESSAGE = 'se van a cargar mas productos pronto';
 const CATEGORY_EMOJIS = { agro: '🌾', bazar: '🏠', papeleria: '📎', default: '📦' };
 const EMPTY_MESSAGES = {
   error: 'No pudimos cargar los productos. Intentá de nuevo más tarde.',
@@ -161,6 +163,7 @@ const loadingState = $('loadingState');
 const emptyState = $('emptyState');
 const loadMoreRow = $('loadMoreRow');
 const loadMoreBtn = $('loadMoreBtn');
+const loadMoreNote = $('loadMoreNote');
 const cartBtn = $('cartBtn');
 const cartBadge = $('cartBadge');
 const cartDrawer = $('cartDrawer');
@@ -202,6 +205,22 @@ function showToast(msg, duration = 2800) {
   toast.classList.add('show');
   clearTimeout(_toastTimer);
   _toastTimer = setTimeout(() => toast.classList.remove('show'), duration);
+}
+
+function hideLoadMoreNote() {
+  if (!loadMoreNote) return;
+  loadMoreNote.hidden = true;
+  loadMoreNote.textContent = '';
+}
+
+function showLoadMoreNote(message = LOAD_MORE_END_MESSAGE) {
+  if (!loadMoreNote) {
+    showToast(message);
+    return;
+  }
+
+  loadMoreNote.textContent = message;
+  loadMoreNote.hidden = false;
 }
 
 // ─── NORMALIZAR TEXTO (quita acentos para comparar) ─────────
@@ -342,10 +361,12 @@ async function loadProducts(filter = 'all', page = 1, append = false) {
   setLoading(true);
 
   try {
+    if (!append) hideLoadMoreNote();
+
     const isSearch = searchInput.value.trim().length > 0;
     const params = {
       page,
-      per_page: 100 // ✅ Cargamos una cantidad mayor para tener el catálogo localmente
+      per_page: API_PAGE_SIZE // ✅ Cargamos una cantidad mayor para tener el catálogo localmente
     };
     if (isSearch) params.q = searchInput.value.trim();
     // Usar ID de categoría para filtrar en la API
@@ -360,8 +381,8 @@ async function loadProducts(filter = 'all', page = 1, append = false) {
     const { data, total } = await tnFetch(params);
 
     connectionState = 'connected';
-    const totalCount = parseInt(total || 0);
-    hasNextPage = (page * PAGE_SIZE) < totalCount;
+    const totalCount = parseInt(total || '', 10);
+    const hasKnownTotal = Number.isFinite(totalCount) && totalCount > 0;
     currentPage = page;
 
     const products = Array.isArray(data) ? data.map(p => {
@@ -407,8 +428,18 @@ async function loadProducts(filter = 'all', page = 1, append = false) {
     console.log('🧴 [DEBUG] Productos de Perfumería encontrados:', perfumeriaProducts.length);
     perfumeriaProducts.forEach(p => console.log('  -', p.title, '| IDs:', p.categoryIdsList));
 
+    hasNextPage = hasKnownTotal
+      ? (page * API_PAGE_SIZE) < totalCount
+      : products.length === API_PAGE_SIZE;
+
     allProducts = append ? [...allProducts, ...products] : products;
     filteredProducts = logicFilter(allProducts, currentFilter, searchInput.value, currentCategoryId);
+
+    if (append && filteredProducts.length > 0 && visibleCount >= filteredProducts.length && !hasNextPage) {
+      showLoadMoreNote();
+    } else {
+      hideLoadMoreNote();
+    }
     
     refreshView();
 
@@ -930,11 +961,17 @@ searchInput.addEventListener('input', () => {
 });
 
 loadMoreBtn.addEventListener('click', () => {
+  if (isLoading) return;
+
+  hideLoadMoreNote();
   visibleCount += PAGE_SIZE;
   
   // Si tenemos suficientes productos cargados localmente, solo refrescamos la vista
   if (visibleCount <= filteredProducts.length) {
     refreshView();
+    if (filteredProducts.length > 0 && visibleCount >= filteredProducts.length && !hasNextPage) {
+      showLoadMoreNote();
+    }
   } else if (!isLoading && hasNextPage) {
     // Si nos quedamos sin productos locales, pedimos la siguiente tanda a la API
     loadProducts(currentFilter, currentPage + 1, true);
@@ -942,6 +979,9 @@ loadMoreBtn.addEventListener('click', () => {
     // Ajuste final por si el resto es menor a PAGE_SIZE
     visibleCount = filteredProducts.length;
     refreshView();
+    if (filteredProducts.length > 0) {
+      showLoadMoreNote();
+    }
   }
 });
 
