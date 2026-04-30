@@ -3033,8 +3033,7 @@ em {
   max-height: min(850px, 90vh);
   border-radius: var(--radius-xl);
   position: relative;
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: hidden;
   box-shadow: 0 30px 100px rgba(0, 0, 0, 0.25);
   transform: translateY(40px) scale(0.95);
   transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -3073,6 +3072,7 @@ em {
   grid-template-columns: 1.1fr 1fr;
   flex: 1;
   overflow: hidden;
+  min-height: 0;
 }
 
 .pm-gallery {
@@ -3130,9 +3130,12 @@ em {
 
 .pm-info {
   padding: 3rem 2.5rem;
+  overflow-y: auto;
+  overflow-x: hidden;
   display: flex;
   flex-direction: column;
   gap: 2rem;
+  min-height: 0;
 }
 
 .pm-head {
