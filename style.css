@@ -2130,6 +2130,7 @@ em {
   pointer-events: none;
   transition: opacity 0.3s ease;
   backdrop-filter: blur(6px);
+  overflow: hidden;
 }
 
 .overlay.active {
@@ -3032,7 +3033,8 @@ em {
   max-height: min(850px, 90vh);
   border-radius: var(--radius-xl);
   position: relative;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
   box-shadow: 0 30px 100px rgba(0, 0, 0, 0.25);
   transform: translateY(40px) scale(0.95);
   transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -3128,7 +3130,6 @@ em {
 
 .pm-info {
   padding: 3rem 2.5rem;
-  overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 2rem;
