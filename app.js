@@ -624,6 +624,7 @@ function buildCard(p, i = 0) {
   else if (catNorm.includes('bazar') || catNorm.includes('hogar')) emoji = '🏠';
   else if (catNorm.includes('papel') || catNorm.includes('libreria') || catNorm.includes('oficina')) emoji = '📎';
 
+  const catClass = getCategoryClass(p.category);
   const hasSale = p.comparePrice > p.price && p.price > 0;
   const discount = hasSale ? Math.round(((p.comparePrice - p.price) / p.comparePrice) * 100) : 0;
 
