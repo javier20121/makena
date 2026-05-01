@@ -165,10 +165,9 @@ em {
 }
 
 .btn-hero-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 28px rgba(107, 173, 174, 0.40);
-  /* Rosé-based shadow */
-  filter: brightness(1.08);
+  transform: translateY(-8px) scale(1.03);
+  box-shadow: 0 14px 42px rgba(107, 173, 174, 0.50);
+  filter: brightness(1.12);
 }
 
 .btn-hero-ghost {
@@ -178,9 +177,9 @@ em {
 }
 
 .btn-hero-ghost:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 28px rgba(107, 173, 174, 0.40);
-  filter: brightness(1.08);
+  transform: translateY(-8px) scale(1.03);
+  box-shadow: 0 14px 42px rgba(107, 173, 174, 0.50);
+  filter: brightness(1.12);
 }
 
 .btn-wa {
@@ -1554,7 +1553,7 @@ em {
   border: 1px solid rgba(255, 255, 255, 0.5);
   display: flex;
   flex-direction: column;
-  transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1), box-shadow 0.4s ease, border-color 0.3s ease;
+  transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.5s ease, border-color 0.4s ease;
   cursor: pointer;
   box-shadow: 
     0 4px 24px rgba(107, 173, 174, 0.08),
@@ -1564,6 +1563,10 @@ em {
 }
 
 .product-card:hover {
+  transform: translateY(-22px) scale(1.04);
+  box-shadow: 0 40px 70px rgba(107, 173, 174, 0.25);
+  border-color: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.88);
   transform: translateY(-10px);
   box-shadow: 0 30px 60px rgba(107, 173, 174, 0.15);
   border-color: rgba(255, 255, 255, 0.8);
@@ -3333,13 +3336,14 @@ em {
   box-shadow: 0 0 10px rgba(192, 133, 82, 0.6);
 }
 
-/* ── SECTION TRANSITIONS: scroll reveal ─────────────────── */
 .reveal {
   opacity: 0;
   transform: translateY(28px);
   transition:
     opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
     transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+    opacity 1s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+    transform 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 .reveal.visible { opacity: 1; transform: none; }
 .reveal-group .reveal:nth-child(1) { transition-delay: 0s; }
@@ -3507,12 +3511,12 @@ em {
   100% { background-position: -200% 0; }
 }
 
-/* ── FADEUP: más suave ───────────────────────────────────── */
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(22px) scale(0.98); }
   to   { opacity: 1; transform: translateY(0)   scale(1); }
 }
 .fade-up { animation: fadeUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.fade-up { animation: fadeUp 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) both; }
 
 /* ── ANNOUNCE BAR: transición de cierre ──────────────────── */
 .announce-bar { transition: max-height 0.4s ease, opacity 0.3s ease, padding 0.4s ease; overflow: hidden; max-height: 60px; }

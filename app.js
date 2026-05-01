@@ -12,7 +12,6 @@ const WHATSAPP_NUMBER = '5493757000000'; // No olvides verificar si este número
 const PAGE_SIZE = 8;
 const API_PAGE_SIZE = 100;
 const LOAD_MORE_END_MESSAGE = 'se van a cargar mas productos pronto';
-const CATEGORY_EMOJIS = { agro: '🌾', bazar: '🏠', papeleria: '📎', default: '📦' };
 const EMPTY_MESSAGES = {
   error: 'No pudimos cargar los productos. Intentá de nuevo más tarde.',
   comingSoon: '¡Próximamente! Los productos están en camino.',
@@ -30,6 +29,28 @@ const CATEGORY_MAPPING = {
   '38337374': 'Cotillón',        // Cotillón -> Cotillón
   '38348340': 'Térmicos',        // Linea Stanley -> Térmicos
 };
+// ─── FUENTE DE VERDAD DE CATEGORÍAS ─────────────────────────
+const CATEGORY_CONFIG = {
+  agro:      { emoji: '🌾', label: 'Agro',      cssClass: 'agro',      keywords: ['agro','campo','jardin','huerta','semilla'] },
+  bazar:     { emoji: '🏠', label: 'Bazar',     cssClass: 'bazar',     keywords: ['bazar','hogar','cocina','limpieza','articulos'] },
+  papeleria: { emoji: '📎', label: 'Papelería', cssClass: 'papeleria', keywords: ['papel','libreria','oficina','escolar'] },
+  perfumeria:{ emoji: '✨', label: 'Perfumería',cssClass: 'rosado',    keywords: ['perfum','maquillaje','belleza','cuidado','peluqueria'] },
+  cotillon:  { emoji: '🎉', label: 'Cotillón',  cssClass: 'celeste',   keywords: ['cotillon','fiesta'] },
+  termicos:  { emoji: '☕', label: 'Térmicos',  cssClass: 'lila',      keywords: ['termo','stanley','termico'] },
+  default:   { emoji: '📦', label: 'General',   cssClass: '',          keywords: [] },
+};
+
+// Función única que resuelve la config a partir del nombre de categoría
+function getCategoryConfig(categoryName) {
+  const c = norm(categoryName);
+  for (const key in CATEGORY_CONFIG) {
+    if (key === 'default') continue;
+    if (CATEGORY_CONFIG[key].keywords.some(k => c.includes(k))) {
+      return CATEGORY_CONFIG[key];
+    }
+  }
+  return CATEGORY_CONFIG.default;
+}
 
 // ─── ASOCIACIONES SEMÁNTICAS — cargadas bajo demanda ────────
 // Se inicializa vacío y se llena la primera vez que el usuario escribe.
@@ -580,7 +601,16 @@ function renderProducts(products, append = false, emptyMsg = EMPTY_MESSAGES.noRe
   emptyState.hidden = true;
   products.forEach((p, i) => productsGrid.appendChild(buildCard(p, i)));
 }
-
+function getCategoryClass(category) {
+  const c = norm(category);
+  if (c.includes('agro') || c.includes('campo') || c.includes('jardin')) return 'agro';
+  if (c.includes('bazar') || c.includes('hogar') || c.includes('cocina')) return 'bazar';
+  if (c.includes('papel') || c.includes('libreria') || c.includes('oficina')) return 'papeleria';
+  if (c.includes('celeste')) return 'celeste';
+  if (c.includes('lila')) return 'lila';
+  if (c.includes('rosa') || c.includes('perfum') || c.includes('maquillaje')) return 'rosado';
+  return ''; // sin clase extra → usa el estilo celeste por defecto
+}
 function buildCard(p, i = 0) {
   const el = document.createElement('article');
   el.className = 'product-card fade-up';
@@ -609,7 +639,7 @@ function buildCard(p, i = 0) {
   el.innerHTML = `
     <div class="product-img-wrap">
       ${imgHtml}
-      <span class="product-tag">${esc(CATEGORY_MAPPING[p.categoryIdsList[0]] || p.category)}</span>
+      <span class="product-tag ${catClass}">${esc(CATEGORY_MAPPING[p.categoryIdsList[0]] || p.category)}</span>      
       ${hasSale ? `<span class="badge-sale">${discount}% OFF</span>` : ''}
       <button class="wishlist-btn" aria-label="Favorito">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l8.72-8.72 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
@@ -1075,9 +1105,9 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeCart(
 
 function setupObserver() {
   const obs = new IntersectionObserver(entries => {
-    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('fade-up'); obs.unobserve(e.target); } });
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); } });
   }, { threshold: 0.1 });
-  document.querySelectorAll('.cat-card, .contact-card, .mosaic-cell, .about-checks li, .stat-pill').forEach(el => obs.observe(el));
+  document.querySelectorAll('.cat-card, .contact-card, .mosaic-cell, .about-checks li, .stat-pill, .section-head, .about-grid > div').forEach(el => obs.observe(el));
 }
 
 function initDraggableDeco() {
