@@ -3014,12 +3014,13 @@ em {
   inset: 0;
   z-index: 2100;
   display: flex;
-  align-items: center;
+  align-items: flex-start; /* Cambiado a flex-start para que el scroll inicie arriba */
   justify-content: center;
-  padding: 1.5rem;
+  padding: 2rem 1.5rem; /* Más aire para el scroll */
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.4s ease;
+  overflow-y: auto; /* Habilita el scroll dentro del modal */
 }
 
 .product-modal.open {
@@ -3032,7 +3033,7 @@ em {
   width: min(1000px, 100%);
   max-height: min(850px, 90vh);
   border-radius: var(--radius-xl);
-  position: relative;
+  position: relative; 
   overflow: hidden;
   box-shadow: 0 30px 100px rgba(0, 0, 0, 0.25);
   transform: translateY(40px) scale(0.95);
@@ -3289,10 +3290,11 @@ em {
 @media (max-width: 768px) {
   .pm-grid {
     grid-template-columns: 1fr;
-    overflow-y: auto;
+    overflow-y: visible; /* Dejamos que el modal padre controle el scroll */
   }
   .pm-content {
-    max-height: 95vh;
+    max-height: none; /* En móvil permitimos que crezca según contenido */
+    height: auto;
   }
   .pm-gallery {
     padding: 1rem;
