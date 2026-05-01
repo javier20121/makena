@@ -737,7 +737,8 @@ function updateCartUI() {
   cartFooter.hidden = false;
 
   cartBody.innerHTML = cart.map(item => {
-    const emoji = CATEGORY_EMOJIS[item.category] || '📦';
+    const config = getCategoryConfig(item.category);
+    const emoji = config.emoji;
     const imgHtml = item.image
       ? `<img class="ci-img" src="${esc(item.image)}" alt="${esc(item.title)}" loading="lazy">`
       : `<div class="ci-placeholder">${emoji}</div>`;

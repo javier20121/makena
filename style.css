@@ -761,7 +761,7 @@ em {
   border-radius: var(--radius);
   cursor: pointer;
   transition: all var(--transition);
-  animation: slideInRight 0.5s ease both;
+  animation: slideInRight 0.75s cubic-bezier(0.16, 1, 0.3, 1) both;
   box-shadow: var(--shadow);
 }
 
@@ -787,7 +787,7 @@ em {
 @keyframes slideInRight {
   from {
     opacity: 0;
-    transform: translateX(30px);
+    transform: translateX(60px);
   }
 
   to {
@@ -2412,7 +2412,7 @@ em {
 @keyframes fadeUp {
   from {
     opacity: 0;
-    transform: translateY(24px);
+    transform: translateY(80px);
   }
 
   to {
@@ -2422,7 +2422,7 @@ em {
 }
 
 .fade-up {
-  animation: fadeUp 0.55s ease both;
+  animation: fadeUp 0.95s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 /* ── RESPONSIVE ──────────────────────────────────────────────── */
@@ -3512,11 +3512,10 @@ em {
 }
 
 @keyframes fadeUp {
-  from { opacity: 0; transform: translateY(22px) scale(0.98); }
+  from { opacity: 0; transform: translateY(80px) scale(0.95); }
   to   { opacity: 1; transform: translateY(0)   scale(1); }
 }
-.fade-up { animation: fadeUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) both; }
-.fade-up { animation: fadeUp 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) both; }
+.fade-up { animation: fadeUp 0.95s cubic-bezier(0.16, 1, 0.3, 1) both; }
 
 /* ── ANNOUNCE BAR: transición de cierre ──────────────────── */
 .announce-bar { transition: max-height 0.4s ease, opacity 0.3s ease, padding 0.4s ease; overflow: hidden; max-height: 60px; }
