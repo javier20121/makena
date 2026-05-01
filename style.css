@@ -761,8 +761,20 @@ em {
   border-radius: var(--radius);
   cursor: pointer;
   transition: all var(--transition);
-  animation: slideInRight 0.75s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: slideInRight 1.2s cubic-bezier(0.16, 1, 0.3, 1) both !important;
   box-shadow: var(--shadow);
+}
+
+.hfc:nth-child(1) {
+  animation-delay: 0.1s !important;
+}
+
+.hfc:nth-child(2) {
+  animation-delay: 0.2s !important;
+}
+
+.hfc:nth-child(3) {
+  animation-delay: 0.3s !important;
 }
 
 .hfc:hover {
@@ -770,18 +782,6 @@ em {
   background: var(--surface);
   transform: translateX(-4px);
   box-shadow: var(--shadow-lg);
-}
-
-.hfc:nth-child(1) {
-  animation-delay: 0.1s;
-}
-
-.hfc:nth-child(2) {
-  animation-delay: 0.2s;
-}
-
-.hfc:nth-child(3) {
-  animation-delay: 0.3s;
 }
 
 @keyframes slideInRight {
@@ -1009,12 +1009,12 @@ em {
   cursor: pointer;
   transition: transform var(--transition), box-shadow var(--transition);
   border: 1px solid var(--border);
-  animation: fadeUp 0.95s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: fadeUp 1.2s cubic-bezier(0.16, 1, 0.3, 1) both !important;
 }
 
-.cats-grid .cat-card:nth-child(1) { animation-delay: 0.1s; }
-.cats-grid .cat-card:nth-child(2) { animation-delay: 0.2s; }
-.cats-grid .cat-card:nth-child(3) { animation-delay: 0.3s; }
+.cats-grid .cat-card:nth-child(1) { animation-delay: 0.1s !important; }
+.cats-grid .cat-card:nth-child(2) { animation-delay: 0.2s !important; }
+.cats-grid .cat-card:nth-child(3) { animation-delay: 0.3s !important; }
 
 .cat-card:hover {
   transform: translateY(-6px);
@@ -1448,7 +1448,7 @@ em {
   background: var(--surface);
   color: var(--ink-3);
   border: 1.5px solid var(--border);
-  animation: fadeUp 0.95s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: fadeUp 1.2s cubic-bezier(0.16, 1, 0.3, 1) both !important;
 }
   transition: all var(--transition);
   box-shadow: 0 1px 4px rgba(124, 106, 247, 0.06);
@@ -1550,7 +1550,6 @@ em {
   font-size: 0.98rem;
 }
 
-/* Tarjeta de producto Premium */
 .product-card {
   background: rgba(255, 255, 255, 0.65);
   backdrop-filter: blur(10px);
@@ -1567,8 +1566,7 @@ em {
     inset 0 0 0 1px rgba(255, 255, 255, 0.3);
   position: relative;
   height: 100%;
-  animation: fadeUp 0.95s cubic-bezier(0.16, 1, 0.3, 1) both;
-}
+}}
 
 .product-card:hover {
   transform: translateY(-22px) scale(1.04);
@@ -1893,12 +1891,12 @@ em {
   border: 1px solid var(--border);
   text-align: center;
   box-shadow: var(--shadow);
-  animation: fadeUp 0.95s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: fadeUp 1.2s cubic-bezier(0.16, 1, 0.3, 1) both !important;
 }
 
-.about-stat-pills .stat-pill:nth-child(1) { animation-delay: 0.1s; }
-.about-stat-pills .stat-pill:nth-child(2) { animation-delay: 0.2s; }
-.about-stat-pills .stat-pill:nth-child(3) { animation-delay: 0.3s; }
+.about-stat-pills .stat-pill:nth-child(1) { animation-delay: 0.1s !important; }
+.about-stat-pills .stat-pill:nth-child(2) { animation-delay: 0.2s !important; }
+.about-stat-pills .stat-pill:nth-child(3) { animation-delay: 0.3s !important; }
 
 .stat-pill strong {
   display: block;
@@ -1935,13 +1933,13 @@ em {
   display: flex;
   gap: 1rem;
   align-items: flex-start;
-  animation: fadeUp 0.95s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: fadeUp 1.2s cubic-bezier(0.16, 1, 0.3, 1) both !important;
 }
 
-.about-checks li:nth-child(1) { animation-delay: 0.1s; }
-.about-checks li:nth-child(2) { animation-delay: 0.2s; }
-.about-checks li:nth-child(3) { animation-delay: 0.3s; }
-.about-checks li:nth-child(4) { animation-delay: 0.4s; }
+.about-checks li:nth-child(1) { animation-delay: 0.1s !important; }
+.about-checks li:nth-child(2) { animation-delay: 0.2s !important; }
+.about-checks li:nth-child(3) { animation-delay: 0.3s !important; }
+.about-checks li:nth-child(4) { animation-delay: 0.4s !important; }
 
 .check-icon {
   width: 26px;
@@ -2027,12 +2025,12 @@ em {
   padding: 1.1rem 1.25rem;
   transition: all var(--transition);
   box-shadow: var(--shadow);
-  animation: fadeUp 0.95s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: fadeUp 1.2s cubic-bezier(0.16, 1, 0.3, 1) both !important;
 }
 
-.contact-right .contact-card:nth-child(1) { animation-delay: 0.1s; }
-.contact-right .contact-card:nth-child(2) { animation-delay: 0.2s; }
-.contact-right .contact-card:nth-child(3) { animation-delay: 0.3s; }
+.contact-right .contact-card:nth-child(1) { animation-delay: 0.1s !important; }
+.contact-right .contact-card:nth-child(2) { animation-delay: 0.2s !important; }
+.contact-right .contact-card:nth-child(3) { animation-delay: 0.3s !important; }
 
 .contact-card:hover {
   border-color: var(--lila);
@@ -2438,7 +2436,6 @@ em {
     opacity: 0;
     transform: translateY(80px);
   }
-
   to {
     opacity: 1;
     transform: translateY(0);
@@ -2446,53 +2443,28 @@ em {
 }
 
 .fade-up {
-  animation: fadeUp 0.95s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: fadeUp 1.2s cubic-bezier(0.16, 1, 0.3, 1) both !important;
 }
 
 /* Aplicar fade-up automáticamente a elementos clave */
-.cat-card {
-  animation: fadeUp 0.95s cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-.cat-card:nth-child(1) { animation-delay: 0.1s; }
-.cat-card:nth-child(2) { animation-delay: 0.2s; }
-.cat-card:nth-child(3) { animation-delay: 0.3s; }
-
 .section-head {
-  animation: fadeUp 0.95s cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-.section-head h2 {
-  animation: fadeUp 0.95s cubic-bezier(0.16, 1, 0.3, 1) both;
-  animation-delay: 0.05s;
-}
-
-.hero-bar {
-  animation: fadeUp 0.95s cubic-bezier(0.16, 1, 0.3, 1) both;
-  animation-delay: 0.2s;
-}
-
-.hero-bar-item {
-  animation: fadeUp 0.95s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: fadeUp 1.2s cubic-bezier(0.16, 1, 0.3, 1) both !important;
 }
 
 .hero-title {
-  animation: fadeUp 0.95s cubic-bezier(0.16, 1, 0.3, 1) both;
-  animation-delay: 0.1s;
+  animation: fadeUp 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both !important;
 }
 
 .hero-sub {
-  animation: fadeUp 0.95s cubic-bezier(0.16, 1, 0.3, 1) both;
-  animation-delay: 0.15s;
+  animation: fadeUp 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both !important;
 }
 
-.hero-actions {
-  animation: fadeUp 0.95s cubic-bezier(0.16, 1, 0.3, 1) both;
-  animation-delay: 0.2s;
+.hero-bar {
+  animation: fadeUp 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.3s both !important;
 }
 
 .eyebrow {
-  animation: fadeUp 0.95s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: fadeUp 1.2s cubic-bezier(0.16, 1, 0.3, 1) both !important;
 }
 
 /* ── RESPONSIVE ──────────────────────────────────────────────── */
