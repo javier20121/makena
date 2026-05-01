@@ -1694,6 +1694,77 @@ em {
   border: 1.5px solid rgba(219, 39, 119, 0.25);
 }
 
+/* ─── CARRUSEL DE IMÁGENES ─────────────────────────────────── */
+.product-carousel {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.carousel-track {
+  flex: 1;
+  display: flex;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE y Edge */
+  snap-type: x mandatory;
+}
+
+.carousel-track::-webkit-scrollbar {
+  display: none; /* Chrome, Safari y Opera */
+}
+
+.carousel-img {
+  min-width: 100%;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 1.2s cubic-bezier(0.165, 0.84, 0.44, 1);
+  scroll-snap-align: start;
+  cursor: pointer;
+}
+
+.product-card:hover .carousel-img {
+  transform: scale(1.1);
+}
+
+.carousel-dots {
+  position: absolute;
+  bottom: 0.75rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 0.5rem;
+  z-index: 10;
+  padding: 0.5rem;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+}
+
+.carousel-dots .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  padding: 0;
+}
+
+.carousel-dots .dot:hover {
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.carousel-dots .dot.active {
+  background: white;
+  width: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
 .product-body {
   padding: 1.5rem;
   flex: 1;

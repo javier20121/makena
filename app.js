@@ -409,7 +409,7 @@ async function loadProducts(filter = 'all', page = 1, append = false) {
           : ['General'],
         categoryIdsList: (p.categories && p.categories.length > 0) ? p.categories.map(c => String(c.id)) : ['0'],
         permalink: p.canonical_url || (typeof p.permalink === 'object' ? p.permalink?.es : p.permalink) || null,
-        images: p.images || [],
+        images: (p.images && Array.isArray(p.images)) ? p.images.filter(img => img && img.src) : [],
         fullDescription: p.description?.es || '',
         allVariants: p.variants || [],
         tags: p.tags ? p.tags.split(',').map(t => t.trim()).filter(t => t !== '') : []
@@ -419,7 +419,7 @@ async function loadProducts(filter = 'all', page = 1, append = false) {
     // 🟢 Depuración: Verificamos qué nombres e IDs llegan de la API
     console.log('[loadProducts] Total de productos cargados:', products.length);
     products.forEach(p => {
-      console.log(`[DEBUG] Producto: "${p.title}" | IDs: [${p.categoryIdsList.join(', ')}] | Categorías: [${p.categoriesList.join(', ')}]`);
+      console.log(`[DEBUG] Producto: "${p.title}" | IDs: [${p.categoryIdsList.join(', ')}] | Categorías: [${p.categoriesList.join(', ')}] | Imágenes: ${p.images.length}`);
     });
 
     // 🟢 Verificar específicamente productos de Perfumería
@@ -597,9 +597,37 @@ function buildCard(p, i = 0) {
   const hasSale = p.comparePrice > p.price && p.price > 0;
   const discount = hasSale ? Math.round(((p.comparePrice - p.price) / p.comparePrice) * 100) : 0;
 
-  const imgHtml = p.image
-    ? `<img class="product-img" src="${esc(p.image)}" alt="${esc(p.imageAlt)}" loading="lazy" decoding="async">`
-    : `<div class="product-img-placeholder">${emoji}</div>`;
+  // Crear carrusel si hay múltiples imágenes
+  let imgHtml = '';
+  const validImages = p.images && p.images.filter(img => img && img.src);
+  
+  if (validImages && validImages.length > 1) {
+    // Carrusel con múltiples imágenes
+    imgHtml = `
+      <div class="product-carousel">
+        <div class="carousel-track">
+          ${validImages.map((img, idx) => `
+            <img class="carousel-img ${idx === 0 ? 'active' : ''}" 
+                 src="${esc(img.src)}" 
+                 alt="${esc(p.imageAlt)} ${idx + 1}" 
+                 loading="lazy" 
+                 decoding="async">
+          `).join('')}
+        </div>
+        <div class="carousel-dots">
+          ${validImages.map((_, idx) => `
+            <button class="dot ${idx === 0 ? 'active' : ''}" data-slide="${idx}" aria-label="Imagen ${idx + 1}"></button>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  } else if (p.image) {
+    // Una sola imagen
+    imgHtml = `<img class="product-img" src="${esc(p.image)}" alt="${esc(p.imageAlt)}" loading="lazy" decoding="async">`;
+  } else {
+    // Sin imagen
+    imgHtml = `<div class="product-img-placeholder">${emoji}</div>`;
+  }
 
   const priceHtml = hasSale
     ? `<div><span class="product-compare">${fmt(p.comparePrice)}</span> <span class="product-price">${fmt(p.price)}</span></div>`
@@ -625,6 +653,38 @@ function buildCard(p, i = 0) {
         </div>
       </div>
     </div>`;
+
+  // Agregar event listeners para el carrusel si existen múltiples imágenes
+  if (validImages && validImages.length > 1) {
+    setTimeout(() => {
+      const carousel = el.querySelector('.carousel-track');
+      const dots = el.querySelectorAll('.carousel-dots .dot');
+      const imgs = el.querySelectorAll('.carousel-img');
+      
+      // Actualizar puntos al hacer scroll
+      if (carousel) {
+        carousel.addEventListener('scroll', () => {
+          const scrollLeft = carousel.scrollLeft;
+          const width = carousel.offsetWidth;
+          const activeIdx = Math.round(scrollLeft / width);
+          
+          dots.forEach((dot, idx) => {
+            dot.classList.toggle('active', idx === activeIdx);
+          });
+        });
+      }
+      
+      // Hacer scroll cuando haces clic en los puntos
+      dots.forEach((dot, idx) => {
+        dot.addEventListener('click', (e) => {
+          e.stopPropagation();
+          if (carousel) {
+            carousel.scrollLeft = idx * carousel.offsetWidth;
+          }
+        });
+      });
+    }, 0);
+  }
 
   return el;
 }
@@ -845,13 +905,23 @@ function openProductModal(id) {
 
   const mainImg = $('pmMainImg');
   const thumbs = $('pmThumbs');
+  
+  // Filtrar solo imágenes válidas (con src)
+  const validImages = p.images && p.images.filter(img => img && img.src);
+  
   mainImg.src = p.image || '';
+  mainImg.alt = p.imageAlt || 'Producto';
 
-  thumbs.innerHTML = p.images.map((img, idx) => `
-    <div class="pm-thumb ${idx === 0 ? 'active' : ''}" data-src="${esc(img.src)}">
-      <img src="${esc(img.src)}" alt="Miniatura ${idx + 1}">
-    </div>
-  `).join('');
+  // Renderizar miniaturas si existen imágenes
+  if (validImages && validImages.length > 0) {
+    thumbs.innerHTML = validImages.map((img, idx) => `
+      <div class="pm-thumb ${idx === 0 ? 'active' : ''}" data-src="${esc(img.src)}">
+        <img src="${esc(img.src)}" alt="Miniatura ${idx + 1}" loading="lazy">
+      </div>
+    `).join('');
+  } else {
+    thumbs.innerHTML = ''; // Si no hay imágenes, dejar vacío
+  }
 
   const varContainer = $('pmVariants');
   if (p.allVariants && p.allVariants.length > 1) {
