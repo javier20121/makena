@@ -1009,7 +1009,12 @@ em {
   cursor: pointer;
   transition: transform var(--transition), box-shadow var(--transition);
   border: 1px solid var(--border);
+  animation: fadeUp 0.95s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
+
+.cats-grid .cat-card:nth-child(1) { animation-delay: 0.1s; }
+.cats-grid .cat-card:nth-child(2) { animation-delay: 0.2s; }
+.cats-grid .cat-card:nth-child(3) { animation-delay: 0.3s; }
 
 .cat-card:hover {
   transform: translateY(-6px);
@@ -1443,6 +1448,8 @@ em {
   background: var(--surface);
   color: var(--ink-3);
   border: 1.5px solid var(--border);
+  animation: fadeUp 0.95s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
   transition: all var(--transition);
   box-shadow: 0 1px 4px rgba(124, 106, 247, 0.06);
 }
@@ -1560,6 +1567,7 @@ em {
     inset 0 0 0 1px rgba(255, 255, 255, 0.3);
   position: relative;
   height: 100%;
+  animation: fadeUp 0.95s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .product-card:hover {
@@ -1885,7 +1893,12 @@ em {
   border: 1px solid var(--border);
   text-align: center;
   box-shadow: var(--shadow);
+  animation: fadeUp 0.95s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
+
+.about-stat-pills .stat-pill:nth-child(1) { animation-delay: 0.1s; }
+.about-stat-pills .stat-pill:nth-child(2) { animation-delay: 0.2s; }
+.about-stat-pills .stat-pill:nth-child(3) { animation-delay: 0.3s; }
 
 .stat-pill strong {
   display: block;
@@ -1922,7 +1935,13 @@ em {
   display: flex;
   gap: 1rem;
   align-items: flex-start;
+  animation: fadeUp 0.95s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
+
+.about-checks li:nth-child(1) { animation-delay: 0.1s; }
+.about-checks li:nth-child(2) { animation-delay: 0.2s; }
+.about-checks li:nth-child(3) { animation-delay: 0.3s; }
+.about-checks li:nth-child(4) { animation-delay: 0.4s; }
 
 .check-icon {
   width: 26px;
@@ -2008,7 +2027,12 @@ em {
   padding: 1.1rem 1.25rem;
   transition: all var(--transition);
   box-shadow: var(--shadow);
+  animation: fadeUp 0.95s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
+
+.contact-right .contact-card:nth-child(1) { animation-delay: 0.1s; }
+.contact-right .contact-card:nth-child(2) { animation-delay: 0.2s; }
+.contact-right .contact-card:nth-child(3) { animation-delay: 0.3s; }
 
 .contact-card:hover {
   border-color: var(--lila);
@@ -2422,6 +2446,52 @@ em {
 }
 
 .fade-up {
+  animation: fadeUp 0.95s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Aplicar fade-up automáticamente a elementos clave */
+.cat-card {
+  animation: fadeUp 0.95s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.cat-card:nth-child(1) { animation-delay: 0.1s; }
+.cat-card:nth-child(2) { animation-delay: 0.2s; }
+.cat-card:nth-child(3) { animation-delay: 0.3s; }
+
+.section-head {
+  animation: fadeUp 0.95s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.section-head h2 {
+  animation: fadeUp 0.95s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: 0.05s;
+}
+
+.hero-bar {
+  animation: fadeUp 0.95s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: 0.2s;
+}
+
+.hero-bar-item {
+  animation: fadeUp 0.95s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.hero-title {
+  animation: fadeUp 0.95s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: 0.1s;
+}
+
+.hero-sub {
+  animation: fadeUp 0.95s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: 0.15s;
+}
+
+.hero-actions {
+  animation: fadeUp 0.95s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: 0.2s;
+}
+
+.eyebrow {
   animation: fadeUp 0.95s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
