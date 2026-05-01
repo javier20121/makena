@@ -922,7 +922,11 @@ function setupCarousel(mainImg, validImages) {
   const nextBtn = thumbs.querySelector('.pm-nav-next');
   const counter = thumbs.querySelector('.pm-image-counter');
   
+  let currentIdx = 0;
+  let autoplayInterval;
+  
   function updateImage(idx) {
+    currentIdx = idx;
     mainImg.src = validImages[idx].src;
     mainImg.dataset.currentImage = idx;
     
@@ -935,22 +939,43 @@ function setupCarousel(mainImg, validImages) {
     if (counter) counter.textContent = `${idx + 1} / ${validImages.length}`;
   }
   
+  function nextImage() {
+    const next = (currentIdx + 1) % validImages.length;
+    updateImage(next);
+  }
+  
+  function prevImage() {
+    const prev = currentIdx === 0 ? validImages.length - 1 : currentIdx - 1;
+    updateImage(prev);
+  }
+  
+  function startAutoplay() {
+    autoplayInterval = setInterval(nextImage, 4000); // Cambiar cada 4 segundos
+  }
+  
+  function pauseAutoplay() {
+    clearInterval(autoplayInterval);
+  }
+  
+  function resetAutoplay() {
+    pauseAutoplay();
+    startAutoplay();
+  }
+  
   // Navegación con botones
   if (prevBtn) {
     prevBtn.addEventListener('click', (e) => {
       e.stopPropagation();
-      const current = parseInt(mainImg.dataset.currentImage, 10) || 0;
-      const prev = current === 0 ? validImages.length - 1 : current - 1;
-      updateImage(prev);
+      prevImage();
+      resetAutoplay();
     });
   }
   
   if (nextBtn) {
     nextBtn.addEventListener('click', (e) => {
       e.stopPropagation();
-      const current = parseInt(mainImg.dataset.currentImage, 10) || 0;
-      const next = (current + 1) % validImages.length;
-      updateImage(next);
+      nextImage();
+      resetAutoplay();
     });
   }
   
@@ -960,8 +985,16 @@ function setupCarousel(mainImg, validImages) {
       e.stopPropagation();
       const idx = parseInt(thumb.dataset.index, 10);
       updateImage(idx);
+      resetAutoplay();
     });
   });
+  
+  // Pausar autoplay al pasar el mouse sobre la imagen principal
+  mainImg.addEventListener('mouseenter', pauseAutoplay);
+  mainImg.addEventListener('mouseleave', startAutoplay);
+  
+  // Iniciar autoplay automáticamente
+  startAutoplay();
 }
 
 function closeProductModal() {
