@@ -914,6 +914,10 @@ function openProductModal(id) {
   overlay.classList.add('active');
   document.body.style.overflow = 'hidden';
   if (lenis) lenis.stop();
+
+  // Evitar que Lenis intercepte el scroll de la rueda del mouse dentro del modal
+  productModal._wheelHandler = function(e) { e.stopPropagation(); };
+  productModal.addEventListener('wheel', productModal._wheelHandler, { passive: true });
 }
 
 function setupCarousel(mainImg, validImages) {
@@ -966,6 +970,11 @@ function setupCarousel(mainImg, validImages) {
 
 function closeProductModal() {
   productModal.classList.remove('open');
+  // Remover el handler que bloqueaba a Lenis
+  if (productModal._wheelHandler) {
+    productModal.removeEventListener('wheel', productModal._wheelHandler);
+    productModal._wheelHandler = null;
+  }
   if (!cartDrawer.classList.contains('open')) {
     overlay.classList.remove('active');
     document.body.style.overflow = '';
