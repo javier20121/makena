@@ -597,37 +597,10 @@ function buildCard(p, i = 0) {
   const hasSale = p.comparePrice > p.price && p.price > 0;
   const discount = hasSale ? Math.round(((p.comparePrice - p.price) / p.comparePrice) * 100) : 0;
 
-  // Crear carrusel si hay múltiples imágenes
-  let imgHtml = '';
-  const validImages = p.images && p.images.filter(img => img && img.src);
-  
-  if (validImages && validImages.length > 1) {
-    // Carrusel con múltiples imágenes
-    imgHtml = `
-      <div class="product-carousel">
-        <div class="carousel-track">
-          ${validImages.map((img, idx) => `
-            <img class="carousel-img ${idx === 0 ? 'active' : ''}" 
-                 src="${esc(img.src)}" 
-                 alt="${esc(p.imageAlt)} ${idx + 1}" 
-                 loading="lazy" 
-                 decoding="async">
-          `).join('')}
-        </div>
-        <div class="carousel-dots">
-          ${validImages.map((_, idx) => `
-            <button class="dot ${idx === 0 ? 'active' : ''}" data-slide="${idx}" aria-label="Imagen ${idx + 1}"></button>
-          `).join('')}
-        </div>
-      </div>
-    `;
-  } else if (p.image) {
-    // Una sola imagen
-    imgHtml = `<img class="product-img" src="${esc(p.image)}" alt="${esc(p.imageAlt)}" loading="lazy" decoding="async">`;
-  } else {
-    // Sin imagen
-    imgHtml = `<div class="product-img-placeholder">${emoji}</div>`;
-  }
+  // Mostrar solo la primera imagen en la tarjeta
+  const imgHtml = p.image
+    ? `<img class="product-img" src="${esc(p.image)}" alt="${esc(p.imageAlt)}" loading="lazy" decoding="async">`
+    : `<div class="product-img-placeholder">${emoji}</div>`;
 
   const priceHtml = hasSale
     ? `<div><span class="product-compare">${fmt(p.comparePrice)}</span> <span class="product-price">${fmt(p.price)}</span></div>`
@@ -653,38 +626,6 @@ function buildCard(p, i = 0) {
         </div>
       </div>
     </div>`;
-
-  // Agregar event listeners para el carrusel si existen múltiples imágenes
-  if (validImages && validImages.length > 1) {
-    setTimeout(() => {
-      const carousel = el.querySelector('.carousel-track');
-      const dots = el.querySelectorAll('.carousel-dots .dot');
-      const imgs = el.querySelectorAll('.carousel-img');
-      
-      // Actualizar puntos al hacer scroll
-      if (carousel) {
-        carousel.addEventListener('scroll', () => {
-          const scrollLeft = carousel.scrollLeft;
-          const width = carousel.offsetWidth;
-          const activeIdx = Math.round(scrollLeft / width);
-          
-          dots.forEach((dot, idx) => {
-            dot.classList.toggle('active', idx === activeIdx);
-          });
-        });
-      }
-      
-      // Hacer scroll cuando haces clic en los puntos
-      dots.forEach((dot, idx) => {
-        dot.addEventListener('click', (e) => {
-          e.stopPropagation();
-          if (carousel) {
-            carousel.scrollLeft = idx * carousel.offsetWidth;
-          }
-        });
-      });
-    }, 0);
-  }
 
   return el;
 }
@@ -911,14 +852,26 @@ function openProductModal(id) {
   
   mainImg.src = p.image || '';
   mainImg.alt = p.imageAlt || 'Producto';
+  mainImg.dataset.currentImage = 0;
 
   // Renderizar miniaturas si existen imágenes
-  if (validImages && validImages.length > 0) {
-    thumbs.innerHTML = validImages.map((img, idx) => `
-      <div class="pm-thumb ${idx === 0 ? 'active' : ''}" data-src="${esc(img.src)}">
-        <img src="${esc(img.src)}" alt="Miniatura ${idx + 1}" loading="lazy">
-      </div>
-    `).join('');
+  if (validImages && validImages.length > 1) {
+    thumbs.innerHTML = `
+      <button class="pm-nav-btn pm-nav-prev" aria-label="Imagen anterior">❮</button>
+      ${validImages.map((img, idx) => `
+        <div class="pm-thumb ${idx === 0 ? 'active' : ''}" data-index="${idx}" data-src="${esc(img.src)}">
+          <img src="${esc(img.src)}" alt="Miniatura ${idx + 1}" loading="lazy">
+        </div>
+      `).join('')}
+      <button class="pm-nav-btn pm-nav-next" aria-label="Siguiente imagen">❯</button>
+    `;
+    
+    // Agregar el indicador de posición
+    const indicator = document.createElement('div');
+    indicator.className = 'pm-image-counter';
+    indicator.textContent = `1 / ${validImages.length}`;
+    thumbs.appendChild(indicator);
+    
   } else {
     thumbs.innerHTML = ''; // Si no hay imágenes, dejar vacío
   }
@@ -952,10 +905,63 @@ function openProductModal(id) {
 
   renderRelatedProducts(p);
 
+  // Configurar carrusel si hay múltiples imágenes
+  if (validImages && validImages.length > 1) {
+    setTimeout(() => setupCarousel(mainImg, validImages), 0);
+  }
+
   productModal.classList.add('open');
   overlay.classList.add('active');
   document.body.style.overflow = 'hidden';
   if (lenis) lenis.stop();
+}
+
+function setupCarousel(mainImg, validImages) {
+  const thumbs = $('pmThumbs');
+  const prevBtn = thumbs.querySelector('.pm-nav-prev');
+  const nextBtn = thumbs.querySelector('.pm-nav-next');
+  const counter = thumbs.querySelector('.pm-image-counter');
+  
+  function updateImage(idx) {
+    mainImg.src = validImages[idx].src;
+    mainImg.dataset.currentImage = idx;
+    
+    // Actualizar miniaturas activas
+    document.querySelectorAll('.pm-thumb').forEach((thumb, i) => {
+      thumb.classList.toggle('active', i === idx);
+    });
+    
+    // Actualizar contador
+    if (counter) counter.textContent = `${idx + 1} / ${validImages.length}`;
+  }
+  
+  // Navegación con botones
+  if (prevBtn) {
+    prevBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const current = parseInt(mainImg.dataset.currentImage, 10) || 0;
+      const prev = current === 0 ? validImages.length - 1 : current - 1;
+      updateImage(prev);
+    });
+  }
+  
+  if (nextBtn) {
+    nextBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const current = parseInt(mainImg.dataset.currentImage, 10) || 0;
+      const next = (current + 1) % validImages.length;
+      updateImage(next);
+    });
+  }
+  
+  // Clic en miniaturas
+  document.querySelectorAll('.pm-thumb').forEach(thumb => {
+    thumb.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const idx = parseInt(thumb.dataset.index, 10);
+      updateImage(idx);
+    });
+  });
 }
 
 function closeProductModal() {
@@ -968,14 +974,6 @@ function closeProductModal() {
 }
 
 pmClose.addEventListener('click', closeProductModal);
-
-$('pmThumbs').addEventListener('click', e => {
-  const thumb = e.target.closest('.pm-thumb');
-  if (!thumb) return;
-  document.querySelectorAll('.pm-thumb').forEach(t => t.classList.remove('active'));
-  thumb.classList.add('active');
-  $('pmMainImg').src = thumb.dataset.src;
-});
 
 chips.forEach(c => {
   c.addEventListener('click', () => {
