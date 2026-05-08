@@ -15,6 +15,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,700;0,900;1,300;1,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="anima-styles.css">
   
   <!-- Datos Estructurados para Google -->
   <script type="application/ld+json">
@@ -34,6 +35,47 @@
   </script>
  </head>
 <body>
+
+  <svg width="0" height="0" style="position:absolute;overflow:hidden" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <filter id="nf_s" color-interpolation-filters="sRGB">
+        <feTurbulence type="fractalNoise" baseFrequency="0.7 0.7" numOctaves="3" seed="12" result="n"/>
+        <feColorMatrix in="n" type="luminanceToAlpha" result="a"/>
+        <feComponentTransfer in="a" result="t"><feFuncA type="discrete" tableValues="0 0 0 0 0 0 0 1 1 0 0 0 0 0 0 0"/></feComponentTransfer>
+        <feFlood flood-color="#A89600" result="c"/>
+        <feComposite in="c" in2="t" operator="in" result="d"/>
+        <feComposite in="d" in2="SourceGraphic" operator="in" result="f"/>
+        <feMerge><feMergeNode in="SourceGraphic"/><feMergeNode in="f"/></feMerge>
+      </filter>
+      <filter id="nf_p" color-interpolation-filters="sRGB">
+        <feTurbulence type="fractalNoise" baseFrequency="0.7 0.7" numOctaves="3" seed="33" result="n"/>
+        <feColorMatrix in="n" type="luminanceToAlpha" result="a"/>
+        <feComponentTransfer in="a" result="t"><feFuncA type="discrete" tableValues="0 0 0 0 0 0 0 1 1 0 0 0 0 0 0 0"/></feComponentTransfer>
+        <feFlood flood-color="#B07818" result="c"/>
+        <feComposite in="c" in2="t" operator="in" result="d"/>
+        <feComposite in="d" in2="SourceGraphic" operator="in" result="f"/>
+        <feMerge><feMergeNode in="SourceGraphic"/><feMergeNode in="f"/></feMerge>
+      </filter>
+      <filter id="nf_c" color-interpolation-filters="sRGB">
+        <feTurbulence type="fractalNoise" baseFrequency="0.7 0.7" numOctaves="3" seed="66" result="n"/>
+        <feColorMatrix in="n" type="luminanceToAlpha" result="a"/>
+        <feComponentTransfer in="a" result="t"><feFuncA type="discrete" tableValues="0 0 0 0 0 0 0 1 1 0 0 0 0 0 0 0"/></feComponentTransfer>
+        <feFlood flood-color="#4A8090" result="c"/>
+        <feComposite in="c" in2="t" operator="in" result="d"/>
+        <feComposite in="d" in2="SourceGraphic" operator="in" result="f"/>
+        <feMerge><feMergeNode in="SourceGraphic"/><feMergeNode in="f"/></feMerge>
+      </filter>
+      <filter id="nf_b" color-interpolation-filters="sRGB">
+        <feTurbulence type="fractalNoise" baseFrequency="0.7 0.7" numOctaves="3" seed="88" result="n"/>
+        <feColorMatrix in="n" type="luminanceToAlpha" result="a"/>
+        <feComponentTransfer in="a" result="t"><feFuncA type="discrete" tableValues="0 0 0 0 0 0 0 1 1 0 0 0 0 0 0 0"/></feComponentTransfer>
+        <feFlood flood-color="#7A5848" result="c"/>
+        <feComposite in="c" in2="t" operator="in" result="d"/>
+        <feComposite in="d" in2="SourceGraphic" operator="in" result="f"/>
+        <feMerge><feMergeNode in="SourceGraphic"/><feMergeNode in="f"/></feMerge>
+      </filter>
+    </defs>
+  </svg>
 
   <!-- SCROLL PROGRESS -->
   <div class="scroll-progress" id="scrollProgress"></div>
@@ -157,7 +199,75 @@
       </div>
     </section>
 
-    <!-- CATEGORÍAS DINÁMICAS (API) -->
+    <!-- SECCIÓN DE ANIMACIÓN ESPECIAL (STANLEY, PERFUMERÍA, ETC.) -->
+    <div id="anima-scroll-container">
+      <section id="anima-section">
+        <!-- Partículas ambiente -->
+        <canvas id="particles-canvas" aria-hidden="true"></canvas>
+        <div class="grain" aria-hidden="true"></div>
+
+        <div class="nav-dots-anima">
+          <div class="nav-dot-anima active"></div>
+          <div class="nav-dot-anima"></div>
+          <div class="nav-dot-anima"></div>
+          <div class="nav-dot-anima"></div>
+        </div>
+
+        <div class="scene-label-anima" id="sceneLabelAnima">Stanley</div>
+        <div class="scene-num-bg" id="sceneNumberAnima">01</div>
+        <div class="deco-line" id="decoLineAnima"></div>
+
+        <!-- LADO IZQUIERDO: TEXTOS -->
+        <div class="col-text">
+          <div class="eyebrow-wrap">
+            <div class="eyebrow-anima stanley-ey">Termos &amp; Accesorios</div>
+            <div class="eyebrow-anima perfumeria-ey">Perfumería &amp; Belleza</div>
+            <div class="eyebrow-anima cotillon-ey">Cotillón &amp; Fiesta</div>
+            <div class="eyebrow-anima blanqueria-ey">Blanquería &amp; Hogar</div>
+          </div>
+
+          <div class="title-wrap">
+            <h1 class="hero-title-anima stanley-title"><span class="t-reveal">STANLEY</span></h1>
+            <h1 class="hero-title-anima perfumeria-title"><span class="t-reveal">PERFUMERÍA</span></h1>
+            <h1 class="hero-title-anima cotillon-title"><span class="t-reveal">COTILLÓN</span></h1>
+            <h1 class="hero-title-anima blanqueria-title"><span class="t-reveal">BLANQUERÍA</span></h1>
+          </div>
+
+          <div class="sub-wrap">
+            <p class="hero-subtitle-anima stanley-subtitle">Termos y mates con la mejor<br>calidad para tu rutina diaria.</p>
+            <p class="hero-subtitle-anima perfumeria-subtitle">Aromas y cuidado personal<br>para todos los estilos.</p>
+            <p class="hero-subtitle-anima cotillon-subtitle">Decoración, fiesta y color<br>para cada celebración.</p>
+            <p class="hero-subtitle-anima blanqueria-subtitle">Textiles para renovar cada<br>espacio de tu hogar.</p>
+          </div>
+
+          <div class="cta-wrap">
+            <a class="hero-cta-anima stanley-cta" href="#productos"><span>Explorar colección</span><svg width="16" height="16" viewBox="0 0 16 16"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+            <a class="hero-cta-anima perfumeria-cta" href="#productos"><span>Explorar colección</span><svg width="16" height="16" viewBox="0 0 16 16"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+            <a class="hero-cta-anima cotillon-cta" href="#productos"><span>Explorar colección</span><svg width="16" height="16" viewBox="0 0 16 16"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+            <a class="hero-cta-anima blanqueria-cta" href="#productos"><span>Explorar colección</span><svg width="16" height="16" viewBox="0 0 16 16"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+          </div>
+        </div>
+
+        <!-- LADO DERECHO: PRODUCTOS -->
+        <div class="col-product">
+          <div class="stanley-glass    scene-glass"></div>
+          <div class="perfumeria-glass scene-glass"></div>
+          <div class="cotillon-glass   scene-glass"></div>
+          <div class="blanqueria-glass scene-glass"></div>
+
+          <img class="stanley-img    scene-img" src="./img/stanley-img.png"    alt="Stanley" />
+          <img class="perfumeria-img scene-img" src="./img/perfumeria-img.png" alt="Perfumería" />
+          <img class="cotillon-img   scene-img" src="./img/cotillon-img.png"   alt="Cotillón" />
+          <img class="blanqueria-img scene-img" src="./img/blanqueria-img.png" alt="Blanquería" />
+
+          <div class="product-badge-anima" id="productBadgeAnima">
+            <span class="badge-year">2025</span>
+            <span class="badge-sep">·</span>
+            <span class="badge-cat" id="badgeCatAnima">Stanley</span>
+          </div>
+        </div>
+      </section>
+    </div>
     <section class="section categories-dynamic-section" id="categoriasAPI">
       <div class="section-head reveal">
         <p class="eyebrow">Todas nuestras categorías</p>
@@ -472,6 +582,7 @@
   </button>
 
   <script src="https://unpkg.com/lenis@1.1.13/dist/lenis.min.js"></script>
+  <script src="anima-logic.js" defer></script>
   <script src="app.js" defer></script>
 </body>
 </html>

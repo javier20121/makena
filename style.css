@@ -284,6 +284,23 @@ em {
   box-shadow: 0 10px 30px rgba(70, 98, 100, 0.08);
 }
 
+/* Ocultar elementos durante la animación premium */
+body.is-animating .navbar,
+body.is-animating .scroll-progress,
+body.is-animating .back-top,
+body.is-animating .wa-float {
+  transform: translateY(-100%);
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden;
+}
+
+/* Los elementos flotantes inferiores bajan en vez de subir */
+body.is-animating .back-top,
+body.is-animating .wa-float {
+  transform: translateY(100%);
+}
+
 .navbar-inner {
   max-width: 1280px;
   margin: 0 auto;

@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Makena</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,600;1,300&family=Montserrat:wght@300;400;500;700;900&family=Bebas+Neue&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./style.css" />
+  <svg width="0" height="0" style="position:absolute;overflow:hidden" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <filter id="nf_s" color-interpolation-filters="sRGB">
+        <feTurbulence type="fractalNoise" baseFrequency="0.7 0.7" numOctaves="3" seed="12" result="n"/>
+        <feColorMatrix in="n" type="luminanceToAlpha" result="a"/>
+        <feComponentTransfer in="a" result="t"><feFuncA type="discrete" tableValues="0 0 0 0 0 0 0 1 1 0 0 0 0 0 0 0"/></feComponentTransfer>
+        <feFlood flood-color="#A89600" result="c"/>
+        <feComposite in="c" in2="t" operator="in" result="d"/>
+        <feComposite in="d" in2="SourceGraphic" operator="in" result="f"/>
+        <feMerge><feMergeNode in="SourceGraphic"/><feMergeNode in="f"/></feMerge>
+      </filter>
+      <filter id="nf_p" color-interpolation-filters="sRGB">
+        <feTurbulence type="fractalNoise" baseFrequency="0.7 0.7" numOctaves="3" seed="33" result="n"/>
+        <feColorMatrix in="n" type="luminanceToAlpha" result="a"/>
+        <feComponentTransfer in="a" result="t"><feFuncA type="discrete" tableValues="0 0 0 0 0 0 0 1 1 0 0 0 0 0 0 0"/></feComponentTransfer>
+        <feFlood flood-color="#B07818" result="c"/>
+        <feComposite in="c" in2="t" operator="in" result="d"/>
+        <feComposite in="d" in2="SourceGraphic" operator="in" result="f"/>
+        <feMerge><feMergeNode in="SourceGraphic"/><feMergeNode in="f"/></feMerge>
+      </filter>
+      <filter id="nf_c" color-interpolation-filters="sRGB">
+        <feTurbulence type="fractalNoise" baseFrequency="0.7 0.7" numOctaves="3" seed="66" result="n"/>
+        <feColorMatrix in="n" type="luminanceToAlpha" result="a"/>
+        <feComponentTransfer in="a" result="t"><feFuncA type="discrete" tableValues="0 0 0 0 0 0 0 1 1 0 0 0 0 0 0 0"/></feComponentTransfer>
+        <feFlood flood-color="#4A8090" result="c"/>
+        <feComposite in="c" in2="t" operator="in" result="d"/>
+        <feComposite in="d" in2="SourceGraphic" operator="in" result="f"/>
+        <feMerge><feMergeNode in="SourceGraphic"/><feMergeNode in="f"/></feMerge>
+      </filter>
+      <filter id="nf_b" color-interpolation-filters="sRGB">
+        <feTurbulence type="fractalNoise" baseFrequency="0.7 0.7" numOctaves="3" seed="88" result="n"/>
+        <feColorMatrix in="n" type="luminanceToAlpha" result="a"/>
+        <feComponentTransfer in="a" result="t"><feFuncA type="discrete" tableValues="0 0 0 0 0 0 0 1 1 0 0 0 0 0 0 0"/></feComponentTransfer>
+        <feFlood flood-color="#7A5848" result="c"/>
+        <feComposite in="c" in2="t" operator="in" result="d"/>
+        <feComposite in="d" in2="SourceGraphic" operator="in" result="f"/>
+        <feMerge><feMergeNode in="SourceGraphic"/><feMergeNode in="f"/></feMerge>
+      </filter>
+    </defs>
+  </svg>
+</head>
+<body>
+
+  <div class="progress-bar" id="progressBar"></div>
+
+  <!-- Custom cursor -->
+  <div class="cursor-ring"  id="cursorRing"></div>
+  <div class="cursor-dot"   id="cursorDot"></div>
+
+  <!-- NAV -->
+  <nav>
+    <div class="nav-logo-wrap">
+    <span class="nav-logo">MAKENA</span>
+    <span class="nav-full">Makena</span>
+    </div>
+    <div class="nav-counter">
+      <span id="navNum" class="nav-num">01</span>
+      <span class="nav-slash">/</span>
+      <span class="nav-total">04</span>
+    </div>
+    <div class="nav-dots">
+      <button class="nav-dot active" data-idx="0"></button>
+      <button class="nav-dot"        data-idx="1"></button>
+      <button class="nav-dot"        data-idx="2"></button>
+      <button class="nav-dot"        data-idx="3"></button>
+    </div>
+  </nav>
+
+  <!-- Lateral izquierdo -->
+  <aside class="aside-left">
+    <span class="scene-label" id="sceneLabel">Stanley</span>
+    <div class="aside-rule"></div>
+  </aside>
+
+  <!-- Lateral derecho -->
+  <aside class="aside-right">
+    <div class="scroll-indicator" id="scrollIndicator">
+      <div class="si-track"><div class="si-thumb" id="siThumb"></div></div>
+      <span class="si-label">Scroll</span>
+    </div>
+  </aside>
+
+  <!-- HERO -->
+  <section class="hero" id="hero">
+
+    <!-- Partículas ambiente -->
+    <canvas id="particles-canvas" aria-hidden="true"></canvas>
+
+    <!-- Grain overlay -->
+    <div class="grain" aria-hidden="true"></div>
+
+    <!-- Grid decorativo -->
+    <div class="deco-grid" aria-hidden="true">
+      <div class="dg-v" style="left:calc(100%/5 * 1)"></div>
+      <div class="dg-v" style="left:calc(100%/5 * 4)"></div>
+      <div class="dg-h" style="top:38%"></div>
+    </div>
+
+    <!-- Número de escena decorativo -->
+    <div class="scene-num-bg" id="sceneNumber">01</div>
+
+    <!-- Línea deco superior -->
+    <div class="deco-line" id="decoLine"></div>
+
+    <!-- ── LADO IZQUIERDO: tipografía ── -->
+    <div class="col-text">
+
+      <!-- Eyebrow / kicker -->
+      <div class="eyebrow-wrap">
+        <div class="eyebrow stanley-ey">Termos &amp; Accesorios</div>
+        <div class="eyebrow perfumeria-ey">Perfumería &amp; Belleza</div>
+        <div class="eyebrow cotillon-ey">Cotillón &amp; Fiesta</div>
+        <div class="eyebrow blanqueria-ey">Blanquería &amp; Hogar</div>
+      </div>
+
+      <!-- Títulos -->
+      <div class="title-wrap">
+        <h1 class="hero-title stanley-title">
+          <span class="t-reveal">STANLEY</span>
+        </h1>
+        <h1 class="hero-title perfumeria-title">
+          <span class="t-reveal">PERFUMERÍA</span>
+        </h1>
+        <h1 class="hero-title cotillon-title">
+          <span class="t-reveal">COTILLÓN</span>
+        </h1>
+        <h1 class="hero-title blanqueria-title">
+          <span class="t-reveal">BLANQUERÍA</span>
+        </h1>
+      </div>
+
+      <!-- Subtítulos -->
+      <div class="sub-wrap">
+        <p class="hero-subtitle stanley-subtitle">Termos y mates con la mejor<br>calidad para tu rutina diaria.</p>
+        <p class="hero-subtitle perfumeria-subtitle">Aromas y cuidado personal<br>para todos los estilos.</p>
+        <p class="hero-subtitle cotillon-subtitle">Decoración, fiesta y color<br>para cada celebración.</p>
+        <p class="hero-subtitle blanqueria-subtitle">Textiles para renovar cada<br>espacio de tu hogar.</p>
+      </div>
+
+      <!-- CTAs -->
+      <div class="cta-wrap">
+        <a class="hero-cta stanley-cta"    href="#"><span>Explorar colección</span><svg width="16" height="16" viewBox="0 0 16 16"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+        <a class="hero-cta perfumeria-cta" href="#"><span>Explorar colección</span><svg width="16" height="16" viewBox="0 0 16 16"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+        <a class="hero-cta cotillon-cta"   href="#"><span>Explorar colección</span><svg width="16" height="16" viewBox="0 0 16 16"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+        <a class="hero-cta blanqueria-cta" href="#"><span>Explorar colección</span><svg width="16" height="16" viewBox="0 0 16 16"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+      </div>
+
+    </div>
+
+    <!-- ── LADO DERECHO: producto ── -->
+    <div class="col-product">
+
+      <!-- Glassmorphism cards -->
+      <div class="stanley-glass    scene-glass"></div>
+      <div class="perfumeria-glass scene-glass"></div>
+      <div class="cotillon-glass   scene-glass"></div>
+      <div class="blanqueria-glass scene-glass"></div>
+
+      <!-- Imágenes -->
+      <img class="stanley-img    scene-img" src="./img/stanley-img.png"    alt="Stanley" />
+      <img class="perfumeria-img scene-img" src="./img/perfumeria-img.png" alt="Perfumería" />
+      <img class="cotillon-img   scene-img" src="./img/cotillon-img.png"   alt="Cotillón" />
+      <img class="blanqueria-img scene-img" src="./img/blanqueria-img.png" alt="Blanquería" />
+
+      <!-- Badge flotante -->
+      <div class="product-badge" id="productBadge">
+        <span class="badge-year">2025</span>
+        <span class="badge-sep">·</span>
+        <span class="badge-cat" id="badgeCat">Stanley</span>
+      </div>
+
+    </div>
+
+  </section>
+
+  <script src="./script.js" defer></script>
+</body>
+</html>

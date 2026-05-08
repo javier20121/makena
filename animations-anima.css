@@ -1,0 +1,12 @@
+/* animations.css — solo lo que el RAF no maneja */
+
+@keyframes imgFloat {
+  0%,100% { transform: translate3d(0,0,0)      scale(1)     rotate(1deg);   }
+  50%      { transform: translate3d(0,-10px,0)  scale(1.010) rotate(0.5deg); }
+}
+.img-floating { animation: imgFloat 5s ease-in-out infinite !important; }
+
+@keyframes scrollPulse {
+  0%,100% { opacity:.15; transform:scaleY(.5) translateY(-5px); }
+  50%      { opacity:.7;  transform:scaleY(1)  translateY(0);    }
+}
