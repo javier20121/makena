@@ -136,7 +136,8 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function spawnParticles() {
-    const n = Math.floor(canvas.width / 20);
+    const isMobile = window.innerWidth < 860;
+    const n = Math.floor(canvas.width / (isMobile ? 50 : 20)); // Menos partículas en móvil
     particles = Array.from({length: n}, () => ({
       x: Math.random() * canvas.width,
       y: Math.random() * canvas.height,

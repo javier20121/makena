@@ -26,6 +26,7 @@
   top: 0;
   width: 100%;
   height: 100vh;
+  height: 100svh; /* Soporte para barra de direcciones en Android */
   overflow: hidden;
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -324,24 +325,49 @@
   transition: opacity 0.3s ease, transform 0.4s var(--anima-ease-out);
 }
 
-/* RESPONSIVE */
+/* RESPONSIVE / MOBILE (Android & iOS) */
 @media (max-width: 860px) {
   #anima-section {
     grid-template-columns: 1fr;
-    grid-template-rows: 1fr auto;
+    grid-template-rows: 1fr;
   }
   .col-text {
-    padding: 100px 24px 0;
-    justify-content: flex-start;
+    padding: 80px 24px 40px;
+    justify-content: center;
+    text-align: left;
+    width: 100%;
   }
   .col-product {
     position: absolute;
-    right: 0; top: 0; bottom: 0;
-    width: 42vw;
+    right: -10%; 
+    top: 50%;
+    transform: translateY(-50%);
+    width: 60vw;
     pointer-events: none;
-    opacity: 0.7;
+    opacity: 0.5; /* Más sutil en móvil */
+    z-index: 10;
   }
-  .title-wrap { height: clamp(85px, 22vw, 160px); }
-  .scene-num-bg { font-size: clamp(100px,30vw,180px); }
-  .scene-label-anima, .nav-dots-anima { display: none; }
+  .title-wrap { 
+    height: auto; 
+    min-height: 80px; 
+    margin-bottom: 16px;
+  }
+  .hero-title-anima .t-reveal {
+    font-size: clamp(48px, 15vw, 80px) !important;
+  }
+  .sub-wrap {
+    height: auto;
+    margin-bottom: 24px;
+  }
+  .hero-subtitle-anima {
+    font-size: 1.1rem;
+    position: relative; /* Evitar superposición en móvil */
+  }
+  .scene-num-bg { 
+    font-size: 140px; 
+    bottom: 20px; 
+    right: 10px;
+    opacity: 0.02 !important;
+  }
+  .scene-label-anima, .nav-dots-anima, #anima-section::before { display: none; }
 }
