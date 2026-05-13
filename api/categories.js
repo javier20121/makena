@@ -1,9 +1,12 @@
 // /api/categories.js
 module.exports = async function handler(req, res) {
-  // 1. Configurar CORS
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  const allowedOrigin = process.env.APP_ORIGIN;
+
+  if (allowedOrigin && req.headers.origin === allowedOrigin) {
+    res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
+    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  }
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
@@ -23,16 +26,13 @@ module.exports = async function handler(req, res) {
     return res.status(500).json({ error: 'Error de configuración del servidor' });
   }
 
-  const finalStoreId = storeId || defaultStoreId;
+  const finalStoreId = defaultStoreId || storeId;
   if (!finalStoreId) {
     return res.status(400).json({ error: 'Falta storeId' });
   }
 
   // 3. Construir URL de Tiendanube para categorías
   const tnUrl = new URL(`https://api.tiendanube.com/v1/${finalStoreId}/categories`);
-
-  console.log(`[Proxy Categories] Conectando a Tiendanube: ${finalStoreId}`);
-
   try {
     const response = await fetch(tnUrl.toString(), {
       method: 'GET',
@@ -55,13 +55,8 @@ module.exports = async function handler(req, res) {
     }
 
     const data = await response.json();
-
-    console.log('[Categories API] Respuesta cruda de Tiendanube:', JSON.stringify(data, null, 2));
-
     // 5. Validar respuesta
     const categoriesArray = Array.isArray(data) ? data : (data.categories || []);
-
-    console.log('[Categories API] Categorías procesadas:', categoriesArray.map(c => ({ id: c.id, name: c.name })));
 
     res.setHeader('X-Total-Count', categoriesArray.length);
     return res.status(200).json(categoriesArray);

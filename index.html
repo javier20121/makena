@@ -16,6 +16,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,700;0,900;1,300;1,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="anima-styles.css">
+  <link rel="stylesheet" href="styles/storefront-enhancements.css">
   
   <!-- Datos Estructurados para Google -->
   <script type="application/ld+json">
@@ -334,7 +335,7 @@
 
       <p class="empty-msg" id="emptyState" hidden>
         Sin resultados.
-        <button onclick="applyFilter('all');searchInput.value=''" class="link-btn">Ver todos</button>
+        <button type="button" class="link-btn" data-reset-catalog>Ver todos</button>
       </p>
 
       <div class="load-more-wrap" id="loadMoreRow" hidden>
@@ -583,6 +584,6 @@
 
   <script src="https://unpkg.com/lenis@1.1.13/dist/lenis.min.js"></script>
   <script src="anima-logic.js" defer></script>
-  <script src="app.js" defer></script>
+  <script type="module" src="js/main.js"></script>
 </body>
 </html>
